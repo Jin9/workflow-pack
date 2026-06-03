@@ -1,0 +1,93 @@
+{
+  "id": "EPIC-AUTH",
+  "title": "Customer authentication and session management",
+  "problem_statement": "Customers cannot securely access their own account, cart and order history without an authentication boundary; every authenticated storefront path depends on this, and credential handling must satisfy PDPA lawful basis and leak no PII.",
+  "why_now": "Auth is the prerequisite for checkout, orders and reviews; nothing customer-specific can ship before it.",
+  "hypothesis": "A short-lived access token plus a rotating refresh token gives a secure, low-friction session that unblocks the rest of the storefront.",
+  "success_criteria": [
+    {
+      "metric": "login success rate on valid credentials",
+      "baseline": "n/a (new build)",
+      "target": ">= 99%",
+      "measurement_method": "auth service logs (no PII)"
+    },
+    {
+      "metric": "account-enumeration leakage",
+      "baseline": "n/a",
+      "target": "0 (identical message for unknown-email and wrong-password)",
+      "measurement_method": "security test + response assertion"
+    }
+  ],
+  "scope": {
+    "in": [
+      "register with unique email",
+      "login returning access + refresh tokens",
+      "generic invalid-credentials message",
+      "refresh-token rotation",
+      "logout",
+      "login rate limiting"
+    ],
+    "out_explicit": [
+      "social / federated login",
+      "real email/SMS verification"
+    ],
+    "out_deferred": [
+      "multi-factor authentication",
+      "self-service email change"
+    ]
+  },
+  "stakeholders": [
+    {
+      "role": "Product Manager",
+      "name_or_team": "Khun Pim",
+      "raci": "A"
+    },
+    {
+      "role": "Tech Lead",
+      "name_or_team": "Khun Anan",
+      "raci": "C"
+    },
+    {
+      "role": "DPO",
+      "name_or_team": "Khun Apinya",
+      "raci": "C"
+    }
+  ],
+  "legal_status": "present",
+  "inferred_tier": "T2",
+  "tier_signals": [
+    {
+      "signal": "customer-facing + PII (email, phone)",
+      "weight": "high",
+      "evidence_quote": "Register with email, password, name, phone. Email is unique; weak passwords rejected"
+    },
+    {
+      "signal": "resolved PDPA lawful basis, no AML/sanctions",
+      "weight": "med",
+      "evidence_quote": "Lawful basis cited to Thailand PDPA B.E. 2562 (2019)"
+    }
+  ],
+  "story_refs": [
+    {
+      "id": "STORY-AUTH-01",
+      "slug": "customer-logs-email-password",
+      "file": "STORY-AUTH-01-customer-logs-email-password.json",
+      "title": "Customer logs in with email and password",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-AUTH-02",
+      "slug": "customer-refreshes-expired-session-securely",
+      "file": "STORY-AUTH-02-customer-refreshes-expired-session-securely.json",
+      "title": "Customer refreshes an expired session securely",
+      "priority": "Should"
+    }
+  ],
+  "change_log": [
+    {
+      "date": "2026-06-01",
+      "author": "eliciting-banking-brief-v1.4.1",
+      "change": "Created from requirement shoppilot-mvp"
+    }
+  ]
+}

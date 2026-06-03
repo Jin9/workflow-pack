@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BA Research — S1 Pack (Discovery · Brief · Epics · Stories)</title>
+<style>
+  :root{--bg:#eef2f9;--panel:#fff;--panel2:#f1f5fb;--ink:#1e293b;--muted:#566782;--line:#d4ddec;--accent:#0369a1;
+    --must:#dc2626;--should:#f59e0b;--could:#64748b;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;
+    --value:#0369a1;--usability:#7c3aed;--feasibility:#b45309;--viability:#0f766e;
+    --low:#dc2626;--medium:#f59e0b;--high:#16a34a;--p1:#dc2626;--p2:#f59e0b;--radius:12px;}
+  :root[data-theme="dark"]{--bg:#0f172a;--panel:#13203a;--panel2:#1a2a47;--ink:#e8eefc;--muted:#94a8cc;--line:#2a3c5e;--accent:#38bdf8;
+    --value:#38bdf8;--usability:#a78bfa;--feasibility:#fbbf24;--viability:#2dd4bf;}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;padding:26px 20px 70px;transition:background .2s,color .2s}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:24px;margin:0 0 4px} .sub{color:var(--accent)}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:26px 0 8px}
+  .layer{font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.5px}
+  .lede{color:var(--muted);margin:0 0 14px;max-width:900px;font-size:14.5px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px;align-items:center}
+  button.ctl{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600}
+  button.ctl:hover{border-color:var(--accent);color:var(--accent)}
+  .nav a{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;margin-right:14px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .pill{font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line)}
+  .pill.ok{color:var(--ok);border-color:var(--ok)} .pill.bad{color:var(--p1);border-color:var(--p1)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin:0 0 12px;box-shadow:0 1px 3px rgba(15,23,42,.05);padding:14px 16px}
+  .card.flush{padding:0;overflow:hidden}
+  .rec{display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;border-left:6px solid var(--muted)}
+  .rec.proceed{border-left-color:var(--ok)} .rec .dot{width:12px;height:12px;border-radius:50%;background:var(--muted)}
+  .rec.proceed .dot{background:var(--ok)} .rec .why{font-weight:500;font-size:13.5px;color:var(--muted)}
+  .frame{font-size:15px;line-height:1.62}
+  ul.opps{margin:2px 0;padding-left:20px} ul.opps li{margin:5px 0}
+  ul.regimes{margin:2px 0;padding-left:20px} ul.regimes li{margin:6px 0} ul.regimes .na{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:13.6px;margin:4px 0;background:var(--panel)}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  code{background:var(--panel2);padding:1px 5px;border-radius:5px;color:var(--accent);font-size:12.5px}
+  .tag{font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:6px;border:1px solid var(--line);white-space:nowrap;text-transform:capitalize}
+  .rk-value{color:var(--value);border-color:var(--value)} .rk-usability{color:var(--usability);border-color:var(--usability)}
+  .rk-feasibility{color:var(--feasibility);border-color:var(--feasibility)} .rk-viability{color:var(--viability);border-color:var(--viability)}
+  .conf{font-weight:800} .conf-low{color:var(--low)} .conf-medium{color:var(--medium)} .conf-high{color:var(--high)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0} .chips span{font-size:12px;padding:2px 9px;border-radius:6px;border:1px solid var(--line);background:var(--panel2)}
+  .t-must{color:var(--must);border-color:var(--must)} .t-should{color:var(--should);border-color:var(--should)} .t-could{color:var(--could);border-color:var(--could)}
+  .epic>.head{padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .epic>.head:hover{background:var(--panel2)}
+  .eid{font-weight:800;color:var(--accent);font-size:13px} .etitle{font-weight:700;font-size:17px}
+  .count{margin-left:auto;color:var(--muted);font-size:12.5px}
+  .ebody{display:none;padding:2px 16px 14px;border-top:1px dashed var(--line)} .epic.open .ebody{display:block}
+  .lbl{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.6px;margin:12px 0 4px}
+  .path{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;display:inline-block;margin:4px 0}
+  .story{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--panel2)}
+  .story>.shead{padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .sid{font-weight:800;color:var(--accent);font-size:12px} .stitle{font-weight:600}
+  .sbody{display:none;padding:4px 12px 12px} .story.open .sbody{display:block}
+  .ac{font-style:italic;color:var(--muted)}
+  .sev-P1{color:var(--p1);font-weight:700} .sev-P2{color:var(--p2);font-weight:700} .sev-P3{color:var(--could);font-weight:700}
+  .bg-applies{color:var(--accent);font-weight:700} .bg-na{color:var(--muted)} .bg-unknown{color:var(--p2);font-weight:700}
+  .dor{display:flex;gap:6px;flex-wrap:wrap} .dor span{font-size:12px;padding:2px 7px;border-radius:6px;border:1px solid var(--line)}
+  .dor .y{color:var(--ok);border-color:var(--ok)} .dor .n{color:var(--muted)}
+  .missing{color:var(--p1);font-weight:700}
+  .note{border-left:4px solid var(--warn);background:var(--panel2)} .note b{color:var(--warn)}
+  .foot{margin-top:24px;border-top:1px solid var(--line);padding-top:12px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BA Research — <span class="sub">S1 Pack</span></h1>
+  <p class="lede">One self-contained <b>offline</b> human-view of the S1 four-layer ref chain:
+  <b>Discovery</b> (problem-space) → <b>Brief</b> (boundary) → <b>Epics</b> → <b>Stories</b> (discrete files).
+  The machine handoff is the same chain via <code>INDEX.json</code> (<code>discovery_file</code> · <code>brief_file</code> · <code>epics[]</code> · <code>story_files[]</code>); a downstream node loads only the layers it needs.</p>
+  <div class="controls">
+    <span class="nav"><a href="#discovery">① Discovery</a><a href="#brief">② Brief</a><a href="#epics">③ Epics → Stories</a></span>
+    <button class="ctl" id="expandAll" aria-pressed="false">⤢ Expand all</button>
+    <button class="ctl" id="themeToggle">🌙 Dark</button>
+  </div>
+  <div class="meta" id="meta"></div>
+
+  <h2 id="discovery"><span class="layer">LAYER 0</span> &nbsp;Discovery — problem space</h2>
+  <div id="rec"></div>
+  <div class="lbl">Problem framing (what · for whom · why now)</div>
+  <div class="card frame" id="frame"></div>
+  <div class="lbl">Opportunities (outcome, not solution)</div>
+  <div class="card" id="opps"></div>
+  <div class="lbl">Assumptions &amp; the four product risks</div>
+  <div class="card" id="risks"></div>
+  <div class="lbl">Regulatory regimes in play</div>
+  <div class="card" id="regimes"></div>
+
+  <h2 id="brief"><span class="layer">LAYER 1</span> &nbsp;Brief — boundary (intake)</h2>
+  <div class="card" id="briefcard"></div>
+
+  <h2 id="epics"><span class="layer">LAYER 2 · 3</span> &nbsp;Epics → Stories (discrete files)</h2>
+  <div id="gov"></div>
+  <div id="oq"></div>
+  <div id="epicsbox"></div>
+
+  <h2>Provenance &amp; divergence</h2>
+  <div class="card note" id="note"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+/* INJECT: PACK is the assembled four-layer pack (discovery + brief summary + epic/story bodies), built
+   deterministically from discovery.json, brief.json, INDEX.json and the discrete EPIC-(DOMAIN)/STORY files.
+   Strings are HTML-escaped via esc() on render. */
+const PACK = {
+  "meta": {
+    "task_id": "REQ-shoppilot-mvp",
+    "stage": "S1",
+    "state": "ready-for-tl",
+    "confidence": "high",
+    "owner": "BA lead",
+    "produced_by": "researching-ba-problem-space ^0.1.0 (discovery) + eliciting-banking-brief ^1.4.1 (brief) + deterministic render",
+    "schemaVersion": "1.1",
+    "tier": "T2",
+    "source_ref": "S0-intake/ecommerce_mvp_business_only.gap-closed.md",
+    "audit_id": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
+    "layers": {
+      "discovery": {
+        "file": "discovery.json",
+        "input_file": "discovery-input.json",
+        "skill": "researching-ba-problem-space ^0.1.0",
+        "stage_type": "analyze",
+        "recommendation": "proceed",
+        "audit_id": "9d4e1f8a-2c07-4b63-a5e9-6f1b0c3d8e24"
+      },
+      "brief": {
+        "file": "brief.json",
+        "skill": "eliciting-banking-brief ^1.4.1",
+        "status": "ready-for-tl",
+        "audit_id": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22"
+      },
+      "epics": {
+        "count": 4,
+        "ref": "epics[]"
+      },
+      "stories": {
+        "count": 8,
+        "ref": "story_files[]"
+      }
+    }
+  },
+  "discovery": {
+    "skill": "researching-ba-problem-space ^0.1.0",
+    "input_file": "discovery-input.json",
+    "problem_framing": "Problem: a single Thai merchant has no direct online sales channel and today leans on phone/chat to sell; it wants customers to self-serve the entire purchase journey (browse -> cart -> checkout -> mock payment -> delivery tracking) while back-office staff run catalog, stock, orders and coupons from one console. For whom: B2C retail customers in Thailand (guest and registered) and the merchant's own back-office staff; own-data-only isolation between customers is treated as non-negotiable. Why now: this is the merchant's first online storefront and, equally, the squad's vehicle to validate an end-to-end software-delivery workflow on a 'small but complete' MVP (single merchant, single currency/language, mock payment and shipping) that must nonetheless 'actually sell' -- stock reservation, server-computed totals, coupon rules and pre-shipment cancellation genuinely enforced -- and stay extensible to a real payment provider, real shipping and a future loyalty/points program without a rebuild. PROVENANCE / RB-01: the source ecommerce_mvp_business_only.gap-closed.md is already a fully-structured requirement (sections 1-20: RACI, PII inventory, retention schedule, quantified SLOs), which is exactly this skill's RB-01 'input already a structured requirement -> route to intake' condition. Per explicit instruction this discovery is produced retrospectively -- framing the opportunity from the business narrative (sections 1-3) and the resolved regulatory context (section 18) rather than from a raw, pre-intake idea -- so it reads as a derived problem-space record, not true upstream discovery. AI drafts; the named human decides at the review gate, then hands the framing into intake (eliciting-banking-brief), which is materialized here as the brief + epics + stories layers of this S1 pack.",
+    "opportunities": [
+      "Direct self-serve online sales channel: let customers complete a purchase end-to-end on the web without phone or chat, lifting the registration->first-purchase and checkout->payment conversion the business wants to measure.",
+      "Unified back-office console: let merchant staff manage catalog, inventory, orders, fulfillment state and coupons in one place, cutting operational handling time and same-day fulfillment lag.",
+      "A trustworthy 'it actually sells' MVP: correct stock reservation, server-computed totals, idempotent confirm/payment and audited state changes so customers never hit overselling or double charges (the zero-defect quality KPIs).",
+      "An extensible foundation: a structure that admits a real payment provider, a real shipping provider and a future loyalty/points program without re-architecting.",
+      "An end-to-end SDLC workflow testbed: use ShopPilot as the reference initiative to exercise the squad's delivery pipeline from discovery through deployment."
+    ],
+    "assumptions": [
+      {
+        "statement": "Thai B2C shoppers will complete purchases unassisted on a single-merchant web storefront rather than reverting to phone/chat ordering.",
+        "risk_type": "value",
+        "confidence": "medium",
+        "de_risk": "Instrument the registration->first-purchase and checkout->payment funnels (section 3) and read them post-launch; run 5-8 customer interviews or a demand test before committing later-phase investment."
+      },
+      {
+        "statement": "Guest, customer and admin can each complete their core flows (browse->pay; manage catalog/stock/orders) without training, including the own-data-only rule and applying a coupon at checkout.",
+        "risk_type": "usability",
+        "confidence": "medium",
+        "de_risk": "Moderated prototype usability tests on the checkout and admin-fulfillment flows; verify the section 20 accessibility targets (keyboard-usable, responsive, human-readable error/confirmation messages)."
+      },
+      {
+        "statement": "Mock payment/shipping plus atomic stock reservation with a 30-minute TTL, last-item-race resolution, idempotent confirm and provider-replay-safe callbacks, and price snapshots can be built and hardened within the one-sprint budget (section 7.1).",
+        "risk_type": "feasibility",
+        "confidence": "low",
+        "de_risk": "Run a time-boxed spike on the reservation + idempotency concurrency model (last-item race and provider-replay dedup) before commit, and hand the spike to a technical-feasibility assessment."
+      },
+      {
+        "statement": "A single-merchant MVP is sustainable for the business and the regulator: PDPA obligations (per-field lawful basis, TH/SG residency, 5-year retention), CPA/ETA disclosure and a PCI-out-of-scope payment model are operable at this scale.",
+        "risk_type": "viability",
+        "confidence": "high",
+        "de_risk": "Largely de-risked in the gap-closed governance workshop (sections 14-20: named Legal/DPO/Compliance owners, resolved citations); keep a cost model and confirm the manual-refund SOP (refunds over 3,000 THB need dual approval) is operationally staffed."
+      }
+    ],
+    "regulatory_regimes": [
+      "PDPA B.E. 2562 (2019): per-field lawful basis (section 15), data-subject access/correction/erasure via a back-office request, separate marketing-email consent, and a defined breach-notification path; lawful basis resolved.",
+      "Data residency: all personal data confined to the Thailand/Singapore (ap-southeast) region (section 16).",
+      "Revenue Code: 5-year retention envelope for order, financial and audit records (section 16).",
+      "Consumer Protection Act and Electronic Transactions Act: price and total shown before payment; order confirmation treated as an electronic record (section 18).",
+      "PCI-DSS v4.0: ShopPilot stays out of cardholder-data scope -- no PAN/CVV collected or stored; mock provider now, PSP tokenization later (section 18).",
+      "Not in play: KYC / AML / sanctions screening -- there is no account opening, lending, or money movement beyond tokenized retail payment; flagged explicitly so intake does not assume a financial-crime regime. No hard regulatory blocker remains (all section 18 citations resolved)."
+    ],
+    "recommendation": "proceed",
+    "audit_id": "9d4e1f8a-2c07-4b63-a5e9-6f1b0c3d8e24"
+  },
+  "brief": {
+    "skill": "eliciting-banking-brief ^1.4.1",
+    "file": "brief.json",
+    "title": "ShopPilot MVP — single-merchant B2C storefront + back office",
+    "summary": "A single-merchant Thai-market online shop covering the full business flow (browse -> cart -> checkout -> pay -> fulfil -> review) plus an admin back office. Governance is pre-resolved: Legal Counsel, DPO and Compliance are named and engaged; PII inventory, retention, residency and regulatory citations (PDPA, Revenue Code, CPA, PCI-DSS) are resolved, and every numeric policy parameter carries a named approving owner.",
+    "scope_kind": "multi-epic",
+    "status": "ready-for-tl",
+    "ba_confidence": "high",
+    "tier": "T2",
+    "blocks_tl_handoff": false,
+    "epic_ids": [
+      "EPIC-AUTH",
+      "EPIC-CHECKOUT",
+      "EPIC-ORDER",
+      "EPIC-INVENTORY"
+    ],
+    "counts": {
+      "epics": 4,
+      "stories": 8,
+      "governance_gaps": 0,
+      "regulatory_dependencies": 4,
+      "pii_inventory": 6,
+      "open_questions": 2,
+      "assumptions_made": 4,
+      "glossary": 4
+    },
+    "regulatory": [
+      "PDPA",
+      "Revenue Code",
+      "CPA",
+      "PCI-DSS"
+    ],
+    "pii_fields": [
+      "customer_email",
+      "customer_phone",
+      "customer_name",
+      "shipping_address",
+      "password",
+      "session_tokens"
+    ]
+  },
+  "pack": {
+    "count_check": {
+      "epics": 4,
+      "stories": 8,
+      "story_files": 8,
+      "index_rows": 8,
+      "discovery_present": true,
+      "brief_present": true,
+      "holds": true
+    },
+    "governance_gaps": [],
+    "open_questions": [
+      {
+        "id": "OQ-1",
+        "severity": "P3",
+        "question": "Should a customer be able to confirm delivery, or does the admin mark delivered (current design)?",
+        "why_matters": "Adding customer-confirmed delivery introduces a new flow and a notification; it is deferred but affects ORDER scope if pulled forward.",
+        "suggested_resolver": "Product Manager (Khun Pim)",
+        "related_story_ids": [
+          "STORY-ORDER-02"
+        ]
+      },
+      {
+        "id": "OQ-2",
+        "severity": "P3",
+        "question": "What is the abandoned-cart handling beyond the 30-day purge (notify vs silent purge)?",
+        "why_matters": "Affects the cart-abandonment KPI and a possible future reminder notification; not blocking for MVP.",
+        "suggested_resolver": "Marketing Lead (Khun Fah)",
+        "related_story_ids": [
+          "STORY-CHECKOUT-01"
+        ]
+      }
+    ],
+    "epics": [
+      {
+        "id": "EPIC-AUTH",
+        "title": "Customer authentication and session management",
+        "problem_statement": "Customers cannot securely access their own account, cart and order history without an authentication boundary; every authenticated storefront path depends on this, and credential handling must satisfy PDPA lawful basis and leak no PII.",
+        "why_now": "Auth is the prerequisite for checkout, orders and reviews; nothing customer-specific can ship before it.",
+        "hypothesis": "A short-lived access token plus a rotating refresh token gives a secure, low-friction session that unblocks the rest of the storefront.",
+        "success_criteria": [
+          {
+            "metric": "login success rate on valid credentials",
+            "baseline": "n/a (new build)",
+            "target": ">= 99%",
+            "measurement_method": "auth service logs (no PII)"
+          },
+          {
+            "metric": "account-enumeration leakage",
+            "baseline": "n/a",
+            "target": "0 (identical message for unknown-email and wrong-password)",
+            "measurement_method": "security test + response assertion"
+          }
+        ],
+        "scope": {
+          "in": [
+            "register with unique email",
+            "login returning access + refresh tokens",
+            "generic invalid-credentials message",
+            "refresh-token rotation",
+            "logout",
+            "login rate limiting"
+          ],
+          "out_explicit": [
+            "social / federated login",
+            "real email/SMS verification"
+          ],
+          "out_deferred": [
+            "multi-factor authentication",
+            "self-service email change"
+          ]
+        },
+        "stakeholders": [
+          {
+            "role": "Product Manager",
+            "name_or_team": "Khun Pim",
+            "raci": "A"
+          },
+          {
+            "role": "Tech Lead",
+            "name_or_team": "Khun Anan",
+            "raci": "C"
+          },
+          {
+            "role": "DPO",
+            "name_or_team": "Khun Apinya",
+            "raci": "C"
+          }
+        ],
+        "legal_status": "present",
+        "inferred_tier": "T2",
+        "tier_signals": [
+          {
+            "signal": "customer-facing + PII (email, phone)",
+            "weight": "high",
+            "evidence_quote": "Register with email, password, name, phone. Email is unique; weak passwords rejected"
+          },
+          {
+            "signal": "resolved PDPA lawful basis, no AML/sanctions",
+            "weight": "med",
+            "evidence_quote": "Lawful basis cited to Thailand PDPA B.E. 2562 (2019)"
+          }
+        ],
+        "story_refs": [
+          {
+            "id": "STORY-AUTH-01",
+            "slug": "customer-logs-email-password",
+            "file": "STORY-AUTH-01-customer-logs-email-password.json",
+            "title": "Customer logs in with email and password",
+            "priority": "Must"
+          },
+          {
+            "id": "STORY-AUTH-02",
+            "slug": "customer-refreshes-expired-session-securely",
+            "file": "STORY-AUTH-02-customer-refreshes-expired-session-securely.json",
+            "title": "Customer refreshes an expired session securely",
+            "priority": "Should"
+          }
+        ],
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ],
+        "story_ids": [
+          "STORY-AUTH-01",
+          "STORY-AUTH-02"
+        ]
+      },
+      {
+        "id": "EPIC-CHECKOUT",
+        "title": "Server-side checkout and mock payment",
+        "problem_statement": "Customers must be able to pay for a cart at a total the system computes (never a tampered client value), with shipping and coupon rules applied, and the order must not double-charge or oversell when clicks or provider callbacks are duplicated.",
+        "why_now": "Checkout is the revenue path; it depends on auth and gates orders and inventory.",
+        "hypothesis": "Server-computed totals plus idempotent confirm and provider-replay dedup give a correct, replay-safe money path on a mock provider that swaps cleanly for a real PSP later.",
+        "success_criteria": [
+          {
+            "metric": "client-trusted total incidents",
+            "baseline": "n/a",
+            "target": "0 (all totals server-computed)",
+            "measurement_method": "checkout integration tests"
+          },
+          {
+            "metric": "double-charge / double-reserve on duplicate signal",
+            "baseline": "n/a",
+            "target": "0",
+            "measurement_method": "idempotency + provider-replay tests"
+          }
+        ],
+        "scope": {
+          "in": [
+            "server-side total computation",
+            "shipping rule (free >= 1500 THB else 60 THB)",
+            "one coupon, floored at 0",
+            "coupon re-validation at confirm",
+            "idempotent order confirm",
+            "mock payment success/failure/timeout",
+            "provider-replay dedup"
+          ],
+          "out_explicit": [
+            "real payment gateway",
+            "coupon stacking",
+            "storing card data"
+          ],
+          "out_deferred": [
+            "wallets",
+            "installments / BNPL"
+          ]
+        },
+        "stakeholders": [
+          {
+            "role": "Product Manager",
+            "name_or_team": "Khun Pim",
+            "raci": "A"
+          },
+          {
+            "role": "Merchant Owner",
+            "name_or_team": "Khun Wirat",
+            "raci": "A"
+          },
+          {
+            "role": "Compliance Officer",
+            "name_or_team": "Khun Niran",
+            "raci": "C"
+          }
+        ],
+        "legal_status": "present",
+        "inferred_tier": "T2",
+        "tier_signals": [
+          {
+            "signal": "money movement, customer-facing",
+            "weight": "high",
+            "evidence_quote": "All money is computed server-side - the client total is never trusted"
+          },
+          {
+            "signal": "no cardholder data stored (PCI scope-excluded)",
+            "weight": "med",
+            "evidence_quote": "card data (PAN/CVV) is never collected or stored by ShopPilot"
+          }
+        ],
+        "story_refs": [
+          {
+            "id": "STORY-CHECKOUT-01",
+            "slug": "customer-checks-out-server-computed-total",
+            "file": "STORY-CHECKOUT-01-customer-checks-out-server-computed-total.json",
+            "title": "Customer checks out at a server-computed total",
+            "priority": "Must"
+          },
+          {
+            "id": "STORY-CHECKOUT-02",
+            "slug": "mock-payment-capture-provider-replay-safety",
+            "file": "STORY-CHECKOUT-02-mock-payment-capture-provider-replay-safety.json",
+            "title": "Mock payment capture with provider-replay safety",
+            "priority": "Must"
+          }
+        ],
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ],
+        "story_ids": [
+          "STORY-CHECKOUT-01",
+          "STORY-CHECKOUT-02"
+        ]
+      },
+      {
+        "id": "EPIC-ORDER",
+        "title": "Orders, fulfillment and price snapshot",
+        "problem_statement": "Customers must be able to track only their own order through a state machine with a frozen price snapshot, and admins must advance fulfillment with no illegal backward transitions, every change audited.",
+        "why_now": "Orders are the post-payment customer experience and the admin's daily work; they depend on checkout.",
+        "hypothesis": "An append-only audited state machine plus an order-time price/name/address snapshot gives trustworthy tracking that never drifts with catalog edits.",
+        "success_criteria": [
+          {
+            "metric": "cross-customer order access",
+            "baseline": "n/a",
+            "target": "0 (A never sees B's order)",
+            "measurement_method": "authorization tests"
+          },
+          {
+            "metric": "illegal backward transitions accepted",
+            "baseline": "n/a",
+            "target": "0",
+            "measurement_method": "state-machine tests"
+          }
+        ],
+        "scope": {
+          "in": [
+            "own-order tracking",
+            "price/name/address snapshot at creation",
+            "human-readable order number",
+            "status timeline",
+            "admin paid->packing->shipped(tracking)->delivered",
+            "admin cancel-before-packing with reason"
+          ],
+          "out_explicit": [
+            "returns",
+            "automated refunds"
+          ],
+          "out_deferred": [
+            "customer-confirmed delivery",
+            "partial fulfillment"
+          ]
+        },
+        "stakeholders": [
+          {
+            "role": "Operations Lead",
+            "name_or_team": "Khun Mali",
+            "raci": "R"
+          },
+          {
+            "role": "Product Manager",
+            "name_or_team": "Khun Pim",
+            "raci": "A"
+          }
+        ],
+        "legal_status": "present",
+        "inferred_tier": "T2",
+        "tier_signals": [
+          {
+            "signal": "customer PII shown with own-data-only isolation",
+            "weight": "high",
+            "evidence_quote": "A customer sees only their own data - never another customer's orders or addresses"
+          }
+        ],
+        "story_refs": [
+          {
+            "id": "STORY-ORDER-01",
+            "slug": "customer-tracks-order-frozen-price-snapshot",
+            "file": "STORY-ORDER-01-customer-tracks-order-frozen-price-snapshot.json",
+            "title": "Customer tracks an order with a frozen price snapshot",
+            "priority": "Must"
+          },
+          {
+            "id": "STORY-ORDER-02",
+            "slug": "admin-advances-fulfillment-state-machine",
+            "file": "STORY-ORDER-02-admin-advances-fulfillment-state-machine.json",
+            "title": "Admin advances the fulfillment state machine",
+            "priority": "Must"
+          }
+        ],
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ],
+        "story_ids": [
+          "STORY-ORDER-01",
+          "STORY-ORDER-02"
+        ]
+      },
+      {
+        "id": "EPIC-INVENTORY",
+        "title": "Stock reservation and audit",
+        "problem_statement": "Stock must never oversell or go negative under concurrent checkouts, reservations must release on failure/timeout/cancel, and every admin stock change must be audited with a reason and before/after values.",
+        "why_now": "Inventory integrity underpins checkout correctness and the no-oversell reliability promise.",
+        "hypothesis": "Reserve-on-confirm with a TTL release plus an audited adjustment log gives correct stock under races without holding inventory at add-to-cart.",
+        "success_criteria": [
+          {
+            "metric": "negative stock occurrences",
+            "baseline": "n/a",
+            "target": "0",
+            "measurement_method": "concurrency / race tests"
+          },
+          {
+            "metric": "last-item race double-success",
+            "baseline": "n/a",
+            "target": "0 (exactly one winner)",
+            "measurement_method": "race-path integration test"
+          }
+        ],
+        "scope": {
+          "in": [
+            "available/reserved/sold per SKU",
+            "reserve on confirm",
+            "TTL auto-release",
+            "convert to sold on payment",
+            "release on failure/timeout/cancel",
+            "admin adjust with reason",
+            "no reduce below reserved",
+            "audit on every change"
+          ],
+          "out_explicit": [
+            "multi-warehouse",
+            "inter-warehouse transfer"
+          ],
+          "out_deferred": [
+            "automated low-stock reordering"
+          ]
+        },
+        "stakeholders": [
+          {
+            "role": "Operations Lead",
+            "name_or_team": "Khun Mali",
+            "raci": "R"
+          },
+          {
+            "role": "Merchant Owner",
+            "name_or_team": "Khun Wirat",
+            "raci": "A"
+          }
+        ],
+        "legal_status": "present",
+        "inferred_tier": "T2",
+        "tier_signals": [
+          {
+            "signal": "concurrency-safety and audit, no PII",
+            "weight": "med",
+            "evidence_quote": "Stock may never go negative - concurrent last-item checkouts must resolve to exactly one winner"
+          }
+        ],
+        "story_refs": [
+          {
+            "id": "STORY-INVENTORY-01",
+            "slug": "stock-reservation-lifecycle-last-item-race",
+            "file": "STORY-INVENTORY-01-stock-reservation-lifecycle-last-item-race.json",
+            "title": "Stock reservation lifecycle and last-item race",
+            "priority": "Must"
+          },
+          {
+            "id": "STORY-INVENTORY-02",
+            "slug": "admin-adjusts-stock-audit-trail",
+            "file": "STORY-INVENTORY-02-admin-adjusts-stock-audit-trail.json",
+            "title": "Admin adjusts stock with an audit trail",
+            "priority": "Should"
+          }
+        ],
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ],
+        "story_ids": [
+          "STORY-INVENTORY-01",
+          "STORY-INVENTORY-02"
+        ]
+      }
+    ],
+    "stories": {
+      "STORY-AUTH-01": {
+        "id": "STORY-AUTH-01",
+        "epic_id": "EPIC-AUTH",
+        "title": "Customer logs in with email and password",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "registered customer",
+          "i_want": "to log in with my email and password",
+          "so_that": "I can access my profile, cart and orders securely"
+        },
+        "context": "Authentication boundary for the storefront; credentials are PII under PDPA and the failure message must not enable account enumeration.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "successful login issues tokens",
+            "scenario_type": "happy",
+            "given": [
+              "a registered customer with valid credentials"
+            ],
+            "when": "the customer submits a login request",
+            "then": [
+              "a 15-minute access token and a 14-day refresh token are issued",
+              "no password or token value appears in any log"
+            ]
+          },
+          {
+            "scenario_name": "wrong password is indistinguishable from unknown email",
+            "scenario_type": "error",
+            "given": [
+              "a registered customer"
+            ],
+            "when": "the customer submits a wrong password",
+            "then": [
+              "the request is rejected with the generic message 'email or password is incorrect'",
+              "the same message is returned for an unknown email"
+            ]
+          },
+          {
+            "scenario_name": "login attempt is audited",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any login attempt"
+            ],
+            "when": "the attempt resolves",
+            "then": [
+              "an audit event is emitted carrying {event, actor, ts, outcome, audit_id} with no credential value"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "applies",
+            "justification": "email and phone are direct PII; password is a credential",
+            "fields_or_events": [
+              "customer_email",
+              "password"
+            ],
+            "treatment": "encrypt at rest; one-way hash for password; redact in logs"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "login attempts must be auditable for security review"
+          },
+          "idempotency": {
+            "status": "not_applicable",
+            "justification": "login is an authn read with no state mutation to replay"
+          },
+          "reversibility": {
+            "status": "not_applicable",
+            "justification": "issuing a session has nothing to reverse"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "this story is the authentication boundary itself"
+          },
+          "regulatory": {
+            "status": "applies",
+            "justification": "PDPA B.E. 2562 sec. 24 lawful basis for credential handling; citation resolved"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context in an e-commerce login"
+          }
+        },
+        "priority": "Must",
+        "sizing": {
+          "story_points": 5,
+          "complexity": "medium",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [],
+          "blocks": [
+            "STORY-AUTH-02",
+            "STORY-CHECKOUT-01"
+          ]
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      },
+      "STORY-AUTH-02": {
+        "id": "STORY-AUTH-02",
+        "epic_id": "EPIC-AUTH",
+        "title": "Customer refreshes an expired session securely",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "logged-in customer",
+          "i_want": "to refresh my access token",
+          "so_that": "I stay logged in without re-entering credentials and without weakening security"
+        },
+        "context": "Refresh-token rotation must be atomic and replay-resistant so a stolen or duplicated refresh token cannot mint extra sessions.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "rotate refresh token",
+            "scenario_type": "happy",
+            "given": [
+              "a valid, unexpired refresh token"
+            ],
+            "when": "the customer requests a refresh",
+            "then": [
+              "a new access+refresh pair is issued",
+              "the previous refresh token is revoked"
+            ]
+          },
+          {
+            "scenario_name": "replayed refresh token revokes the family",
+            "scenario_type": "error",
+            "given": [
+              "a refresh token that was already used"
+            ],
+            "when": "the customer presents it again",
+            "then": [
+              "the request is rejected",
+              "the entire token family is revoked"
+            ]
+          },
+          {
+            "scenario_name": "concurrent refresh is idempotent",
+            "scenario_type": "banking_grade_idempotency",
+            "given": [
+              "two simultaneous refresh requests with the same token"
+            ],
+            "when": "both are processed",
+            "then": [
+              "exactly one rotation occurs",
+              "only one new pair is issued; the other request fails closed"
+            ]
+          },
+          {
+            "scenario_name": "refresh is audited",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any refresh"
+            ],
+            "when": "it resolves",
+            "then": [
+              "an audit event with {event, actor, ts, outcome, audit_id} is emitted"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "not_applicable",
+            "justification": "operates on opaque tokens, not PII"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "refresh and revocation are security events"
+          },
+          "idempotency": {
+            "status": "applies",
+            "justification": "rotation must be atomic so concurrent refreshes cannot double-issue",
+            "fields_or_events": [
+              "refresh_rotation"
+            ],
+            "treatment": "single-use token with family revocation"
+          },
+          "reversibility": {
+            "status": "not_applicable",
+            "justification": "rotation is forward-only; revocation is the safety control"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "session-continuity boundary"
+          },
+          "regulatory": {
+            "status": "not_applicable",
+            "justification": "no regulated data beyond the credential already covered in AUTH-01"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context"
+          }
+        },
+        "priority": "Should",
+        "sizing": {
+          "story_points": 5,
+          "complexity": "medium",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [
+            "STORY-AUTH-01"
+          ],
+          "blocks": []
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      },
+      "STORY-CHECKOUT-01": {
+        "id": "STORY-CHECKOUT-01",
+        "epic_id": "EPIC-CHECKOUT",
+        "title": "Customer checks out at a server-computed total",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "logged-in customer",
+          "i_want": "to review my cart, address, coupon, shipping and net total before paying",
+          "so_that": "I pay exactly what the system computed, not a tampered client value"
+        },
+        "context": "Totals are computed server-side; shipping is free at >= 1500 THB else 60 THB; one coupon, floored at 0; the coupon is re-validated at confirm and a double-click yields exactly one order.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "server-computed total with coupon and shipping",
+            "scenario_type": "happy",
+            "given": [
+              "a cart subtotal of 1200 THB with coupon WELCOME100 (-100) and an in-region address"
+            ],
+            "when": "the customer confirms the order",
+            "then": [
+              "the server computes total = 1160 THB (1200 - 100 + 60 shipping)",
+              "an order is created in awaiting-payment with reserved stock"
+            ]
+          },
+          {
+            "scenario_name": "coupon expired during browsing",
+            "scenario_type": "error",
+            "given": [
+              "a coupon that expired while the customer browsed"
+            ],
+            "when": "the customer confirms",
+            "then": [
+              "the order is rejected with the neutral message 'this coupon is no longer valid'",
+              "no order is created and no stock is reserved"
+            ]
+          },
+          {
+            "scenario_name": "double-click confirm is idempotent",
+            "scenario_type": "banking_grade_idempotency",
+            "given": [
+              "a confirm already accepted for this idempotency key"
+            ],
+            "when": "the customer clicks confirm again",
+            "then": [
+              "the original order is returned",
+              "no second order, reservation or charge is created"
+            ]
+          },
+          {
+            "scenario_name": "order creation is audited",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any confirm that creates an order"
+            ],
+            "when": "it resolves",
+            "then": [
+              "an audit event {event, actor, ts, order_id, total, audit_id} is emitted"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "applies",
+            "justification": "the chosen shipping address is direct PII",
+            "fields_or_events": [
+              "shipping_address"
+            ],
+            "treatment": "snapshotted into the order; redacted in non-order logs"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "order creation is a financial event"
+          },
+          "idempotency": {
+            "status": "applies",
+            "justification": "double-click must not create duplicate orders/charges",
+            "fields_or_events": [
+              "order_confirm"
+            ],
+            "treatment": "client idempotency key dedup"
+          },
+          "reversibility": {
+            "status": "applies",
+            "justification": "a confirm that fails downstream must release reserved stock",
+            "compensating_action": "release the stock reserved by this confirm"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "the cart and address must belong to the confirming customer"
+          },
+          "regulatory": {
+            "status": "applies",
+            "justification": "Consumer Protection Act / Electronic Transactions Act require the total be shown before payment; resolved"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context"
+          }
+        },
+        "priority": "Must",
+        "sizing": {
+          "story_points": 8,
+          "complexity": "high",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [
+            "STORY-AUTH-01",
+            "STORY-INVENTORY-01"
+          ],
+          "blocks": [
+            "STORY-CHECKOUT-02"
+          ]
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [
+          "OQ-2"
+        ],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      },
+      "STORY-CHECKOUT-02": {
+        "id": "STORY-CHECKOUT-02",
+        "epic_id": "EPIC-CHECKOUT",
+        "title": "Mock payment capture with provider-replay safety",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "logged-in customer",
+          "i_want": "to pay for my awaiting-payment order through the mock provider",
+          "so_that": "my order is confirmed and stock is settled exactly once"
+        },
+        "context": "Three mock outcomes (success/failure/timeout); the captured amount must equal the server total; a duplicate provider callback must apply only once.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "successful capture settles the order",
+            "scenario_type": "happy",
+            "given": [
+              "an awaiting-payment order with reserved stock"
+            ],
+            "when": "the mock provider returns success with an amount equal to the server total",
+            "then": [
+              "the order moves to paid",
+              "reserved stock converts to sold",
+              "a shipment record and a 'payment succeeded' notification are written"
+            ]
+          },
+          {
+            "scenario_name": "failure or timeout releases stock",
+            "scenario_type": "error",
+            "given": [
+              "an awaiting-payment order with reserved stock"
+            ],
+            "when": "the mock provider returns failure or timeout",
+            "then": [
+              "the order moves to payment-failed or payment-timeout",
+              "the reserved stock is released back to available"
+            ]
+          },
+          {
+            "scenario_name": "duplicate provider callback applies once",
+            "scenario_type": "banking_grade_idempotency",
+            "given": [
+              "a payment-confirmation already applied for a provider event id"
+            ],
+            "when": "the same event id is received again",
+            "then": [
+              "the order is unchanged",
+              "stock is not decremented again and the amount is unchanged"
+            ]
+          },
+          {
+            "scenario_name": "capture is audited",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any capture attempt"
+            ],
+            "when": "it resolves",
+            "then": [
+              "an audit event {event, actor, ts, order_id, amount, outcome, audit_id} is emitted"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "not_applicable",
+            "justification": "no cardholder data is collected or stored; the PSP tokenizes (PCI scope-excluded)"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "every money movement is audited"
+          },
+          "idempotency": {
+            "status": "applies",
+            "justification": "provider callbacks can be re-sent and must apply once",
+            "fields_or_events": [
+              "payment_callback"
+            ],
+            "treatment": "deduplicate on provider event id"
+          },
+          "reversibility": {
+            "status": "applies",
+            "justification": "a failed/timed-out capture must release the reservation",
+            "compensating_action": "release reserved stock and mark payment-failed/timeout"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "only the order owner may pay"
+          },
+          "regulatory": {
+            "status": "applies",
+            "justification": "PCI-DSS v4.0 scope boundary confirmed: no PAN stored; citation resolved"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context"
+          }
+        },
+        "priority": "Must",
+        "sizing": {
+          "story_points": 8,
+          "complexity": "high",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [
+            "STORY-CHECKOUT-01"
+          ],
+          "blocks": [
+            "STORY-ORDER-01"
+          ]
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      },
+      "STORY-ORDER-01": {
+        "id": "STORY-ORDER-01",
+        "epic_id": "EPIC-ORDER",
+        "title": "Customer tracks an order with a frozen price snapshot",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "logged-in customer",
+          "i_want": "to view my order's status, timeline and frozen prices",
+          "so_that": "I can track delivery and see what I actually agreed to pay"
+        },
+        "context": "An order shows a price/name/address snapshot taken at creation and is visible only to its owner; later catalog edits must not change it.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "owner views order with snapshot",
+            "scenario_type": "happy",
+            "given": [
+              "a customer who owns order ORD-20260507-000001 created at price 1290 THB"
+            ],
+            "when": "the catalog price later changes to 999 THB and the owner opens the order",
+            "then": [
+              "the order still shows 1290 THB",
+              "the status timeline and tracking number (if shipped) are shown"
+            ]
+          },
+          {
+            "scenario_name": "non-owner is denied",
+            "scenario_type": "error",
+            "given": [
+              "a customer who does not own the order"
+            ],
+            "when": "they request the order by its number",
+            "then": [
+              "access is denied with no order data disclosed"
+            ]
+          },
+          {
+            "scenario_name": "status transition is audited",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any order status change"
+            ],
+            "when": "it resolves",
+            "then": [
+              "an audit event {event, actor, ts, order_id, before, after, audit_id} is emitted"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "applies",
+            "justification": "the order carries the customer's snapshotted shipping address",
+            "fields_or_events": [
+              "shipping_address"
+            ],
+            "treatment": "visible to the owner and admin only; redacted elsewhere"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "status changes are tracked"
+          },
+          "idempotency": {
+            "status": "not_applicable",
+            "justification": "viewing an order is a read with no mutation"
+          },
+          "reversibility": {
+            "status": "not_applicable",
+            "justification": "a read has nothing to reverse"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "own-data-only: A must never see B's order"
+          },
+          "regulatory": {
+            "status": "not_applicable",
+            "justification": "covered by PDPA basis already inventoried; no new regulated processing here"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context"
+          }
+        },
+        "priority": "Must",
+        "sizing": {
+          "story_points": 3,
+          "complexity": "low",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [
+            "STORY-CHECKOUT-02"
+          ],
+          "blocks": []
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      },
+      "STORY-ORDER-02": {
+        "id": "STORY-ORDER-02",
+        "epic_id": "EPIC-ORDER",
+        "title": "Admin advances the fulfillment state machine",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "back-office admin",
+          "i_want": "to move a paid order through packing, shipped and delivered",
+          "so_that": "customers can track fulfillment and the history stays correct"
+        },
+        "context": "Transitions are forward-only (paid->packing->shipped[tracking required]->delivered); illegal backward moves are rejected and every transition is audited with the actor.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "forward transitions with required tracking",
+            "scenario_type": "happy",
+            "given": [
+              "a paid order"
+            ],
+            "when": "the admin moves it to packing then shipped with a tracking number then delivered",
+            "then": [
+              "each transition is accepted",
+              "the shipped transition is rejected if the tracking number is blank"
+            ]
+          },
+          {
+            "scenario_name": "illegal backward transition is rejected",
+            "scenario_type": "error",
+            "given": [
+              "a shipped order"
+            ],
+            "when": "the admin tries to move it back to packing or to cancel a delivered order",
+            "then": [
+              "the transition is rejected",
+              "the order status is unchanged"
+            ]
+          },
+          {
+            "scenario_name": "re-submitting the same transition is idempotent",
+            "scenario_type": "banking_grade_idempotency",
+            "given": [
+              "an order already moved to shipped"
+            ],
+            "when": "the same shipped transition is submitted again",
+            "then": [
+              "no duplicate state change occurs",
+              "no duplicate audit/notification is produced"
+            ]
+          },
+          {
+            "scenario_name": "transition is audited with before/after",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any accepted transition"
+            ],
+            "when": "it resolves",
+            "then": [
+              "an audit event {event, actor, ts, order_id, before, after, audit_id} is emitted"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "not_applicable",
+            "justification": "the admin operates on order ids and statuses; customer PII view is limited and inventoried in ORDER-01"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "each transition must record the acting admin and before/after"
+          },
+          "idempotency": {
+            "status": "applies",
+            "justification": "a re-submitted transition must not double-apply",
+            "fields_or_events": [
+              "order_transition"
+            ],
+            "treatment": "transition guarded by current-state precondition"
+          },
+          "reversibility": {
+            "status": "applies",
+            "justification": "illegal backward transitions are rejected; admin cancel-before-packing releases stock",
+            "compensating_action": "reject illegal transitions; release stock on admin cancel before packing"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "only admin role may transition orders"
+          },
+          "regulatory": {
+            "status": "not_applicable",
+            "justification": "internal fulfillment operation, no regulated processing"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context"
+          }
+        },
+        "priority": "Must",
+        "sizing": {
+          "story_points": 5,
+          "complexity": "medium",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [
+            "STORY-CHECKOUT-02"
+          ],
+          "blocks": []
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [
+          "OQ-1"
+        ],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      },
+      "STORY-INVENTORY-01": {
+        "id": "STORY-INVENTORY-01",
+        "epic_id": "EPIC-INVENTORY",
+        "title": "Stock reservation lifecycle and last-item race",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "customer (via the system)",
+          "i_want": "my checkout to reserve stock atomically with a TTL",
+          "so_that": "two of us cannot both succeed on the last unit and stock never goes negative"
+        },
+        "context": "Reserve on confirm (not add-to-cart); a 30-minute TTL auto-releases; payment converts to sold; failure/timeout/cancel releases; concurrent last-item checkouts yield exactly one winner.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "reserve on confirm and auto-release on TTL",
+            "scenario_type": "happy",
+            "given": [
+              "a product with 1 unit available"
+            ],
+            "when": "a customer confirms and does not pay within 30 minutes",
+            "then": [
+              "the unit is reserved at confirm",
+              "the reservation auto-releases back to available after the TTL"
+            ]
+          },
+          {
+            "scenario_name": "last-item race has one winner",
+            "scenario_type": "error",
+            "given": [
+              "a product with 1 unit available and two simultaneous confirms"
+            ],
+            "when": "both customers confirm at nearly the same time",
+            "then": [
+              "exactly one confirm succeeds",
+              "the other is rejected with an out-of-stock error at confirm, not at payment",
+              "available stock never goes negative"
+            ]
+          },
+          {
+            "scenario_name": "duplicate reserve signal reserves once",
+            "scenario_type": "banking_grade_idempotency",
+            "given": [
+              "a reservation already taken for a confirm"
+            ],
+            "when": "the reserve operation is retried for the same confirm",
+            "then": [
+              "only one reservation exists",
+              "available stock is decremented once"
+            ]
+          },
+          {
+            "scenario_name": "reserve and release are audited",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any reserve or release"
+            ],
+            "when": "it resolves",
+            "then": [
+              "an audit event {event, actor, ts, sku, before, after, audit_id} is emitted"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "not_applicable",
+            "justification": "stock counts carry no personal data"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "reservations and releases change sellable inventory and are audited"
+          },
+          "idempotency": {
+            "status": "applies",
+            "justification": "a retried reserve/release must apply once",
+            "fields_or_events": [
+              "stock_reserve",
+              "stock_release"
+            ],
+            "treatment": "reservation keyed to the order/confirm"
+          },
+          "reversibility": {
+            "status": "applies",
+            "justification": "release is the compensating action for unpaid/failed/cancelled holds",
+            "compensating_action": "release reserved units on TTL, payment failure/timeout, or cancel-before-pay"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "reservations are system-driven and scoped to the confirming customer's order"
+          },
+          "regulatory": {
+            "status": "not_applicable",
+            "justification": "operational stock integrity, no regulated processing"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context"
+          }
+        },
+        "priority": "Must",
+        "sizing": {
+          "story_points": 8,
+          "complexity": "high",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [],
+          "blocks": [
+            "STORY-CHECKOUT-01"
+          ]
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      },
+      "STORY-INVENTORY-02": {
+        "id": "STORY-INVENTORY-02",
+        "epic_id": "EPIC-INVENTORY",
+        "title": "Admin adjusts stock with an audit trail",
+        "format": "classic_user_story",
+        "card": {
+          "as_a": "back-office admin",
+          "i_want": "to adjust a SKU's stock with a mandatory reason",
+          "so_that": "physical counts stay correct and every change is traceable"
+        },
+        "context": "Admin may receive/count/write-off stock but must give a reason and may not reduce available below the currently reserved quantity; each change is audited with before/after.",
+        "acceptance_criteria": [
+          {
+            "scenario_name": "adjust with a reason",
+            "scenario_type": "happy",
+            "given": [
+              "a SKU with 10 available and 2 reserved"
+            ],
+            "when": "the admin sets available to 12 with reason 'received from supplier'",
+            "then": [
+              "available becomes 12",
+              "an audit entry records actor, reason and before/after"
+            ]
+          },
+          {
+            "scenario_name": "reduce below reserved is rejected",
+            "scenario_type": "error",
+            "given": [
+              "a SKU with 5 available and 3 reserved"
+            ],
+            "when": "the admin tries to set available to 2",
+            "then": [
+              "the adjustment is rejected because it would drop below the reserved quantity",
+              "stock is unchanged"
+            ]
+          },
+          {
+            "scenario_name": "adjustment is audited",
+            "scenario_type": "banking_grade_audit",
+            "given": [
+              "any accepted adjustment"
+            ],
+            "when": "it resolves",
+            "then": [
+              "an audit event {event, actor, ts, sku, reason, before, after, audit_id} is emitted"
+            ]
+          }
+        ],
+        "banking_grade_concerns": {
+          "pii_fields": {
+            "status": "not_applicable",
+            "justification": "stock adjustments carry no personal data"
+          },
+          "audit_events": {
+            "status": "applies",
+            "justification": "manual stock changes must be fully attributable"
+          },
+          "idempotency": {
+            "status": "not_applicable",
+            "justification": "each manual adjustment is a distinct intentional entry, not a replayed event"
+          },
+          "reversibility": {
+            "status": "not_applicable",
+            "justification": "a wrong adjustment is corrected by a new audited adjustment, not an in-place reversal"
+          },
+          "authn_authz": {
+            "status": "applies",
+            "justification": "only admin role may adjust stock"
+          },
+          "regulatory": {
+            "status": "not_applicable",
+            "justification": "operational, no regulated processing"
+          },
+          "tipping_off": {
+            "status": "not_applicable",
+            "justification": "no SAR/AML context"
+          }
+        },
+        "priority": "Should",
+        "sizing": {
+          "story_points": 3,
+          "complexity": "low",
+          "split_required": false
+        },
+        "dependencies": {
+          "depends_on": [],
+          "blocks": []
+        },
+        "dor_checklist": {
+          "format_clear": true,
+          "happy_path_present": true,
+          "error_path_present": true,
+          "banking_grade_evaluated": true,
+          "priority_set": true,
+          "dependencies_identified": true,
+          "sizing_done": true,
+          "no_blocking_ambiguities": true
+        },
+        "requirement_refs": [
+          "shoppilot-mvp"
+        ],
+        "open_questions": [],
+        "scope_ref": "../INDEX.json",
+        "change_log": [
+          {
+            "date": "2026-06-01",
+            "author": "eliciting-banking-brief-v1.4.1",
+            "change": "Created from requirement shoppilot-mvp"
+          }
+        ]
+      }
+    }
+  }
+};
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function arr(a){return Array.isArray(a)?a:(a==null?[]:[a]);}
+function prioTag(p){const k=(p||'').toLowerCase();const c=k==='must'?'t-must':k==='should'?'t-should':'t-could';return `<span class="tag ${c}">${esc(p)}</span>`;}
+function bgClass(s){return s==='applies'?'bg-applies':s==='unknown_p2'?'bg-unknown':'bg-na';}
+function storyById(id){return (PACK.pack.stories||{})[id] || {id:id, _missing:true};}
+
+/* ---- meta ---- */
+function renderMeta(){
+  const m=PACK.meta, cc=PACK.pack.count_check||{};
+  const ccOk = cc.holds!==false;
+  document.getElementById('meta').innerHTML =
+    `<span class="pill"><b>task</b> ${esc(m.task_id)}</span>`+
+    `<span class="pill">stage ${esc(m.stage)}</span>`+
+    `<span class="pill">state ${esc(m.state)}</span>`+
+    `<span class="pill">tier ${esc(m.tier)}</span>`+
+    `<span class="pill">owner ${esc(m.owner)}</span>`+
+    `<span class="pill ${ccOk?'ok':'bad'}">chain ✓ discovery · brief · ${esc(cc.epics)} epics · ${esc(cc.stories)} stories</span>`;
+}
+
+/* ---- Layer 0: discovery ---- */
+function recLabel(r){return r==='proceed'?'Proceed to intake':r==='needs-work'?'Needs discovery work':r==='do-not-build'?'Do not build':esc(r);}
+function renderRec(){
+  const d=PACK.discovery, r=d.recommendation;
+  document.getElementById('rec').innerHTML =
+    `<div class="card rec ${esc(r)}"><span class="dot"></span><span>Recommendation: ${esc(recLabel(r))}</span>`+
+    `<span class="why">— AI draft (<code>${esc(d.skill)}</code>); the named human decides at the review gate.</span></div>`;
+}
+function renderFrame(){
+  const d=PACK.discovery;
+  document.getElementById('frame').innerHTML =
+    `<div>${esc(d.problem_framing)}</div>`+
+    `<div style="margin-top:10px"><span class="path">📄 discovery.json · audit_id ${esc(d.audit_id)}</span></div>`;
+}
+function renderOpps(){
+  document.getElementById('opps').innerHTML = `<ul class="opps">`+arr(PACK.discovery.opportunities).map(o=>`<li>${esc(o)}</li>`).join('')+`</ul>`;
+}
+function renderRisks(){
+  const rows=arr(PACK.discovery.assumptions).map(a=>{
+    const rt=(a.risk_type||'').toLowerCase(), cf=(a.confidence||'').toLowerCase();
+    return `<tr><td><span class="tag rk-${esc(rt)}">${esc(a.risk_type)}</span></td><td>${esc(a.statement)}</td>`+
+      `<td class="conf conf-${esc(cf)}">${esc(a.confidence)}</td><td>${esc(a.de_risk)}</td></tr>`;
+  }).join('');
+  document.getElementById('risks').innerHTML =
+    `<table><thead><tr><th>Risk</th><th>Assumption</th><th>Confidence</th><th>How to de-risk</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderRegimes(){
+  document.getElementById('regimes').innerHTML = `<ul class="regimes">`+arr(PACK.discovery.regulatory_regimes).map(r=>{
+    const na=/^not in play/i.test(r); return `<li class="${na?'na':''}">${esc(r)}</li>`;
+  }).join('')+`</ul>`;
+}
+
+/* ---- Layer 1: brief summary ---- */
+function renderBrief(){
+  const b=PACK.brief, c=b.counts||{};
+  const blocks = b.blocks_tl_handoff ? `<span class="pill bad">blocks TL ✗</span>` : `<span class="pill ok">TL-ready ✓</span>`;
+  document.getElementById('briefcard').innerHTML =
+    `<div style="font-weight:700;font-size:16px">${esc(b.title)}</div>`+
+    `<div style="margin:6px 0 10px;color:var(--muted);font-size:14px">${esc(b.summary)}</div>`+
+    `<div class="meta">`+
+      `<span class="pill">scope ${esc(b.scope_kind)}</span>`+
+      `<span class="pill">status ${esc(b.status)}</span>`+
+      `<span class="pill">confidence ${esc(b.ba_confidence)}</span>`+blocks+
+    `</div>`+
+    `<div class="lbl">Layer counts</div>`+
+    `<table><thead><tr><th>Epics</th><th>Stories</th><th>Gov gaps</th><th>Regulatory</th><th>PII fields</th><th>Open Q</th><th>Assumptions</th><th>Glossary</th></tr></thead>`+
+    `<tbody><tr><td>${esc(c.epics)}</td><td>${esc(c.stories)}</td><td>${esc(c.governance_gaps)}</td><td>${esc(c.regulatory_dependencies)}</td><td>${esc(c.pii_inventory)}</td><td>${esc(c.open_questions)}</td><td>${esc(c.assumptions_made)}</td><td>${esc(c.glossary)}</td></tr></tbody></table>`+
+    `<div class="lbl">Regulatory dependencies</div><div class="chips">${arr(b.regulatory).map(r=>`<span>${esc(r)}</span>`).join('')}</div>`+
+    `<div class="lbl">PII inventory</div><div class="chips">${arr(b.pii_fields).map(f=>`<span>${esc(f)}</span>`).join('')}</div>`+
+    `<div style="margin-top:8px"><span class="path">📄 brief.json · ${esc(b.skill)}</span></div>`;
+}
+
+/* ---- Layer 2/3: epics -> stories ---- */
+function renderGov(){
+  const g=arr(PACK.pack.governance_gaps);
+  document.getElementById('gov').innerHTML = !g.length ? '' :
+    `<div class="lbl">Governance gaps (P1 escalate — never auto-resolved)</div><div class="card flush"><table>`+
+    `<thead><tr><th>ID</th><th>Class</th><th>Severity</th><th>Routes to</th></tr></thead><tbody>`+
+    g.map(x=>`<tr><td><code>${esc(x.id)}</code></td><td>${esc(x.class)}</td><td class="sev-${esc(x.severity)}">${esc(x.severity)}</td><td>${esc(x.routes_to)}</td></tr>`).join('')+
+    `</tbody></table></div>`;
+}
+function renderOq(){
+  const q=arr(PACK.pack.open_questions);
+  document.getElementById('oq').innerHTML = !q.length ? '' :
+    `<div class="lbl">Open questions (OQ-n — stable through S1→S5)</div><div class="card flush"><table>`+
+    `<thead><tr><th>ID</th><th>Sev</th><th>Question</th><th>Why it matters</th><th>Resolver</th></tr></thead><tbody>`+
+    q.map(x=>`<tr><td><code>${esc(x.id)}</code></td><td class="sev-${esc(x.severity)}">${esc(x.severity)}</td><td>${esc(x.question)}</td><td>${esc(x.why_matters)}</td><td>${esc(x.suggested_resolver)}</td></tr>`).join('')+
+    `</tbody></table></div>`;
+}
+function acRows(ac){
+  return arr(ac).map(c=>`<tr><td><b>${esc(c.scenario_name)}</b><br><span class="ac">${esc(c.scenario_type)}</span></td>`+
+    `<td>${arr(c.given).map(esc).join('<br>')}</td><td>${esc(c.when)}</td><td>${arr(c.then).map(esc).join('<br>')}</td></tr>`).join('');
+}
+function bgRows(bg){bg=bg||{};return Object.keys(bg).map(k=>{const r=bg[k]||{};return `<tr><td>${esc(k)}</td><td class="${bgClass(r.status)}">${esc(r.status)}</td><td>${esc(r.justification)}</td></tr>`;}).join('');}
+function dorChips(d){d=d||{};return `<div class="dor">`+Object.keys(d).map(k=>`<span class="${d[k]?'y':'n'}">${d[k]?'✓':'✗'} ${esc(k)}</span>`).join('')+`</div>`;}
+function storyHtml(s){
+  if(s._missing) return `<div class="story"><div class="shead"><span class="sid">${esc(s.id)}</span> <span class="stitle missing">— story file missing from pack</span></div></div>`;
+  const c=s.card||{};
+  return `<div class="story"><div class="shead"><span class="sid">${esc(s.id)}</span> <span class="stitle">${esc(s.title)}</span> ${prioTag(s.priority)}<span class="count">${esc((s.sizing||{}).complexity)} · ${esc((s.sizing||{}).story_points)}</span></div>`+
+    `<div class="sbody"><div class="path">📄 ${esc(s.file)}</div>`+
+    `<div class="lbl">Card</div><div><i>As a</i> ${esc(c.as_a)} · <i>I want</i> ${esc(c.i_want)} · <i>so that</i> ${esc(c.so_that)}</div>`+
+    `<div class="lbl">Acceptance criteria (Gherkin)</div><table><thead><tr><th>Scenario</th><th>Given</th><th>When</th><th>Then</th></tr></thead><tbody>${acRows(s.acceptance_criteria)}</tbody></table>`+
+    `<div class="lbl">Banking-grade concerns</div><table><thead><tr><th>Concern</th><th>Status</th><th>Justification</th></tr></thead><tbody>${bgRows(s.banking_grade_concerns)}</tbody></table>`+
+    `<div class="lbl">Definition of Ready</div>${dorChips(s.dor_checklist)}</div></div>`;
+}
+function epicHtml(e){
+  const ids=arr(e.story_ids); const stories=ids.map(storyById);
+  const sc=arr(e.success_criteria).map(x=>`<tr><td>${esc(x.metric)}</td><td>${esc(x.baseline)}</td><td>${esc(x.target)}</td><td>${esc(x.measurement_method)}</td></tr>`).join('');
+  const sco=e.scope||{};
+  return `<div class="card epic flush"><div class="head"><span class="eid">${esc(e.id)}</span> <span class="etitle">${esc(e.title)}</span>`+
+    `<span class="count">tier ${esc(e.inferred_tier)} · legal ${esc(e.legal_status)} · ${ids.length} stor${ids.length===1?'y':'ies'}</span></div>`+
+    `<div class="ebody"><div class="path">📄 ${esc(e.id)}/${esc(e.id)}.json → refs: ${ids.map(esc).join(', ')||'—'}</div>`+
+    `<div class="lbl">Problem / why now</div><div>${esc(e.problem_statement)}<br><i>${esc(e.why_now)}</i></div>`+
+    `<div class="lbl">Success criteria</div><table><thead><tr><th>Metric</th><th>Baseline</th><th>Target</th><th>Method</th></tr></thead><tbody>${sc}</tbody></table>`+
+    `<div class="lbl">Scope</div><div><b>In:</b> ${arr(sco.in).map(esc).join(' · ')||'—'}<br><b>Out (explicit):</b> ${arr(sco.out_explicit).map(esc).join(' · ')||'—'}<br><b>Out (deferred):</b> ${arr(sco.out_deferred).map(esc).join(' · ')||'—'}</div>`+
+    `<div class="lbl">Stories (separate STORY-* files, under this epic)</div>${stories.map(storyHtml).join('')}</div></div>`;
+}
+function renderEpics(){
+  document.getElementById('epicsbox').innerHTML = arr(PACK.pack.epics).map(epicHtml).join('');
+  document.querySelectorAll('.epic > .head').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
+  document.querySelectorAll('.story > .shead').forEach(h=>h.addEventListener('click',e=>{e.stopPropagation();h.parentElement.classList.toggle('open');}));
+}
+
+/* ---- provenance + footer ---- */
+function renderNote(){
+  document.getElementById('note').innerHTML =
+    `<b>Provenance / divergence.</b> RB-01 — the source <code>${esc(PACK.meta.source_ref)}</code> is already a structured requirement, `+
+    `so the discovery layer is derived retrospectively (full note inside the framing above). This four-layer S1 pack `+
+    `(discovery + brief + epics + stories under one <code>INDEX.json</code>) is a new composition: <code>squad-delivery-dashboard.standalone.html</code> `+
+    `and <code>ba-brief.json</code> still document S1 as the epic/story pack only. The manifest extension + this unified viewer are `+
+    `hand-applied — re-running <code>render_ba_pack.py</code> would overwrite them until the renderer is updated (skills phase).`;
+}
+function renderFoot(){
+  document.getElementById('foot').innerHTML =
+    `<b>Sign-off (BA lead — review gate):</b> reviewer __________ · ☐ Proceed to intake ☐ Needs work ☐ Reject · date __________ · `+
+    `audit_id <code>${esc(PACK.meta.audit_id)}</code>.<br>Produced by ${esc(PACK.meta.produced_by)}. `+
+    `Machine handoff: <code>INDEX.json</code> → <code>discovery.json</code> · <code>brief.json</code> · <code>EPIC-*</code> → <code>STORY-*</code> (load only what you need).`;
+}
+
+renderMeta(); renderRec(); renderFrame(); renderOpps(); renderRisks(); renderRegimes();
+renderBrief(); renderGov(); renderOq(); renderEpics(); renderNote(); renderFoot();
+
+document.getElementById('expandAll').addEventListener('click',function(){
+  const on=this.getAttribute('aria-pressed')==='true';
+  this.setAttribute('aria-pressed', String(!on));
+  this.textContent = on ? '⤢ Expand all' : '⤡ Collapse all';
+  document.querySelectorAll('.epic').forEach(c=>c.classList.toggle('open', !on));
+  document.querySelectorAll('.story').forEach(c=>c.classList.toggle('open', !on));
+});
+let theme='light';
+try{ theme = localStorage.getItem('ba-viewer-theme') || 'light'; }catch(e){}
+function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); const b=document.getElementById('themeToggle'); if(b) b.textContent = t==='dark'?'☀️ Light':'🌙 Dark'; }
+applyTheme(theme);
+document.getElementById('themeToggle').addEventListener('click',function(){
+  theme = (document.documentElement.getAttribute('data-theme')==='dark') ? 'light' : 'dark';
+  applyTheme(theme); try{ localStorage.setItem('ba-viewer-theme', theme); }catch(e){}
+});
+</script>
+</body>
+</html>

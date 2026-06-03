@@ -1,0 +1,133 @@
+{
+  "id": "STORY-CHECKOUT-02",
+  "epic_id": "EPIC-CHECKOUT",
+  "title": "Mock payment capture with provider-replay safety",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "logged-in customer",
+    "i_want": "to pay for my awaiting-payment order through the mock provider",
+    "so_that": "my order is confirmed and stock is settled exactly once"
+  },
+  "context": "Three mock outcomes (success/failure/timeout); the captured amount must equal the server total; a duplicate provider callback must apply only once.",
+  "acceptance_criteria": [
+    {
+      "scenario_name": "successful capture settles the order",
+      "scenario_type": "happy",
+      "given": [
+        "an awaiting-payment order with reserved stock"
+      ],
+      "when": "the mock provider returns success with an amount equal to the server total",
+      "then": [
+        "the order moves to paid",
+        "reserved stock converts to sold",
+        "a shipment record and a 'payment succeeded' notification are written"
+      ]
+    },
+    {
+      "scenario_name": "failure or timeout releases stock",
+      "scenario_type": "error",
+      "given": [
+        "an awaiting-payment order with reserved stock"
+      ],
+      "when": "the mock provider returns failure or timeout",
+      "then": [
+        "the order moves to payment-failed or payment-timeout",
+        "the reserved stock is released back to available"
+      ]
+    },
+    {
+      "scenario_name": "duplicate provider callback applies once",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "a payment-confirmation already applied for a provider event id"
+      ],
+      "when": "the same event id is received again",
+      "then": [
+        "the order is unchanged",
+        "stock is not decremented again and the amount is unchanged"
+      ]
+    },
+    {
+      "scenario_name": "capture is audited",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any capture attempt"
+      ],
+      "when": "it resolves",
+      "then": [
+        "an audit event {event, actor, ts, order_id, amount, outcome, audit_id} is emitted"
+      ]
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "not_applicable",
+      "justification": "no cardholder data is collected or stored; the PSP tokenizes (PCI scope-excluded)"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "every money movement is audited"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "provider callbacks can be re-sent and must apply once",
+      "fields_or_events": [
+        "payment_callback"
+      ],
+      "treatment": "deduplicate on provider event id"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "a failed/timed-out capture must release the reservation",
+      "compensating_action": "release reserved stock and mark payment-failed/timeout"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "only the order owner may pay"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "PCI-DSS v4.0 scope boundary confirmed: no PAN stored; citation resolved"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no SAR/AML context"
+    }
+  },
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-CHECKOUT-01"
+    ],
+    "blocks": [
+      "STORY-ORDER-01"
+    ]
+  },
+  "dor_checklist": {
+    "format_clear": true,
+    "happy_path_present": true,
+    "error_path_present": true,
+    "banking_grade_evaluated": true,
+    "priority_set": true,
+    "dependencies_identified": true,
+    "sizing_done": true,
+    "no_blocking_ambiguities": true
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "open_questions": [],
+  "scope_ref": "../INDEX.json",
+  "change_log": [
+    {
+      "date": "2026-06-01",
+      "author": "eliciting-banking-brief-v1.4.1",
+      "change": "Created from requirement shoppilot-mvp"
+    }
+  ]
+}

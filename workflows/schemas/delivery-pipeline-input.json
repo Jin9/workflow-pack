@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/delivery-pipeline-input.json",
+  "title": "delivery-pipeline workflow input",
+  "description": "Top-level workflow input for delivery-pipeline.yaml.",
+  "type": "object",
+  "required": ["raw_request", "requester", "idempotency_key"],
+  "additionalProperties": true,
+  "properties": {
+    "raw_request": { "type": "string", "minLength": 1, "description": "The raw requirement / initiative text." },
+    "requester": { "type": "string" },
+    "idempotency_key": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$" }
+  }
+}

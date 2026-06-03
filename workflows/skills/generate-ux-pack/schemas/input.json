@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cognitive-os/skills/generate-ux-pack/input.schema.json",
+  "title": "generate-ux-pack input",
+  "description": "Inputs for the generate-ux-pack skill: UX team's drop + BA brief. Skill emits a v1.1 UX-design intake pack consumed by Stage 2 TL Design and Stage 4b Frontend Implementation.",
+  "type": "object",
+  "required": ["frontend_spec_path", "prototype_html_path", "ba_brief_dir", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "frontend_spec_path": {
+      "type": "string",
+      "description": "Path to the Frontend Spec markdown (authoritative content source for brand, routes, components, business logic, recommended stack)."
+    },
+    "prototype_html_path": {
+      "type": "string",
+      "description": "Path to the bundled prototype HTML. Structural reference only; do not extract text or style data from bundled code."
+    },
+    "ba_brief_dir": {
+      "type": "string",
+      "description": "Path to the BA brief output directory (contains output.json + epics/). Authoritative source for what stories exist."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID v4 for run identity. First 8 chars become the {idem8} suffix on the output directory."
+    },
+    "figma_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional Figma source URL. If absent, emitted to README.md as TBD-fill-in."
+    },
+    "ux_team_contact": {
+      "type": "string",
+      "description": "Optional UX team contact. If absent, emitted to README.md as TBD-fill-in."
+    },
+    "workload_tier": {
+      "type": "string",
+      "enum": ["T1", "T2", "T3"],
+      "default": "T2",
+      "description": "Workload tier override. T1 = banking/regulated, T2 = production/general, T3 = research/internal."
+    }
+  }
+}

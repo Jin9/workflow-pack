@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/implement-backend-feature/schemas/input.json",
+  "title": "implement-backend-feature input",
+  "description": "Input contract for the implement-backend-feature Generate stage. Validated by the workflow engine before the stage is invoked. Failure to validate halts the workflow before LLM tokens are spent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "design_document",
+    "target_package",
+    "idempotency_key"
+  ],
+  "properties": {
+    "design_document": {
+      "type": "string",
+      "minLength": 200,
+      "description": "Approved markdown design document produced by an earlier design stage. Must declare L1 invariant, L2 contract + data owner, L3 transaction scope + idempotency strategy + observability plan, L4 file/package sketch. Ambiguities cause the Generate stage to loop_back."
+    },
+    "target_package": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_/-]*[a-z0-9]$",
+      "minLength": 3,
+      "maxLength": 256,
+      "description": "Existing Go package path relative to the module root (e.g., internal/loan/disbursement). Missing package signals loop_back."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "UUID v4. Same key with same other inputs MUST produce the same output bytes."
+    },
+    "convention_overrides": {
+      "type": "object",
+      "description": "Repo-specific overrides discovered by an upstream stage that should take precedence over references/go-conventions.md.",
+      "additionalProperties": true,
+      "properties": {
+        "logger": {"type": "string"},
+        "validator": {"type": "string"},
+        "error_wrapper": {"type": "string"},
+        "test_framework": {"type": "string"},
+        "mock_library": {"type": "string"}
+      }
+    },
+    "test_coverage_target": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.80,
+      "description": "Per-file coverage target enforced at step 5. Coverage below target signals loop_back (feature over-scoped for one Generate)."
+    }
+  }
+}

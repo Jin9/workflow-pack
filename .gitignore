@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Local env / editor
+.env
+.venv/
+*.local.json

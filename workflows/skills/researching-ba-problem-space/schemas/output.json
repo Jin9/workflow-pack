@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "researching-ba-problem-space output",
+  "type": "object",
+  "required": ["problem_framing", "assumptions", "recommendation", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "problem_framing": { "type": "string", "description": "What problem, for whom, why now (opportunity, not solution)." },
+    "opportunities": { "type": "array", "items": { "type": "string" } },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["statement", "risk_type", "confidence"],
+        "additionalProperties": false,
+        "properties": {
+          "statement": { "type": "string" },
+          "risk_type": { "type": "string", "enum": ["value", "usability", "feasibility", "viability"] },
+          "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+          "de_risk": { "type": "string", "description": "How to test/de-risk (spike, interview, data)." }
+        }
+      }
+    },
+    "regulatory_regimes": { "type": "array", "items": { "type": "string" }, "description": "KYC / AML / sanctions / PCI-DSS / data-residency in play." },
+    "recommendation": { "type": "string", "enum": ["proceed", "needs-work", "do-not-build"] },
+    "audit_id": { "type": "string", "format": "uuid" },
+    "handoff_to_intake": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed handoff consumed by eliciting-banking-brief input.discovery in the S1 composite chain, after the human review gate. Field-for-field compatible with that skill's input.discovery object. Emitted ONLY when recommendation == 'proceed' (see allOf). On RB-01 (input already structured) emit no handoff.",
+      "required": ["audit_id", "recommendation"],
+      "properties": {
+        "audit_id": { "type": "string", "format": "uuid", "description": "MUST equal the top-level audit_id — one audit identity across the discovery to brief chain." },
+        "recommendation": { "type": "string", "enum": ["proceed", "needs-work", "do-not-build"] },
+        "tier_signal": { "type": "string", "enum": ["T1", "T2", "T3"], "description": "Discovery's tier read. Intake treats it as a FLOOR only; it can raise but never lower an inferred tier." },
+        "stakeholder_hints": {
+          "type": "array",
+          "description": "Absent-but-implied stakeholders discovery surfaced; intake seeds these into its absent-stakeholder enumeration (never discharges a Legal-absence gate).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role"],
+            "properties": {
+              "role": { "type": "string" },
+              "engagement_required_for": { "type": "string" }
+            }
+          }
+        },
+        "opportunity_detail": {
+          "type": "array",
+          "description": "Optional richer opportunities than the flat opportunities[]; intake uses them as scope leads only.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["opportunity"],
+            "properties": {
+              "opportunity": { "type": "string" },
+              "outcome": { "type": "string" },
+              "regulatory_regimes": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "description": "AI drafts, human decides: a ready-to-intake handoff is emitted only on a clear-to-proceed recommendation. A needs-work / do-not-build artifact must not carry one.",
+      "if": { "required": ["handoff_to_intake"] },
+      "then": { "properties": { "handoff_to_intake": { "properties": { "recommendation": { "const": "proceed" } } } } }
+    }
+  ]
+}

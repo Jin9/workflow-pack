@@ -1,0 +1,63 @@
+// Template: consumer_<action>.go
+// Replace <DOMAIN>, <Action>, <action>, <Dep>, <Method>, and payload fields.
+// File path: app/<DOMAIN>/consumer_<action>.go
+//
+// Wire in router/subscriber.go: routes["<DOMAIN>_<AGGREGATE>_<ACTION>"] = <domain>Handler.On<Action>
+
+package <DOMAIN>
+
+import (
+	"context"
+	"encoding/json"
+	"log/slog"
+
+	"gitlab.com/<MODULE-PATH>/common/kafka"
+	"gitlab.com/<MODULE-PATH>/common/serror"
+
+	"gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access"
+
+	"github.com/google/uuid"
+)
+
+// <Action>Message is the payload contract for the <EVENT_NAME> Kafka event.
+type <Action>Message struct {
+	<Field1> string `json:"<field1>" binding:"required"`
+	<Field2> string `json:"<field2>" binding:"required,uuid"`
+}
+
+// On<Action> consumes <EVENT_NAME>; signature must match kafka.KafkaHandler.
+func (h *handler) On<Action>(ctx context.Context, msg kafka.Message[json.RawMessage]) error {
+	var payload <Action>Message
+	if err := kafka.BindMessage(msg.Payload, &payload); err != nil {
+		return serror.Wrap(err).With(
+			slog.String("event_id", msg.EventID),
+		)
+	}
+
+	id, err := uuid.Parse(payload.<Field2>)
+	if err != nil {
+		return serror.Wrap(err).With(
+			slog.String("event_id", msg.EventID),
+			slog.String("<field2>", payload.<Field2>),
+		)
+	}
+
+	entity, err := h.<dep>Storage.<GetMethod>(ctx, id)
+	if err != nil {
+		return serror.Wrap(err).With(
+			slog.String("event_id", msg.EventID),
+			slog.String("<field2>", id.String()),
+		)
+	}
+
+	entity.<StatusField> = access.<Model>Status<NewState>
+
+	if _, err := h.<dep>Storage.<UpdateMethod>(ctx, entity); err != nil {
+		return serror.Wrap(err).With(
+			slog.String("event_id", msg.EventID),
+			slog.String("<field2>", id.String()),
+		)
+	}
+
+	return nil
+}

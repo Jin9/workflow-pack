@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/review-backend-code/schemas/output.json",
+  "title": "review-backend-code output",
+  "description": "Output contract for the review-backend-code Review stage. The workflow engine routes on `verdict`. Validation failure triggers one retry, then human-queue.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "loop_back_target_stage",
+    "findings",
+    "claims_verified",
+    "claims_unverified",
+    "audit_metadata",
+    "uncertainty_flags"
+  ],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["approve", "loop_back", "human-queue"],
+      "description": "Workflow-engine-routable verdict. Function of findings + claims_unverified per references/severity-guide.md verdict matrix."
+    },
+    "loop_back_target_stage": {
+      "type": ["string", "null"],
+      "enum": ["design", "implement", null],
+      "description": "Required (non-null) when verdict is loop_back. Null otherwise. design_ambiguity flags route to design; everything else routes to implement."
+    },
+    "findings": {
+      "type": "array",
+      "description": "One entry per gap found at steps 4, 5, or 6. Empty array means a clean review.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "category", "rule_violated", "file", "line", "evidence", "fix_shape"],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["P1", "P2", "P3"]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["High", "Medium", "Low"],
+            "default": "High"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "data_correctness",
+              "idempotency",
+              "errors",
+              "context",
+              "observability",
+              "security",
+              "audit",
+              "compensation",
+              "tests",
+              "scope",
+              "claims_vs_reality",
+              "input_incomplete",
+              "input_malformed"
+            ]
+          },
+          "rule_violated": {
+            "type": "string",
+            "description": "Identifier from references/review-rubric.md (B1..B11, A1..A7, C1..C4) or 'workflow' for input/contract issues."
+          },
+          "file": {
+            "type": "string",
+            "description": "Path from code_under_review or tests_under_review. Use 'workflow' for input-level findings."
+          },
+          "line": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "description": "Line number in the cited file. Null only when the finding spans the whole file or is workflow-level."
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Verbatim code snippet OR a [needs verification] tag when confidence is Low."
+          },
+          "fix_shape": {
+            "type": "string",
+            "minLength": 8,
+            "description": "What the fix should look like — function signature, invariant to add, control to insert. Suggestion only; this skill does NOT emit code."
+          },
+          "standards_ref": {
+            "type": "string",
+            "description": "Optional published-standard identifier (CWE-###, ASVS V#.#.#, OWASP A0#:2021, etc.). Omit rather than guess."
+          }
+        }
+      }
+    },
+    "claims_verified": {
+      "type": "array",
+      "description": "Plain-text list of Generate claims the code substantiates. Useful for the audit trail.",
+      "items": {"type": "string", "minLength": 4}
+    },
+    "claims_unverified": {
+      "type": "array",
+      "description": "Plain-text list of Generate claims the code does NOT substantiate. Non-empty forces loop_back or human-queue regardless of finding count.",
+      "items": {"type": "string", "minLength": 4}
+    },
+    "audit_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rules_evaluated", "files_scanned", "lines_scanned"],
+      "properties": {
+        "rules_evaluated": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of distinct rule items (B*, A*, C*) the reviewer evaluated. Banking-grade target: all 22 (11 base + 7 augmentation + 4 contract)."
+        },
+        "files_scanned": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lines_scanned": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "review_duration_inferred_seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "description": "Ambiguities the reviewer surfaced — distinct from findings. A design_ambiguity flag overrides loop_back_target_stage routing to 'design'.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "location", "note"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "design_ambiguity",
+              "convention_conflict",
+              "out_of_scope_observation",
+              "needs_human_judgment",
+              "other"
+            ]
+          },
+          "location": {"type": "string"},
+          "note": {"type": "string", "minLength": 8}
+        }
+      }
+    }
+  }
+}

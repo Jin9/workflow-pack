@@ -1,0 +1,78 @@
+{
+  "design_document": "# Design: UserProfileCard (Primitive display)\n\n## L1 — User intent\nA user authorized as `profile:read` views their own profile card: display name, masked account number (last 4 only), masked email (first char + domain), and PDPA-flagged government_id (redacted with reveal action that emits an audit event).\n\nRead-only. No mutations. No navigation.\n\n## L2 — UI architecture\n- **Pillar**: `Primitive` (pure presentation; no fetching, no business logic).\n- **Component tree**: `UserProfileCard` -> `MaskedField` (existing primitive) x3 + `RedactedField` (existing primitive) x1.\n- **State ownership**: server (data passed in as props by Feature parent — Primitive does not fetch); local (boolean `is_government_id_revealed`).\n- **Rendering model**: Client Component (interactive — reveal toggles local state). Parent Page handles SSR/CSR.\n\n## L3 — Technical strategy\n- **A11y**: WCAG 2.1 AA. Reveal control is a `<button aria-pressed>`. Live region announces reveal/hide. Focus stays on the reveal button after toggle. Tab order matches visual.\n- **Error / loading / empty**: data is a prop; loading/empty are parent's concern.\n- **Token storage**: n/a (display-only).\n- **PII**: `account_number` masked (last 4 visible); `email` masked (first char + domain); `government_id` redacted with audit-on-view reveal action. `display_name` is `none`.\n- **Analytics**: one event `pii.government_id.viewed` on reveal.\n- **Tests**: component test with RTL — assert label-based queries, reveal interaction, focus retention, axe clean.\n\n## L4 — Implementation sketch\n- `src/features/profile/components/UserProfileCard.tsx`: Primitive component.\n- `src/features/profile/components/UserProfileCard.types.ts`: prop types from codegen User shape.\n- `src/features/profile/components/UserProfileCard.test.tsx`: component tests + axe.\n",
+  "target_feature_path": "src/features/profile/components",
+  "implement_stage_output": {
+    "files_generated": [
+      {"path": "src/features/profile/components/UserProfileCard.tsx", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "lines_added": 65, "component_pillar": "Primitive"},
+      {"path": "src/features/profile/components/UserProfileCard.types.ts", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "lines_added": 18, "component_pillar": "Type"}
+    ],
+    "tests_generated": [
+      {"path": "src/features/profile/components/UserProfileCard.test.tsx", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "test_type": "component", "coverage_pct": 0.92}
+    ],
+    "a11y_compliance": {
+      "wcag_level": "AA",
+      "keyboard_navigable": true,
+      "screen_reader_tested": true,
+      "color_contrast_verified": true,
+      "focus_management_implemented": true,
+      "axe_clean": true
+    },
+    "security_review": {
+      "xss_surfaces": [],
+      "csrf_protected": true,
+      "csp_compliant": true,
+      "token_storage_strategy": "n/a",
+      "pii_fields_handled": [
+        {"field": "display_name", "treatment": "none"},
+        {"field": "account_number", "treatment": "mask"},
+        {"field": "email", "treatment": "mask"},
+        {"field": "government_id", "treatment": "audit-on-view"}
+      ]
+    },
+    "state_ownership": {
+      "profile_data": "server",
+      "is_government_id_revealed": "local"
+    },
+    "bundle_impact_estimate_kb": 3,
+    "compensating_actions": [],
+    "audit_events_emitted": ["pii.government_id.viewed"],
+    "uncertainty_flags": [],
+    "decision_metadata": {
+      "pillar_choices": [
+        {"file": "src/features/profile/components/UserProfileCard.tsx", "pillar": "Primitive", "rationale": "pure presentation + a11y; no fetching, no business logic."},
+        {"file": "src/features/profile/components/UserProfileCard.types.ts", "pillar": "Type", "rationale": "pure type declarations narrowed from codegen User shape."}
+      ],
+      "state_library_choices": [
+        {"concern": "reveal toggle", "choice": "useState (local)", "rationale": "single component scope."},
+        {"concern": "profile data source", "choice": "props from parent Feature", "rationale": "Primitive must not fetch."}
+      ],
+      "repo_conventions_followed": [
+        "Pillar separation: Primitive never imports from Feature/Page",
+        "Component tests query by role/label via RTL + userEvent",
+        "TypeScript strict; props typed via codegen narrowing in *.types.ts",
+        "PII treatment helpers (MaskedField, RedactedField) reused from existing primitives",
+        "Audit-on-view PII emits pii.<field>.viewed analytics event"
+      ]
+    }
+  },
+  "code_under_review": [
+    {
+      "path": "src/features/profile/components/UserProfileCard.tsx",
+      "component_pillar": "Primitive",
+      "content": "import { useCallback, useRef, useState } from 'react'\nimport { MaskedField, RedactedField } from '@app/design-system/pii'\nimport { useAnalytics } from '@app/hooks/useAnalytics'\nimport type { UserProfileCardProps } from './UserProfileCard.types'\n\nexport function UserProfileCard({ profile }: UserProfileCardProps) {\n  const [isRevealed, setRevealed] = useState(false)\n  const revealButtonRef = useRef<HTMLButtonElement>(null)\n  const { track } = useAnalytics()\n\n  const onReveal = useCallback(() => {\n    setRevealed((prev) => {\n      const next = !prev\n      if (next) {\n        track({\n          event_type: 'pii.government_id.viewed',\n          actor: { id: profile.id, type: 'user' },\n          action: 'reveal',\n          target: { kind: 'user', id: profile.id },\n        })\n      }\n      revealButtonRef.current?.focus()\n      return next\n    })\n  }, [profile.id, track])\n\n  return (\n    <section aria-labelledby='upc-heading' className='bg-surface p-4 rounded-md'>\n      <h2 id='upc-heading' className='text-heading-md text-default'>\n        {profile.display_name}\n      </h2>\n      <dl className='mt-4 grid gap-2'>\n        <div>\n          <dt className='text-muted'>Account</dt>\n          <dd><MaskedField value={profile.account_number} reveal={4} /></dd>\n        </div>\n        <div>\n          <dt className='text-muted'>Email</dt>\n          <dd><MaskedField value={profile.email} strategy='email' /></dd>\n        </div>\n        <div>\n          <dt className='text-muted'>Government ID</dt>\n          <dd>\n            <RedactedField value={profile.government_id} revealed={isRevealed} />\n            <button\n              ref={revealButtonRef}\n              type='button'\n              aria-pressed={isRevealed}\n              onClick={onReveal}\n              className='ml-2 text-link underline'\n            >\n              {isRevealed ? 'Hide' : 'Reveal'}\n            </button>\n            <span role='status' aria-live='polite' className='sr-only'>\n              {isRevealed ? 'Government ID revealed' : 'Government ID hidden'}\n            </span>\n          </dd>\n        </div>\n      </dl>\n    </section>\n  )\n}\n"
+    },
+    {
+      "path": "src/features/profile/components/UserProfileCard.types.ts",
+      "component_pillar": "Type",
+      "content": "import type { components } from '@codegen/api'\n\ntype CodegenUser = components['schemas']['User']\n\nexport type UserProfileCardProps = {\n  profile: Pick<CodegenUser, 'id' | 'display_name' | 'account_number' | 'email' | 'government_id'>\n}\n"
+    }
+  ],
+  "tests_under_review": [
+    {
+      "path": "src/features/profile/components/UserProfileCard.test.tsx",
+      "test_type": "component",
+      "content": "import { axe } from 'jest-axe'\nimport { render, screen } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport { UserProfileCard } from './UserProfileCard'\n\nconst profile = {\n  id: 'u_1',\n  display_name: 'Synthetic Person',\n  account_number: '1234567890',\n  email: 'synth@example.test',\n  government_id: 'SYN-0000-0000',\n}\n\ndescribe('UserProfileCard', () => {\n  it('renders masked PII by default', () => {\n    render(<UserProfileCard profile={profile} />)\n    expect(screen.getByRole('heading', { name: /synthetic person/i })).toBeInTheDocument()\n    expect(screen.getByText(/7890/)).toBeInTheDocument()\n    expect(screen.queryByText(profile.government_id)).not.toBeInTheDocument()\n  })\n\n  it('reveals government_id on click and emits analytics + retains focus', async () => {\n    const user = userEvent.setup()\n    render(<UserProfileCard profile={profile} />)\n    const reveal = screen.getByRole('button', { name: /reveal/i })\n    await user.click(reveal)\n    expect(screen.getByText(profile.government_id)).toBeInTheDocument()\n    expect(screen.getByRole('button', { name: /hide/i })).toHaveFocus()\n  })\n\n  it('is axe-clean', async () => {\n    const { container } = render(<UserProfileCard profile={profile} />)\n    expect(await axe(container)).toHaveNoViolations()\n  })\n})\n"
+    }
+  ],
+  "idempotency_key": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+}

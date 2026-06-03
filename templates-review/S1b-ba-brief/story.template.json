@@ -1,0 +1,40 @@
+{
+  "id": "STORY-<DOMAIN>-01",
+  "epic_id": "EPIC-<DOMAIN>",
+  "title": "<story title, 8-120 chars>",
+  "format": "<classic_user_story|job_story>",
+  "card": {
+    "as_a": "<role / persona>",
+    "i_want": "<one capability>",
+    "so_that": "<benefit / business value>"
+  },
+  "context": "<>=30 chars; field set mirrors the canonical user-story-template — referenced, not copied>",
+  "acceptance_criteria": [
+    { "scenario_name": "<happy-path name, >=8 chars>", "scenario_type": "happy", "given": ["<precondition>"], "when": "<action>", "then": ["<observable outcome with concrete values>"] },
+    { "scenario_name": "<error-path name>", "scenario_type": "error", "given": ["<precondition>"], "when": "<action>", "then": ["<error code + locked message>"] },
+    { "scenario_name": "<audit scenario>", "scenario_type": "banking_grade_audit", "given": ["<any attempt>"], "when": "<it resolves>", "then": ["<audit event emitted carrying audit_id>"] }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields":    { "status": "<applies|not_applicable|unknown_p2>", "justification": "<>=10 chars>", "fields_or_events": ["<field>"], "treatment": "<redact|encrypt|tokenize>" },
+    "audit_events":  { "status": "<...>", "justification": "<...>" },
+    "idempotency":   { "status": "<...>", "justification": "<...>" },
+    "reversibility": { "status": "<...>", "justification": "<...>", "compensating_action": "<...>" },
+    "authn_authz":   { "status": "<...>", "justification": "<...>" },
+    "regulatory":    { "status": "<...>", "justification": "<...>" },
+    "tipping_off":   { "status": "<...>", "justification": "<...>" }
+  },
+  "priority": "<Must|Should|Could|Won't>",
+  "sizing": { "story_points": "TBD_by_TL", "complexity": "<trivial|low|medium|high|unknown>", "split_required": false },
+  "dependencies": { "depends_on": [], "blocks": [] },
+  "dor_checklist": {
+    "format_clear": false, "happy_path_present": false, "error_path_present": false,
+    "banking_grade_evaluated": false, "priority_set": false, "dependencies_identified": false,
+    "sizing_done": false, "no_blocking_ambiguities": false
+  },
+  "requirement_refs": ["<REQ-ref or section>"],
+  "open_questions": ["OQ-<n>"],
+  "scope_ref": "../INDEX.json",
+  "change_log": [
+    { "date": "<YYYY-MM-DD>", "author": "<BA / model>", "change": "Created from requirement <ref>" }
+  ]
+}

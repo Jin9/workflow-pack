@@ -1,0 +1,51 @@
+{
+  "design_document": "# Design: GetLoanApplication\n\n## L1 — Business invariant\nA caller authorized as `loan:read` MAY retrieve a single loan application by its UUID. Read-only — never mutates state.\n\n## L2 — Contract\n- **Service / package owner**: `internal/loan/application`\n- **Contract**: `GET /v1/loan-applications/{id}`\n- **Data owner**: `loan-application-service` writes the `loan_applications` table; this read targets the same table.\n- **AuthZ**: required scope `loan:read`. Returns 403 if missing.\n- **Failure modes**: 404 if not found; 403 if not authorized; 5xx if dependency fails.\n\n## L3 — Technical strategy\n- **Persistence**: single SELECT against `loan_applications` by primary key.\n- **Transaction**: read-committed, no explicit transaction needed.\n- **Idempotency**: GET is naturally idempotent — no persistence of idempotency keys.\n- **Observability**: span `application.Get`, RED metrics, log `trace_id + actor_id + application_id`.\n- **Errors**: client (404, 403) vs server (DB unreachable) vs dependency (timeout to auth service).\n- **Tests**: table-driven covering happy path, 404, 403, DB error, timeout.\n\n## L4 — Implementation sketch\n- `internal/loan/application/handler.go`: HTTP handler.\n- `internal/loan/application/service.go`: use-case method `Get(ctx, id) (Application, error)`.\n- `internal/loan/application/repository.go`: interface + Postgres impl.\n- `internal/loan/application/handler_test.go`, `service_test.go`, `repository_pg_test.go`.\n",
+  "target_package": "internal/loan/application",
+  "implement_stage_output": {
+    "files_generated": [
+      {"path": "internal/loan/application/handler.go", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "lines_added": 60},
+      {"path": "internal/loan/application/service.go", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "lines_added": 35},
+      {"path": "internal/loan/application/repository.go", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "lines_added": 18},
+      {"path": "internal/loan/application/repository_pg.go", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "lines_added": 40}
+    ],
+    "tests_generated": [
+      {"path": "internal/loan/application/handler_test.go", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "coverage_pct": 0.90},
+      {"path": "internal/loan/application/service_test.go", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "coverage_pct": 0.88},
+      {"path": "internal/loan/application/repository_pg_test.go", "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "coverage_pct": 0.86}
+    ],
+    "idempotency_strategy": "GET is naturally idempotent — no idempotency_keys persistence required. The HTTP method is safe per RFC 9110 and the underlying SELECT is pure.",
+    "compensating_actions": [],
+    "audit_events_emitted": [],
+    "uncertainty_flags": [],
+    "decision_metadata": {
+      "complexity": "low",
+      "pattern_choices": [
+        {"decision": "no idempotency persistence", "rationale": "GET is naturally idempotent; persistence would add cost without correctness benefit."},
+        {"decision": "no audit event", "rationale": "Read-only path. Banking-grade requires audit on state changes, not reads."}
+      ],
+      "repo_conventions_followed": [
+        "thin handler / use-case service / repository interface boundary",
+        "context.Context first parameter on exported functions",
+        "fmt.Errorf with %w wrapping",
+        "table-driven tests with testify"
+      ]
+    }
+  },
+  "code_under_review": [
+    {
+      "path": "internal/loan/application/handler.go",
+      "content": "package application\n\nimport (\n\t\"context\"\n\t\"errors\"\n\t\"net/http\"\n\n\t\"github.com/google/uuid\"\n\t\"github.com/example/bank/pkg/httpx\"\n\t\"github.com/example/bank/pkg/authz\"\n)\n\ntype Handler struct {\n\tsvc Service\n}\n\nfunc NewHandler(svc Service) *Handler {\n\treturn &Handler{svc: svc}\n}\n\nfunc (h *Handler) Get(w http.ResponseWriter, r *http.Request) {\n\tctx := r.Context()\n\tif err := authz.Require(ctx, \"loan:read\"); err != nil {\n\t\thttpx.WriteError(w, r, err)\n\t\treturn\n\t}\n\tid, err := uuid.Parse(httpx.PathParam(r, \"id\"))\n\tif err != nil {\n\t\thttpx.WriteError(w, r, httpx.NewClientError(\"INVALID_ID\", \"id must be a uuid\"))\n\t\treturn\n\t}\n\tapp, err := h.svc.Get(ctx, id)\n\tif err != nil {\n\t\tif errors.Is(err, ErrNotFound) {\n\t\t\thttpx.WriteError(w, r, httpx.NewClientError(\"NOT_FOUND\", \"application not found\"))\n\t\t\treturn\n\t\t}\n\t\thttpx.WriteError(w, r, err)\n\t\treturn\n\t}\n\thttpx.WriteJSON(w, http.StatusOK, app)\n}\n"
+    },
+    {
+      "path": "internal/loan/application/service.go",
+      "content": "package application\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/google/uuid\"\n\t\"go.opentelemetry.io/otel\"\n)\n\nvar tracer = otel.Tracer(\"internal/loan/application\")\n\ntype Service interface {\n\tGet(ctx context.Context, id uuid.UUID) (Application, error)\n}\n\ntype service struct {\n\trepo Repository\n}\n\nfunc NewService(repo Repository) Service {\n\treturn &service{repo: repo}\n}\n\nfunc (s *service) Get(ctx context.Context, id uuid.UUID) (Application, error) {\n\tctx, span := tracer.Start(ctx, \"application.Get\")\n\tdefer span.End()\n\tapp, err := s.repo.GetByID(ctx, id)\n\tif err != nil {\n\t\treturn Application{}, fmt.Errorf(\"application.Get: %w\", err)\n\t}\n\treturn app, nil\n}\n"
+    }
+  ],
+  "tests_under_review": [
+    {
+      "path": "internal/loan/application/service_test.go",
+      "content": "package application\n\nimport (\n\t\"context\"\n\t\"errors\"\n\t\"testing\"\n\n\t\"github.com/google/uuid\"\n\t\"github.com/stretchr/testify/require\"\n)\n\nfunc TestService_Get(t *testing.T) {\n\ttests := []struct {\n\t\tname    string\n\t\trepo    Repository\n\t\twantErr error\n\t}{\n\t\t{name: \"happy path\", repo: &fakeRepo{app: Application{}}, wantErr: nil},\n\t\t{name: \"not found\", repo: &fakeRepo{err: ErrNotFound}, wantErr: ErrNotFound},\n\t\t{name: \"db error\", repo: &fakeRepo{err: errors.New(\"db down\")}, wantErr: nil /* placeholder */},\n\t}\n\tfor _, tc := range tests {\n\t\tt.Run(tc.name, func(t *testing.T) {\n\t\t\ts := NewService(tc.repo)\n\t\t\t_, err := s.Get(context.Background(), uuid.New())\n\t\t\tif tc.wantErr != nil {\n\t\t\t\trequire.ErrorIs(t, err, tc.wantErr)\n\t\t\t}\n\t\t})\n\t}\n}\n\ntype fakeRepo struct {\n\tapp Application\n\terr error\n}\n\nfunc (f *fakeRepo) GetByID(ctx context.Context, id uuid.UUID) (Application, error) {\n\treturn f.app, f.err\n}\n"
+    }
+  ],
+  "idempotency_key": "a3f1b2c4-d5e6-4789-9abc-def012345678"
+}

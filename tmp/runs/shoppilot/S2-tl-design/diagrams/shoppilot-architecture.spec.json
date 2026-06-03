@@ -1,0 +1,41 @@
+{
+  "services": [
+    { "name": "web",                "type": "microservice", "status": "new" },
+    { "name": "auth-service",       "type": "microservice", "status": "new" },
+    { "name": "inventory-service",  "type": "microservice", "status": "new" },
+    { "name": "checkout-service",   "type": "microservice", "status": "new" },
+    { "name": "order-service",      "type": "microservice", "status": "new" },
+    { "name": "auth-db",        "type": "db", "status": "new", "engine": "MySQL", "instance": "shoppilot", "db": "auth" },
+    { "name": "inventory-db",   "type": "db", "status": "new", "engine": "MySQL", "instance": "shoppilot", "db": "inventory" },
+    { "name": "checkout-db",    "type": "db", "status": "new", "engine": "MySQL", "instance": "shoppilot", "db": "checkout" },
+    { "name": "order-db",       "type": "db", "status": "new", "engine": "MySQL", "instance": "shoppilot", "db": "order" },
+    { "name": "redis",          "type": "redis", "status": "new" },
+    { "name": "events",         "type": "kafka", "status": "new" },
+    { "name": "mock-psp",       "type": "microservice", "status": "external" },
+    { "name": "mock-courier",   "type": "microservice", "status": "external" }
+  ],
+  "connections": [
+    { "from": "web", "to": "auth-service",      "kind": "sync" },
+    { "from": "web", "to": "checkout-service",  "kind": "sync" },
+    { "from": "web", "to": "order-service",     "kind": "sync" },
+    { "from": "web", "to": "inventory-service", "kind": "sync" },
+
+    { "from": "auth-service",      "to": "auth-db",      "kind": "sync" },
+    { "from": "auth-service",      "to": "redis",        "kind": "sync" },
+    { "from": "inventory-service", "to": "inventory-db", "kind": "sync" },
+    { "from": "checkout-service",  "to": "checkout-db",  "kind": "sync" },
+    { "from": "order-service",     "to": "order-db",     "kind": "sync" },
+
+    { "from": "checkout-service", "to": "inventory-service", "kind": "sync", "label": "reserve" },
+    { "from": "checkout-service", "to": "order-service",     "kind": "sync", "label": "create order" },
+    { "from": "checkout-service", "to": "mock-psp",          "kind": "sync", "status": "external", "label": "capture (mock)" },
+    { "from": "order-service",    "to": "mock-courier",      "kind": "sync", "status": "external", "label": "tracking" },
+
+    { "from": "auth-service",      "to": "events", "kind": "async" },
+    { "from": "checkout-service",  "to": "events", "kind": "async", "label": "order.created / payment_captured" },
+    { "from": "order-service",     "to": "events", "kind": "async", "label": "order.status_changed" },
+    { "from": "inventory-service", "to": "events", "kind": "async", "label": "stock.*" },
+    { "from": "events", "to": "order-service",     "kind": "async", "label": "payment_captured" },
+    { "from": "events", "to": "inventory-service", "kind": "async", "label": "payment_captured / cancelled" }
+  ]
+}

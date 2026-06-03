@@ -1,0 +1,19 @@
+{
+  "design_document": "# Design: UserProfileCard (Primitive display)\n\n## L1 — User intent\nA user authorized as `profile:read` views their own profile card: display name, masked account number (last 4 only), masked email (first char + domain), and PDPA-flagged government_id (redacted with reveal action that emits an audit event).\n\nRead-only. No mutations. No navigation.\n\n## L2 — UI architecture\n- **Pillar**: `Primitive` (pure presentation; no fetching, no business logic).\n- **Component tree**: `UserProfileCard` -> `MaskedField` (existing primitive) x3 + `RedactedField` (existing primitive) x1.\n- **State ownership**: server (data passed in as props by Feature parent — Primitive does not fetch); local (boolean `is_government_id_revealed`).\n- **Rendering model**: Client Component (interactive — reveal toggles local state). Parent Page handles SSR/CSR.\n\n## L3 — Technical strategy\n- **A11y**: WCAG 2.1 AA. Reveal control is a `<button aria-pressed>`. Live region announces reveal/hide. Focus stays on the reveal button after toggle. Tab order matches visual.\n- **Error / loading / empty**: data is a prop; loading/empty are parent's concern. Component asserts non-null props via TypeScript; renders empty fragment if any prop is missing (defensive — should not happen).\n- **Token storage**: n/a (display-only).\n- **PII**: `account_number` masked (last 4 visible); `email` masked (first char + domain); `government_id` redacted with audit-on-view reveal action. `display_name` is `none` (already a public field per design).\n- **Analytics**: one event `pii.government_id.viewed` on reveal (audit-on-view requirement).\n- **Tests**: component test with RTL — assert label-based queries for masked / redacted display, reveal interaction, focus retention, axe clean.\n\n## L4 — Implementation sketch\n- `src/features/profile/components/UserProfileCard.tsx`: Primitive component.\n- `src/features/profile/components/UserProfileCard.types.ts`: prop types (imported from codegen User shape with parser-local narrowing).\n- `src/features/profile/components/UserProfileCard.test.tsx`: component tests + axe.\n",
+  "target_feature_path": "src/features/profile/components",
+  "idempotency_key": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "a11y_requirements": {
+    "wcag_level": "AA",
+    "keyboard": "required",
+    "screen_reader": "required",
+    "axe_clean": true
+  },
+  "pii_field_classification": [
+    {"field": "display_name", "treatment": "none"},
+    {"field": "account_number", "treatment": "mask"},
+    {"field": "email", "treatment": "mask"},
+    {"field": "government_id", "treatment": "audit-on-view"}
+  ],
+  "bundle_budget_kb": 8,
+  "test_coverage_target": 0.85
+}

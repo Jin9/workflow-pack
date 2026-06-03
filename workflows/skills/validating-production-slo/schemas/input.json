@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "validating-production-slo input",
+  "type": "object",
+  "required": ["slo_defs", "live_metrics", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "slo_defs": {
+      "type": "array",
+      "description": "Declared SLIs/SLOs with targets (authored by observability-design); consumed, not re-derived.",
+      "items": {
+        "type": "object",
+        "required": ["name", "target"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "target": { "type": "number", "description": "e.g. 0.999 availability, or p99 latency budget." },
+          "sli": { "type": "string", "description": "How the SLI is computed (good/valid ratio)." }
+        }
+      }
+    },
+    "live_metrics": { "type": "object", "description": "Windowed live observations keyed by SLO name." },
+    "bake_window": { "type": ["string", "null"], "description": "e.g. 30m / 1h." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

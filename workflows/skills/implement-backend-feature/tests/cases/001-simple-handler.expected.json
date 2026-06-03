@@ -1,0 +1,64 @@
+{
+  "files_generated": [
+    {
+      "path": "internal/loan/application/handler.go",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "lines_added": 60
+    },
+    {
+      "path": "internal/loan/application/service.go",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "lines_added": 35
+    },
+    {
+      "path": "internal/loan/application/repository.go",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "lines_added": 18
+    },
+    {
+      "path": "internal/loan/application/repository_pg.go",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "lines_added": 40
+    }
+  ],
+  "tests_generated": [
+    {
+      "path": "internal/loan/application/handler_test.go",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "coverage_pct": 0.90
+    },
+    {
+      "path": "internal/loan/application/service_test.go",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "coverage_pct": 0.88
+    },
+    {
+      "path": "internal/loan/application/repository_pg_test.go",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "coverage_pct": 0.86
+    }
+  ],
+  "idempotency_strategy": "GET is naturally idempotent — no idempotency_keys persistence required. The HTTP method is safe per RFC 9110 and the underlying SELECT is pure.",
+  "compensating_actions": [],
+  "audit_events_emitted": [],
+  "uncertainty_flags": [],
+  "decision_metadata": {
+    "complexity": "low",
+    "pattern_choices": [
+      {
+        "decision": "no idempotency persistence",
+        "rationale": "GET is naturally idempotent; persistence would add cost without correctness benefit."
+      },
+      {
+        "decision": "no audit event",
+        "rationale": "Read-only path. Banking-grade requires audit on state changes, not reads (read auditing is the SIEM's job, not the application's)."
+      }
+    ],
+    "repo_conventions_followed": [
+      "thin handler / use-case service / repository interface boundary",
+      "context.Context first parameter on exported functions",
+      "fmt.Errorf with %w wrapping",
+      "table-driven tests with testify"
+    ]
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ba-skill-factory/schemas/eliciting-banking-brief/input.json",
+  "title": "eliciting-banking-brief input contract",
+  "description": "Input schema for the eliciting-banking-brief atomic skill. Minimal required surface (raw_content + idempotency_key); optional hints for source detection, tier, glossary, project context, ground-truth strip mode, and audit mode. additionalProperties: false — unknown keys are configuration drift, refused.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["raw_content", "idempotency_key"],
+  "properties": {
+    "raw_content": {
+      "type": "string",
+      "minLength": 200,
+      "maxLength": 200000,
+      "description": "Raw text body — Jira / Slack / meeting / email / doc / mixed. Skill detects source_type from header markers if not provided (C1). minLength 200 guards against FM-01 (quality < 5.0 likely under 200 chars); maxLength 200000 guards EC-04 token budget."
+    },
+    "source_type": {
+      "type": "string",
+      "enum": ["jira", "slack", "email", "meeting-notes", "doc", "mixed", "unknown"],
+      "description": "Optional hint — skill detects from markers if absent (C1). 'mixed' for forwards combining multiple sources; 'unknown' forces full detection."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "UUID v4. Same key + same raw_content → same output (skill is idempotent per banking_grade.idempotent: true)."
+    },
+    "tier_hint": {
+      "type": "string",
+      "enum": ["T1", "T2", "T3"],
+      "description": "Optional manual tier from orchestrator. Skill re-infers tier from content (C19); emits inferred > manual flag if mismatched (AP-1.3). Never silent under-strict."
+    },
+    "domain_glossary_ref": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Optional path to supplementary domain glossary. Skill always emits its own glossary regardless (C5)."
+    },
+    "project_context_ref": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Optional path to project-context.md for additional context."
+    },
+    "ground_truth_strip_mode": {
+      "type": "string",
+      "enum": ["auto", "force", "skip"],
+      "default": "auto",
+      "description": "EC-17 / FM-12 control. 'auto' detects and strips (production default). 'force' strips unconditionally. 'skip' bypasses strip — production safety constraint requires audit_mode: training when skip is selected (see allOf rule below)."
+    },
+    "audit_mode": {
+      "type": "string",
+      "enum": ["standard", "enhanced", "strict", "training"],
+      "default": "enhanced",
+      "description": "Audit verbosity. 'enhanced' is the banking_grade.audit_level default for T2. 'strict' enables T1-grade decision_metadata. 'training' allows ground_truth_strip_mode: skip for harness self-evaluation."
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC-3339 timestamp. Anchor for C4 relative-date normalization (EOW, next sprint, Q3)."
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["audit_id"],
+      "description": "Optional TYPED upstream discovery handoff from researching-ba-problem-space (S1 composite chain, supplied after the human review gate). ADVISORY ONLY: may raise a tier floor, seed the absent-stakeholder enumeration, and pre-populate regulatory_dependencies rows for verification. MUST NOT suppress any detector, lower any tier, satisfy a citation, or substitute for raw_content. Idempotency is preserved: brief content stays a pure function of (raw_content, discovery). Mirrors researching-ba-problem-space/schemas/output.json (top-level fields + handoff_to_intake extras merged).",
+      "properties": {
+        "audit_id": { "type": "string", "format": "uuid", "description": "Discovery artifact audit_id; threaded into output frontmatter.upstream_refs.discovery_audit_id for the audit chain." },
+        "problem_framing": { "type": "string", "maxLength": 4000 },
+        "opportunities": { "type": "array", "maxItems": 50, "items": { "type": "string" } },
+        "assumptions": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["statement", "risk_type", "confidence"],
+            "properties": {
+              "statement": { "type": "string" },
+              "risk_type": { "type": "string", "enum": ["value", "usability", "feasibility", "viability"] },
+              "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+              "de_risk": { "type": "string" }
+            }
+          }
+        },
+        "regulatory_regimes": { "type": "array", "maxItems": 50, "items": { "type": "string" } },
+        "stakeholder_hints": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role"],
+            "properties": {
+              "role": { "type": "string" },
+              "engagement_required_for": { "type": "string" }
+            }
+          }
+        },
+        "tier_signal": { "type": "string", "enum": ["T1", "T2", "T3"], "description": "Discovery's tier read. Treated as a FLOOR only (max(tier_signal, inferred, tier_hint)); never lowers an inferred tier. Subject to AP-1.3 human-override when it would raise above tier_hint by one or more steps." },
+        "recommendation": { "type": "string", "enum": ["proceed", "needs-work", "do-not-build"], "description": "Discovery's recommendation. needs-work / do-not-build surfaces a P2 open question at Step 11 (never auto-blocks, never silently proceeds)." }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "description": "Production safety: skip-strip requires training mode. Prevents accidental ground-truth leak in production.",
+      "if": {
+        "properties": { "ground_truth_strip_mode": { "const": "skip" } },
+        "required": ["ground_truth_strip_mode"]
+      },
+      "then": {
+        "properties": { "audit_mode": { "const": "training" } },
+        "required": ["audit_mode"]
+      }
+    }
+  ]
+}

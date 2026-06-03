@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/review-frontend-code/schemas/output.json",
+  "title": "review-frontend-code output",
+  "description": "Output contract for the review-frontend-code Review stage. Workflow engine routes on `verdict`. Validation failure triggers one retry, then human-queue.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "loop_back_target_stage",
+    "findings",
+    "claims_verified",
+    "claims_unverified",
+    "a11y_verdict",
+    "security_verdict",
+    "audit_metadata",
+    "uncertainty_flags"
+  ],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["approve", "loop_back", "human-queue"],
+      "description": "Workflow-engine-routable verdict. Function of findings + claims_unverified per references/severity-guide.md verdict matrix."
+    },
+    "loop_back_target_stage": {
+      "type": ["string", "null"],
+      "enum": ["design", "implement", null],
+      "description": "Required (non-null) when verdict is loop_back. design_ambiguity / bundle_overrun / token_gap flags route to design; everything else routes to implement."
+    },
+    "findings": {
+      "type": "array",
+      "description": "One entry per gap. Empty = clean.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "category", "rule_violated", "file", "line", "evidence", "fix_shape"],
+        "properties": {
+          "severity": {"type": "string", "enum": ["P1", "P2", "P3"]},
+          "confidence": {"type": "string", "enum": ["High", "Medium", "Low"], "default": "High"},
+          "category": {
+            "type": "string",
+            "enum": [
+              "a11y",
+              "xss",
+              "csrf",
+              "token_storage",
+              "pii_leak",
+              "missing_compensation",
+              "pillar_violation",
+              "type_safety",
+              "state_ownership",
+              "tokens",
+              "analytics",
+              "tests",
+              "scope",
+              "claims_vs_reality",
+              "false_claim",
+              "input_incomplete",
+              "input_malformed"
+            ]
+          },
+          "rule_violated": {
+            "type": "string",
+            "description": "Identifier from references/review-rubric.md (F1..F12, A1..A9, C1..C5) or 'workflow' for input/contract issues."
+          },
+          "file": {"type": "string"},
+          "line": {"type": ["integer", "null"], "minimum": 1},
+          "evidence": {"type": "string", "minLength": 8, "description": "Verbatim code snippet OR a [needs verification] tag when confidence is Low."},
+          "fix_shape": {"type": "string", "minLength": 8, "description": "What the fix should look like — component signature, prop type, helper name. Suggestion only; this skill does NOT emit code."},
+          "standards_ref": {
+            "type": "string",
+            "description": "Optional published-standard identifier (CWE-###, WCAG #.#.#, OWASP A0#:2021, etc.). Omit rather than guess."
+          }
+        }
+      }
+    },
+    "claims_verified": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 4},
+      "description": "Plain-text list of Generate claims the code substantiates."
+    },
+    "claims_unverified": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 4},
+      "description": "Plain-text list of Generate claims the code does NOT substantiate. Non-empty forces loop_back or human-queue regardless of finding count."
+    },
+    "a11y_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wcag_level_verified",
+        "axe_run_evidence_present",
+        "role_label_queries_present",
+        "focus_management_evident"
+      ],
+      "description": "A11y is a banking-grade blocker — surfaced separately so the workflow can route on it without parsing findings.",
+      "properties": {
+        "wcag_level_verified": {"type": "string", "enum": ["AA", "AAA", "below_AA", "unknown"]},
+        "axe_run_evidence_present": {"type": "boolean"},
+        "role_label_queries_present": {"type": "boolean"},
+        "focus_management_evident": {"type": "boolean", "description": "True only when display/interactive component requires it AND code shows focus moves; null-equivalent (true) for display-only without focus needs."}
+      }
+    },
+    "security_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "xss_mitigations_verified",
+        "token_storage_verified",
+        "pii_helpers_verified",
+        "csrf_protections_verified",
+        "dependency_additions_detected"
+      ],
+      "properties": {
+        "xss_mitigations_verified": {"type": "boolean", "description": "True when every dangerouslySetInnerHTML has DOMPurify + // SAFE: comment, or none present."},
+        "token_storage_verified": {"type": "boolean", "description": "True when no localStorage/sessionStorage write of auth-shaped key found."},
+        "pii_helpers_verified": {"type": "boolean", "description": "True when every PII field in input is rendered through its declared helper."},
+        "csrf_protections_verified": {"type": "boolean", "description": "True when every mutation has CSRF protection or is a no-mutation feature."},
+        "dependency_additions_detected": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of npm imports not in package.json that the reviewer found. Empty when clean."
+        }
+      }
+    },
+    "audit_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rules_evaluated", "files_scanned", "lines_scanned", "claims_checked"],
+      "properties": {
+        "rules_evaluated": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of distinct rule items (F*, A*, C*) the reviewer evaluated. Banking-grade target: all 26 (12 + 9 + 5)."
+        },
+        "files_scanned": {"type": "integer", "minimum": 0},
+        "lines_scanned": {"type": "integer", "minimum": 0},
+        "claims_checked": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of distinct Generate claims the reviewer verified or refuted at step 6."
+        },
+        "review_duration_inferred_seconds": {"type": "number", "minimum": 0}
+      }
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "location", "note"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "design_ambiguity",
+              "convention_conflict",
+              "bundle_overrun",
+              "token_gap",
+              "out_of_scope_observation",
+              "needs_human_judgment",
+              "other"
+            ]
+          },
+          "location": {"type": "string"},
+          "note": {"type": "string", "minLength": 8}
+        }
+      }
+    }
+  }
+}

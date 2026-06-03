@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://skillify-treasury/skills/planning-banking-tests/schemas/input.json",
+  "title": "planning-banking-tests input v1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["idempotency_key"],
+  "properties": {
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+      "description": "UUID v4 for idempotent re-runs. Same key + same input must produce byte-identical output after canonicalization."
+    },
+    "ba_brief_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Filesystem path to a BA output directory (output-{idem8}/) produced by eliciting-banking-brief v1.2+. Skill reads output.json from this directory."
+    },
+    "ba_brief_inline": {
+      "type": "object",
+      "description": "Full BA output.json contents inline. Mutually exclusive with ba_brief_ref. Used by workflow engine for in-memory stage hand-off."
+    },
+    "tl_design_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional path to TL Design output (when available). v1.0.0 records the path and emits tl_design_dependencies findings if absent."
+    },
+    "environment_inventory_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional path to environment inventory YAML/JSON. When present, validates env feasibility per test case."
+    },
+    "tier_hint": {
+      "type": "string",
+      "enum": ["T1", "T2", "T3"],
+      "description": "Operator override of BA-inferred tier. Looser-than-BA emits tier_downgrade_warning requiring human override (TM-11)."
+    },
+    "prior_test_plan_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to prior test plan for incremental update. v1.0.0 accepts but ignores; v1.1+ may consume."
+    },
+    "audit_mode": {
+      "type": "string",
+      "enum": ["standard", "enhanced", "strict"],
+      "default": "enhanced",
+      "description": "Audit trace verbosity. enhanced (default) records every mapping decision per test case."
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["ba_brief_ref"],
+      "not": { "required": ["ba_brief_inline"] }
+    },
+    {
+      "required": ["ba_brief_inline"],
+      "not": { "required": ["ba_brief_ref"] }
+    }
+  ]
+}

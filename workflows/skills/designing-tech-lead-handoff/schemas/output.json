@@ -1,0 +1,329 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitive-os/skills/designing-tech-lead-handoff/output.json",
+  "title": "designing-tech-lead-handoff output contract",
+  "description": "Authoritative, exhaustive output contract for the designing-tech-lead-handoff stage. The pipeline-boundary schema integration/schemas/designing-tech-lead-handoff.json is a permissive superset of this one (it enforces only required_fields: component_map, api_contracts, audit_id). additionalProperties:false everywhere except contract payload_shape (free-form per tech-lead-contracts template). oneOf discriminator on output_type: design / partial_design / blocked_design. api_contracts and component_map shapes are lifted byte-faithful from templates/tech-lead-contracts.md and templates/tech-lead-components.md so backend/frontend implement+review stages consume them unchanged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["output_type", "audit_id", "processing_metadata"],
+  "properties": {
+    "output_type": { "type": "string", "enum": ["design", "partial_design", "blocked_design"] },
+    "component_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Verbatim shape of templates/tech-lead-components.md embedded schema. dependencies[] MUST resolve to api_contracts.contracts[].contract_name (referential integrity enforced at runtime by tests/assertions/contract-completeness.md — not expressible in draft-07).",
+      "required": ["template_version", "components"],
+      "properties": {
+        "template_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["component_name", "required", "complexity", "dependencies", "parallel_safe"],
+            "properties": {
+              "component_name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+              "required": { "type": "boolean" },
+              "complexity": { "type": "string", "enum": ["simple", "standard", "complex"] },
+              "complexity_rationale": { "type": "string", "minLength": 1 },
+              "dependencies": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+              "parallel_safe": { "type": "boolean" },
+              "microservice_split_threshold": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "api_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Verbatim shape of templates/tech-lead-contracts.md embedded schema. payload_shape is intentionally open (free-form JSON-Schema-ish object per the template).",
+      "required": ["template_version", "contracts"],
+      "properties": {
+        "template_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "contracts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["contract_name", "payload_shape", "semantics", "idempotency_rules", "failure_modes", "ordering_guarantees", "contract_version"],
+            "properties": {
+              "contract_name": { "type": "string", "minLength": 1 },
+              "payload_shape": { "type": "object" },
+              "semantics": { "type": "string", "enum": ["sync", "async", "system_internal"] },
+              "idempotency_rules": { "type": "string", "minLength": 1 },
+              "failure_modes": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+              "ordering_guarantees": { "type": "string", "minLength": 1 },
+              "contract_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+            }
+          }
+        }
+      }
+    },
+    "infra_summary": { "$ref": "#/definitions/MdArtifact" },
+    "infra_topology": { "$ref": "#/definitions/MdArtifact" },
+    "connectivity": { "$ref": "#/definitions/MdArtifact" },
+    "observability_spec": { "$ref": "#/definitions/MdArtifact" },
+    "adrs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "slug", "path", "content", "status"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^ADR-\\d{3}$" },
+          "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "path": { "type": "string", "pattern": "^design/architecture/ADRs/ADR-\\d{3}-[a-z0-9-]+\\.md$" },
+          "content": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["Proposed", "Accepted", "Deprecated", "Superseded"] },
+          "supersedes": { "type": "string", "pattern": "^ADR-\\d{3}$" }
+        }
+      }
+    },
+    "orchestrators": {
+      "type": "array",
+      "description": "Possibly empty: a CRUD-only brief instantiates zero Orchestrators (validated as correct by the architecture-smells gate, not flagged as omission).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["orchestrator_id", "context_id", "path", "content", "instantiation_signals"],
+        "properties": {
+          "orchestrator_id": { "type": "string", "pattern": "^orch-[a-z0-9-]+$" },
+          "context_id": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "pattern": "^design/architecture/contexts/[a-z0-9-]+/orchestrators/orch-[a-z0-9-]+\\.md$" },
+          "content": { "type": "string", "minLength": 1 },
+          "instantiation_signals": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "enum": ["multi_aggregate", "compensation", "temporal"] }
+          }
+        }
+      }
+    },
+    "api_specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["context_id", "path", "content", "api_version", "endpoint_count"],
+        "properties": {
+          "context_id": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "pattern": "^design/architecture/contexts/[a-z0-9-]+/api-spec\\.md$" },
+          "content": { "type": "string", "minLength": 1 },
+          "api_version": { "type": "string" },
+          "endpoint_count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "l4_specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["story_id", "context_id", "path", "content", "command", "events_emitted", "spec_status", "api_spec_endpoint_ref"],
+        "properties": {
+          "story_id": { "type": "string", "pattern": "^EPIC-[A-Z0-9-]+-\\d+$" },
+          "context_id": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "pattern": "^design/architecture/contexts/[a-z0-9-]+/stories/EPIC-[A-Z0-9-]+-\\d+-L4-spec\\.md$" },
+          "content": { "type": "string", "minLength": 1 },
+          "command": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "target_aggregate", "transport", "idempotency_required"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^(?!Submit|Process|Handle|Manage)[A-Z][A-Za-z]+$" },
+              "target_aggregate": { "type": "string", "minLength": 1 },
+              "transport": { "type": "string", "enum": ["sync_http", "async_event"] },
+              "intent": { "type": "string" },
+              "idempotency_required": { "type": "boolean" },
+              "idempotency_key_source": { "type": "string" }
+            }
+          },
+          "events_emitted": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "type", "when"],
+              "properties": {
+                "name": { "type": "string", "pattern": "^[a-z][a-z0-9]*\\.[a-z][a-z0-9]*\\.[a-z][a-z0-9]*$" },
+                "type": { "type": "string", "enum": ["domain", "process"] },
+                "when": { "type": "string", "minLength": 1 },
+                "schema_ref": { "type": "string" },
+                "consumers_known": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "no_event_rationale": { "type": "string" },
+          "spec_status": { "type": "string", "enum": ["draft", "ready-for-implementation"] },
+          "api_spec_endpoint_ref": { "type": "string", "minLength": 1 }
+        },
+        "allOf": [
+          {
+            "description": "An L4 with no events must justify the absence.",
+            "if": { "properties": { "events_emitted": { "maxItems": 0 } } },
+            "then": { "required": ["no_event_rationale"] }
+          }
+        ]
+      }
+    },
+    "event_catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "content", "domain_events", "process_events"],
+      "properties": {
+        "path": { "type": "string", "const": "design/architecture/02-event-catalog.md" },
+        "content": { "type": "string", "minLength": 1 },
+        "domain_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["event_name", "emitting_aggregate", "emitting_service", "consumers"],
+            "properties": {
+              "event_name": { "type": "string", "pattern": "^[a-z][a-z0-9]*\\.[a-z][a-z0-9]*\\.[a-z][a-z0-9]*$" },
+              "emitting_aggregate": { "type": "string" },
+              "emitting_service": { "type": "string" },
+              "consumers": { "type": "array", "items": { "type": "string" } },
+              "key_field": { "type": "string" },
+              "retention": { "type": "string" }
+            }
+          }
+        },
+        "process_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["process_event_name", "emitting_orchestrator", "consumers"],
+            "properties": {
+              "process_event_name": { "type": "string", "pattern": "^[a-z][a-z0-9]*\\.journey\\.[a-z][a-z0-9]*$" },
+              "emitting_orchestrator": { "type": "string", "pattern": "^orch-[a-z0-9-]+$" },
+              "consumers": { "type": "array", "items": { "type": "string" } },
+              "key_field": { "type": "string" },
+              "retention": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "coverage_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "detail"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["ba_story_without_ux_route", "ux_route_without_ba_story", "story_without_l4", "contract_without_consumer"] },
+          "detail": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "architecture_smells": {
+      "type": "array",
+      "description": "Result of the scaffold-v1.1 §5 self-audit. Every status:fail MUST carry resolution:revised or resolution:adr with adr_ref.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check", "status", "resolution"],
+        "properties": {
+          "check": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["pass", "fail"] },
+          "resolution": { "type": "string", "enum": ["revised", "adr", "n/a"] },
+          "adr_ref": { "type": "string", "pattern": "^ADR-\\d{3}$" }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "question", "why_matters", "suggested_resolver"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^OQ-\\d+$" },
+          "severity": { "type": "string", "enum": ["P1", "P2", "P3"] },
+          "question": { "type": "string", "minLength": 12 },
+          "why_matters": { "type": "string", "minLength": 20 },
+          "suggested_resolver": { "type": "string" }
+        }
+      }
+    },
+    "blocking_findings": {
+      "type": "array",
+      "description": "Present on output_type=partial_design (artifacts produced but contract-incomplete: FM-TL-03/04/05).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "detail", "owner"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "detail": { "type": "string", "minLength": 1 },
+          "owner": { "type": "string" }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "description": "Present on output_type=blocked_design (pre-architecture stop: bad BA gate or missing UX contract).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "description"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "remediation": { "type": "string" }
+        }
+      }
+    },
+    "audit_id": { "type": "string", "format": "uuid" },
+    "processing_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_name", "skill_version", "started_at", "completed_at", "tier", "mode"],
+      "properties": {
+        "skill_name": { "type": "string", "const": "designing-tech-lead-handoff" },
+        "skill_version": { "type": "string" },
+        "started_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" },
+        "tier": { "type": "string", "enum": ["T1", "T2", "T3"] },
+        "mode": { "type": "string", "enum": ["full", "spec"] },
+        "idempotency_key": { "type": "string", "format": "uuid" },
+        "ba_brief_status_seen": { "type": "string" },
+        "contexts_derived": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "description": "design — full TL handoff. The three pipeline-mandated fields plus the complete 6-artifact set.",
+      "properties": { "output_type": { "const": "design" } },
+      "required": ["output_type", "component_map", "api_contracts", "infra_summary", "infra_topology", "connectivity", "observability_spec", "adrs", "l4_specs", "event_catalog", "audit_id", "processing_metadata"]
+    },
+    {
+      "description": "partial_design — artifacts produced but a contract/naming/dependency check failed (FM-TL-03/04/05).",
+      "properties": { "output_type": { "const": "partial_design" } },
+      "required": ["output_type", "audit_id", "processing_metadata", "blocking_findings"]
+    },
+    {
+      "description": "blocked_design — pre-architecture stop (BA not ready-for-tl, P1 governance unresolved, or UX contract incomplete).",
+      "properties": { "output_type": { "const": "blocked_design" } },
+      "required": ["output_type", "audit_id", "processing_metadata", "blockers"]
+    }
+  ],
+  "definitions": {
+    "MdArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "content"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^design/architecture/.+\\.md$" },
+        "content": { "type": "string", "minLength": 1 },
+        "content_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

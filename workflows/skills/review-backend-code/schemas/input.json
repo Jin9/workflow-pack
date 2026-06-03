@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/review-backend-code/schemas/input.json",
+  "title": "review-backend-code input",
+  "description": "Input contract for the review-backend-code Review stage. Consumes the design plus the entire output of an upstream Generate stage plus the file contents the workflow fetched. Validated by the workflow engine before invocation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "design_document",
+    "target_package",
+    "implement_stage_output",
+    "code_under_review",
+    "tests_under_review",
+    "idempotency_key"
+  ],
+  "properties": {
+    "design_document": {
+      "type": "string",
+      "minLength": 200,
+      "description": "The same approved design document the upstream Generate stage consumed. Used at step 2 to extract the truth against which claims are checked."
+    },
+    "target_package": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_/-]*[a-z0-9]$",
+      "minLength": 3,
+      "maxLength": 256,
+      "description": "Same Go package path the Generate stage targeted."
+    },
+    "implement_stage_output": {
+      "type": "object",
+      "description": "Verbatim output payload of implement-backend-feature for this feature. Structure validated separately against that skill's schemas/output.json.",
+      "additionalProperties": true,
+      "required": [
+        "files_generated",
+        "tests_generated",
+        "idempotency_strategy",
+        "compensating_actions",
+        "audit_events_emitted",
+        "uncertainty_flags",
+        "decision_metadata"
+      ]
+    },
+    "code_under_review": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Production files emitted by Generate. Each entry includes the file content so the reviewer can cite file:line.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "content"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "content": {"type": "string"}
+        }
+      }
+    },
+    "tests_under_review": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Companion tests emitted by Generate. Empty array is invalid — banking-grade never reviews production without companion tests.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "content"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "content": {"type": "string"}
+        }
+      }
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "UUID v4 carried from the workflow. Same key + same other inputs MUST produce the same verdict bytes."
+    },
+    "convention_overrides": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional. Same shape as the implement stage's overrides — passed to the reviewer so a divergence from defaults is not mis-flagged."
+    },
+    "severity_floor": {
+      "type": "string",
+      "enum": ["P1", "P2", "P3"],
+      "default": "P3",
+      "description": "Findings below this severity are dropped from the output. Default P3 (emit everything). Set P2 or P1 only for noisy reviews."
+    }
+  }
+}

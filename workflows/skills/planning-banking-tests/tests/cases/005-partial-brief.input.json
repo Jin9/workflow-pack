@@ -1,0 +1,6 @@
+{
+  "_comment": "Verifies partial_test_plan emission: BA output_type=partial_brief covering only some epics. Fixture must be created with output_type=partial_brief and a subset of epics in completed state.",
+  "ba_brief_ref": "./fixtures/005-partial-brief/",
+  "idempotency_key": "55555555-5555-4555-8555-555555555555",
+  "audit_mode": "enhanced"
+}

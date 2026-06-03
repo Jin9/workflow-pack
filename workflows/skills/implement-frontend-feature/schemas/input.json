@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/implement-frontend-feature/schemas/input.json",
+  "title": "implement-frontend-feature input",
+  "description": "Input contract for the implement-frontend-feature Generate stage. Validated by the workflow engine before invocation. Frontend banking-grade: a11y_requirements and pii_field_classification are required, not optional.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "design_document",
+    "target_feature_path",
+    "idempotency_key",
+    "a11y_requirements",
+    "pii_field_classification"
+  ],
+  "properties": {
+    "design_document": {
+      "oneOf": [
+        {"type": "string", "minLength": 200},
+        {"type": "object"}
+      ],
+      "description": "Approved design from an earlier design-frontend-feature stage. Markdown string OR structured object. Must declare L1 intent, L2 component tree + state ownership + rendering model, L3 a11y contract + error/loading/empty states + token-storage strategy, L4 file sketch."
+    },
+    "target_feature_path": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_./\\-\\[\\]]+$",
+      "minLength": 3,
+      "maxLength": 256,
+      "description": "Existing path under src/ or app/. May include Next.js dynamic segment brackets (e.g., app/loan/application/[id])."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "UUID v4. Same key with same other inputs MUST produce same output bytes."
+    },
+    "a11y_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wcag_level"],
+      "description": "Blocking. No override below AA. Banking-grade regulatory requirement.",
+      "properties": {
+        "wcag_level": {
+          "type": "string",
+          "enum": ["AA", "AAA"],
+          "default": "AA"
+        },
+        "keyboard": {
+          "type": "string",
+          "enum": ["required", "preferred"],
+          "default": "required"
+        },
+        "screen_reader": {
+          "type": "string",
+          "enum": ["required", "preferred"],
+          "default": "required"
+        },
+        "axe_clean": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "pii_field_classification": {
+      "type": "array",
+      "description": "Per-field PII treatment rule. Empty array only if the feature renders zero PII.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "treatment"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Field name as it appears in the API contract."
+          },
+          "treatment": {
+            "type": "string",
+            "enum": ["mask", "redact", "audit-on-view", "none"],
+            "description": "mask = partial display (e.g., last 4 of account); redact = blackbox until reveal action; audit-on-view = emit pii.viewed event on display; none = field is not PII."
+          }
+        }
+      }
+    },
+    "convention_overrides": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Repo-specific overrides discovered by an upstream stage that should take precedence over greenfield defaults.",
+      "properties": {
+        "state_library": {"type": "string"},
+        "form_library": {"type": "string"},
+        "test_framework": {"type": "string"},
+        "design_token_system": {"type": "string"},
+        "api_codegen_path": {"type": "string"}
+      }
+    },
+    "bundle_budget_kb": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Per-feature bundle budget. Generate computes bundle_impact_estimate_kb; over-budget triggers uncertainty_flag of kind bundle_overrun."
+    },
+    "test_coverage_target": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.80,
+      "description": "Per-file coverage target. Below target signals loop_back."
+    }
+  }
+}

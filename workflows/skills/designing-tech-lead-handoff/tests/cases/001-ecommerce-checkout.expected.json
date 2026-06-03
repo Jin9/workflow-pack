@@ -1,0 +1,123 @@
+{
+  "_comment": "SHAPE SKELETON, not a byte-equality fixture. designing-tech-lead-handoff is generative; assert top-level key presence + types + the assertions/ invariants only. A clean ready-for-tl single-epic checkout brief (multi-aggregate + compensation + temporal signals) should yield output_type=design with one orchestrator (orch-checkout).",
+  "output_type": "design",
+  "component_map": {
+    "template_version": "0.1.0",
+    "components": [
+      {
+        "component_name": "checkout",
+        "required": true,
+        "complexity": "complex",
+        "complexity_rationale": "Multi-Aggregate orchestration with compensation and PSP timeout handling.",
+        "dependencies": ["checkout.commit", "events.payment.authorized"],
+        "parallel_safe": true
+      }
+    ]
+  },
+  "api_contracts": {
+    "template_version": "0.1.0",
+    "contracts": [
+      {
+        "contract_name": "checkout.commit",
+        "payload_shape": { "request": "{cartId, addressId, idempotencyKey}", "response": "{orderId, status}" },
+        "semantics": "sync",
+        "idempotency_rules": "Key = client Idempotency-Key header (UUID), scoped per customer, 24h TTL; on collision return the original order.",
+        "failure_modes": ["INVENTORY_UNAVAILABLE -> reservation rejected, no order", "PAYMENT_DECLINED -> reservation released, no order"],
+        "ordering_guarantees": "n/a (sync)",
+        "contract_version": "1.0.0"
+      }
+    ]
+  },
+  "infra_summary": { "path": "design/architecture/infra-summary.md", "content": "<rendered>" },
+  "infra_topology": { "path": "design/architecture/infra-topology.md", "content": "<ascii>" },
+  "connectivity": { "path": "design/architecture/connectivity.md", "content": "<rendered>" },
+  "observability_spec": { "path": "design/architecture/observability-spec.md", "content": "<rendered>" },
+  "adrs": [
+    {
+      "id": "ADR-001",
+      "slug": "orch-checkout-instantiated",
+      "path": "design/architecture/ADRs/ADR-001-orch-checkout-instantiated.md",
+      "content": "<rendered>",
+      "status": "Accepted"
+    }
+  ],
+  "orchestrators": [
+    {
+      "orchestrator_id": "orch-checkout",
+      "context_id": "checkout",
+      "path": "design/architecture/contexts/checkout/orchestrators/orch-checkout.md",
+      "content": "<rendered>",
+      "instantiation_signals": ["multi_aggregate", "compensation", "temporal"]
+    }
+  ],
+  "api_specs": [
+    {
+      "context_id": "checkout",
+      "path": "design/architecture/contexts/checkout/api-spec.md",
+      "content": "<rendered>",
+      "api_version": "v1",
+      "endpoint_count": 1
+    }
+  ],
+  "l4_specs": [
+    {
+      "story_id": "EPIC-CHECKOUT-1",
+      "context_id": "checkout",
+      "path": "design/architecture/contexts/checkout/stories/EPIC-CHECKOUT-1-L4-spec.md",
+      "content": "<rendered>",
+      "command": {
+        "name": "PlaceOrder",
+        "target_aggregate": "Order",
+        "transport": "sync_http",
+        "idempotency_required": true,
+        "idempotency_key_source": "client_provided_uuid"
+      },
+      "events_emitted": [
+        {
+          "name": "order.placed.confirmed",
+          "type": "domain",
+          "when": "On successful payment authorization and order confirm",
+          "consumers_known": ["orch-checkout", "govern"]
+        }
+      ],
+      "spec_status": "ready-for-implementation",
+      "api_spec_endpoint_ref": "../api-spec.md#endpoint-checkout-commit"
+    }
+  ],
+  "event_catalog": {
+    "path": "design/architecture/02-event-catalog.md",
+    "content": "<rendered>",
+    "domain_events": [
+      {
+        "event_name": "order.placed.confirmed",
+        "emitting_aggregate": "Order",
+        "emitting_service": "checkout-service",
+        "consumers": ["orch-checkout", "govern"]
+      }
+    ],
+    "process_events": [
+      {
+        "process_event_name": "checkout.journey.completed",
+        "emitting_orchestrator": "orch-checkout",
+        "consumers": ["govern", "analytics"]
+      }
+    ]
+  },
+  "coverage_gaps": [],
+  "architecture_smells": [
+    { "check": "No Orchestrator contains business logic", "status": "pass", "resolution": "n/a" }
+  ],
+  "open_questions": [],
+  "audit_id": "00000000-0000-4000-8000-000000000001",
+  "processing_metadata": {
+    "skill_name": "designing-tech-lead-handoff",
+    "skill_version": "0.1.0",
+    "started_at": "2026-05-17T00:00:00Z",
+    "completed_at": "2026-05-17T00:05:00Z",
+    "tier": "T2",
+    "mode": "full",
+    "idempotency_key": "3f1a2b4c-5d6e-4a7b-8c9d-0e1f2a3b4c5d",
+    "ba_brief_status_seen": "ready-for-tl",
+    "contexts_derived": ["checkout"]
+  }
+}

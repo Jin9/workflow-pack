@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/discovery.json",
+  "title": "S1 discovery boundary (researching-ba-problem-space output)",
+  "description": "Boundary contract for the S1 discovery node (s1-discovery). Mirrors researching-ba-problem-space/schemas/output.json; permissive at the envelope (additionalProperties:true) so the handoff_to_intake block and future fields pass. The recommendation enum drives the S1 human gate (proceed_when: proceed).",
+  "type": "object",
+  "required": ["problem_framing", "assumptions", "recommendation", "audit_id"],
+  "additionalProperties": true,
+  "properties": {
+    "problem_framing": { "type": "string" },
+    "opportunities": { "type": "array", "items": { "type": "string" } },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["statement", "risk_type", "confidence"],
+        "properties": {
+          "statement": { "type": "string" },
+          "risk_type": { "type": "string", "enum": ["value", "usability", "feasibility", "viability"] },
+          "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+          "de_risk": { "type": "string" }
+        }
+      }
+    },
+    "regulatory_regimes": { "type": "array", "items": { "type": "string" } },
+    "recommendation": { "type": "string", "enum": ["proceed", "needs-work", "do-not-build"] },
+    "audit_id": { "type": "string", "format": "uuid" },
+    "handoff_to_intake": {
+      "type": "object",
+      "description": "Typed handoff merged into the brief node's input.discovery. Present only when recommendation == proceed."
+    }
+  }
+}

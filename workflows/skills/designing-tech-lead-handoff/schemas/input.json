@@ -1,0 +1,829 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitive-os/skills/designing-tech-lead-handoff/input.json",
+  "title": "designing-tech-lead-handoff input contract",
+  "description": "Input for the designing-tech-lead-handoff stage. Consumes the ba-analyze brief fields (epic|epics+initiative, stories, governance_gaps) and the ux-intake path strings (tokens_path, route_map_path, component_inventory_path) plus the workflow idempotency_key. The Epic/Story/Stakeholder/AcceptanceCriterion/BankingGradeRow/GovernanceGap/Translations definitions are inline-copied byte-faithful from ba-squad/skills/eliciting-banking-brief/schemas/output.json @ v1.4.x \u2014 keep in sync; drift is caught by tests/assertions/. No cross-file $ref is used because the orchestrator hands values across the stage boundary, not files (no artifact-handoff skill exists yet \u2014 see WORKFLOW_GAP_ANALYSIS GAP-03).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "stories",
+    "governance_gaps",
+    "tokens_path",
+    "route_map_path",
+    "idempotency_key"
+  ],
+  "properties": {
+    "epic": {
+      "$ref": "#/definitions/Epic"
+    },
+    "epics": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "#/definitions/Epic"
+      }
+    },
+    "initiative": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Multi-epic wrapper. Required when epics[] is present.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 8
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 50
+        },
+        "epic_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^EPIC-[A-Z0-9-]+$"
+          }
+        }
+      }
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/Story"
+      }
+    },
+    "governance_gaps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GovernanceGap"
+      }
+    },
+    "tokens_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Filesystem path from ux-intake (generate-ux-pack output.tokens_path). REQUIRED \u2014 scaffold-v1.1 \u00a78.1 makes tokens.json mandatory."
+    },
+    "route_map_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "From ux-intake (generate-ux-pack output.route_map_path). REQUIRED \u2014 scaffold-v1.1 \u00a78.1 makes route-map.md mandatory; drives route<->story coverage in step 13."
+    },
+    "component_inventory_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "From ux-intake (generate-ux-pack output.component_inventory_path). Optional \u2014 not in ux-intake stage required_fields, so may be absent on a degraded UX drop."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "UUID v1-5. Matches the loose pattern the upstream BA frontmatter accepts (the workflow carries one idempotency_key across stages); same key + same inputs MUST produce the same design."
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "full",
+        "spec"
+      ],
+      "default": "full",
+      "description": "full = complete TL handoff (default). spec = single-story L4 fan-out after a master full pass."
+    },
+    "story_id": {
+      "type": "string",
+      "pattern": "^EPIC-[A-Z0-9-]+-\\d+$",
+      "description": "Required when mode=spec; the single story to emit an L4 spec for."
+    },
+    "prior_design_ref": {
+      "type": "string",
+      "description": "Optional path to a prior full-mode design output, supplied when mode=spec."
+    },
+    "tier_hint": {
+      "type": "string",
+      "enum": [
+        "T1",
+        "T2",
+        "T3"
+      ]
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "epic"
+      ],
+      "not": {
+        "required": [
+          "epics"
+        ]
+      }
+    },
+    {
+      "required": [
+        "epics",
+        "initiative"
+      ],
+      "not": {
+        "required": [
+          "epic"
+        ]
+      }
+    }
+  ],
+  "allOf": [
+    {
+      "description": "mode=spec requires story_id.",
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "spec"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "then": {
+        "required": [
+          "story_id"
+        ]
+      }
+    }
+  ],
+  "definitions": {
+    "Translations": {
+      "type": "object",
+      "description": "v1.4.0+. Optional per-object translation map keyed by ISO-639-1 language code (en, th, ...). Each language entry maps text-bearing field names from the parent object to translated strings. The renderer consults this map when emitting non-English language trees; absent keys fall back to the English source field.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "Stakeholder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "type",
+        "decision_authority"
+      ],
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "function": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "sponsor",
+            "approver",
+            "sme",
+            "affected",
+            "external",
+            "meta"
+          ]
+        },
+        "decision_authority": {
+          "type": "string"
+        },
+        "affected": {
+          "type": "boolean"
+        },
+        "authority_mode": {
+          "type": "string",
+          "enum": [
+            "rule",
+            "proposal",
+            "preference",
+            "estimate",
+            "pain"
+          ]
+        },
+        "attribution_confidence": {
+          "type": "string",
+          "enum": [
+            "high",
+            "paraphrase",
+            "anonymous",
+            "group"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "absent",
+            "handing-off",
+            "mentioned_only",
+            "scheduled"
+          ],
+          "description": "Enumeration completeness \u2014 absent-but-implied stakeholders (DPO, card-network reps, Treasury) MUST appear with status=absent + engagement_required_for. Scope-out alone does not discharge the row."
+        },
+        "engagement_required_for": {
+          "type": "string",
+          "description": "Reason this stakeholder must be engaged (e.g., 'PII inventory sign-off', 'network rep relationship for systemic portal-timeout resolution'). Required when status \u2208 {absent, mentioned_only, scheduled}."
+        }
+      }
+    },
+    "Epic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "problem_statement",
+        "why_now",
+        "success_criteria",
+        "scope",
+        "stakeholders",
+        "legal_status",
+        "inferred_tier",
+        "tier_signals"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^EPIC-[A-Z0-9-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 120
+        },
+        "problem_statement": {
+          "type": "string",
+          "minLength": 80
+        },
+        "why_now": {
+          "type": "string",
+          "minLength": 20
+        },
+        "hypothesis": {
+          "type": "string"
+        },
+        "success_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "metric",
+              "baseline",
+              "target",
+              "measurement_method"
+            ],
+            "properties": {
+              "metric": {
+                "type": "string",
+                "minLength": 5
+              },
+              "baseline": {
+                "type": "string",
+                "minLength": 1
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1
+              },
+              "measurement_method": {
+                "type": "string",
+                "minLength": 5
+              }
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "in",
+            "out_explicit",
+            "out_deferred"
+          ],
+          "properties": {
+            "in": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "out_explicit": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "out_deferred": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "stakeholders": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/definitions/Stakeholder"
+          }
+        },
+        "legal_status": {
+          "type": "string",
+          "enum": [
+            "present",
+            "scheduled",
+            "mentioned_only",
+            "absent"
+          ]
+        },
+        "inferred_tier": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ]
+        },
+        "tier_signals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "signal",
+              "weight",
+              "evidence_quote"
+            ],
+            "properties": {
+              "signal": {
+                "type": "string"
+              },
+              "weight": {
+                "type": "string"
+              },
+              "evidence_quote": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "translations": {
+          "$ref": "#/definitions/Translations"
+        }
+      }
+    },
+    "AcceptanceCriterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_name",
+        "scenario_type",
+        "given",
+        "when",
+        "then"
+      ],
+      "properties": {
+        "scenario_name": {
+          "type": "string",
+          "minLength": 8
+        },
+        "scenario_type": {
+          "type": "string",
+          "enum": [
+            "happy",
+            "error",
+            "banking_grade_audit",
+            "banking_grade_idempotency",
+            "banking_grade_tipping_off",
+            "banking_grade_reversibility",
+            "banking_grade_notification",
+            "banking_grade_authz",
+            "edge_case"
+          ]
+        },
+        "given": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "when": {
+          "type": "string",
+          "minLength": 8,
+          "description": "Single action per scenario. Multi-action When forbidden (AP-8.2)."
+        },
+        "then": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "BankingGradeRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "justification"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "applies",
+            "not_applicable",
+            "unknown_p2"
+          ]
+        },
+        "justification": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Non-empty even when status=not_applicable (AP-4.1 disable-path). Cite workflow class reason."
+        },
+        "fields_or_events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "treatment": {
+          "type": "string"
+        },
+        "compensating_action": {
+          "type": "string"
+        }
+      }
+    },
+    "Story": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "format",
+        "card",
+        "context",
+        "acceptance_criteria",
+        "banking_grade_concerns",
+        "priority",
+        "sizing",
+        "dependencies",
+        "dor_checklist"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^EPIC-[A-Z0-9-]+-\\d+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 120
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "job_story",
+            "classic_user_story"
+          ]
+        },
+        "card": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "when",
+                "i_want_to",
+                "so_i_can"
+              ],
+              "properties": {
+                "when": {
+                  "type": "string",
+                  "minLength": 8
+                },
+                "i_want_to": {
+                  "type": "string",
+                  "minLength": 8
+                },
+                "so_i_can": {
+                  "type": "string",
+                  "minLength": 12
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "as_a",
+                "i_want",
+                "so_that"
+              ],
+              "properties": {
+                "as_a": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "i_want": {
+                  "type": "string",
+                  "minLength": 8
+                },
+                "so_that": {
+                  "type": "string",
+                  "minLength": 12
+                }
+              }
+            }
+          ]
+        },
+        "context": {
+          "type": "string",
+          "minLength": 30
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/definitions/AcceptanceCriterion"
+          }
+        },
+        "banking_grade_concerns": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pii_fields",
+            "audit_events",
+            "idempotency",
+            "reversibility",
+            "authn_authz",
+            "regulatory",
+            "tipping_off"
+          ],
+          "properties": {
+            "pii_fields": {
+              "$ref": "#/definitions/BankingGradeRow"
+            },
+            "audit_events": {
+              "$ref": "#/definitions/BankingGradeRow"
+            },
+            "idempotency": {
+              "$ref": "#/definitions/BankingGradeRow"
+            },
+            "reversibility": {
+              "$ref": "#/definitions/BankingGradeRow"
+            },
+            "authn_authz": {
+              "$ref": "#/definitions/BankingGradeRow"
+            },
+            "regulatory": {
+              "$ref": "#/definitions/BankingGradeRow"
+            },
+            "tipping_off": {
+              "$ref": "#/definitions/BankingGradeRow"
+            }
+          }
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "Must",
+            "Should",
+            "Could",
+            "Won't"
+          ]
+        },
+        "sizing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "story_points",
+            "complexity"
+          ],
+          "properties": {
+            "story_points": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "enum": [
+                    1,
+                    2,
+                    3,
+                    5,
+                    8,
+                    13
+                  ]
+                },
+                {
+                  "type": "string",
+                  "const": "TBD_by_TL"
+                }
+              ]
+            },
+            "complexity": {
+              "type": "string",
+              "enum": [
+                "trivial",
+                "low",
+                "medium",
+                "high",
+                "unknown"
+              ]
+            },
+            "split_required": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "depends_on",
+            "blocks"
+          ],
+          "properties": {
+            "depends_on": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "dor_checklist": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format_clear",
+            "happy_path_present",
+            "error_path_present",
+            "banking_grade_evaluated",
+            "priority_set",
+            "dependencies_identified",
+            "sizing_done",
+            "no_blocking_ambiguities"
+          ],
+          "properties": {
+            "format_clear": {
+              "type": "boolean"
+            },
+            "happy_path_present": {
+              "type": "boolean"
+            },
+            "error_path_present": {
+              "type": "boolean"
+            },
+            "banking_grade_evaluated": {
+              "type": "boolean"
+            },
+            "priority_set": {
+              "type": "boolean"
+            },
+            "dependencies_identified": {
+              "type": "boolean"
+            },
+            "sizing_done": {
+              "type": "boolean"
+            },
+            "no_blocking_ambiguities": {
+              "type": "boolean"
+            }
+          }
+        },
+        "translations": {
+          "$ref": "#/definitions/Translations"
+        }
+      },
+      "allOf": [
+        {
+          "description": "FM-16 (v1.2.2+): if banking_grade_concerns.idempotency.status == 'applies', acceptance_criteria[] MUST contain at least one entry with scenario_type == 'banking_grade_idempotency'. Enforces AP-4.3 auto-emit programmatically.",
+          "if": {
+            "properties": {
+              "banking_grade_concerns": {
+                "properties": {
+                  "idempotency": {
+                    "properties": {
+                      "status": {
+                        "const": "applies"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  }
+                },
+                "required": [
+                  "idempotency"
+                ]
+              }
+            },
+            "required": [
+              "banking_grade_concerns"
+            ]
+          },
+          "then": {
+            "properties": {
+              "acceptance_criteria": {
+                "type": "array",
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "scenario_type": {
+                      "const": "banking_grade_idempotency"
+                    }
+                  },
+                  "required": [
+                    "scenario_type"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "acceptance_criteria"
+            ]
+          }
+        }
+      ]
+    },
+    "GovernanceGap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "severity",
+        "evidence",
+        "required_action",
+        "blocks_tl_handoff"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "legal_absent_on_regulatory",
+            "tipping_off_violation",
+            "pii_inventory_missing",
+            "regulatory_citation_unresolved",
+            "dual_approval_named_owner_missing",
+            "compensating_action_missing",
+            "retention_policy_unstated"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "P1",
+            "P2"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "required_action": {
+          "type": "string",
+          "minLength": 10
+        },
+        "blocks_tl_handoff": {
+          "type": "boolean"
+        },
+        "translations": {
+          "$ref": "#/definitions/Translations"
+        }
+      }
+    }
+  }
+}

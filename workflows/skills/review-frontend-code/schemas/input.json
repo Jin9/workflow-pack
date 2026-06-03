@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/review-frontend-code/schemas/input.json",
+  "title": "review-frontend-code input",
+  "description": "Input contract for the review-frontend-code Review stage. Consumes the design plus the entire output of an upstream implement-frontend-feature stage plus the file contents the workflow fetched. Validated by the workflow engine before invocation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "design_document",
+    "target_feature_path",
+    "implement_stage_output",
+    "code_under_review",
+    "tests_under_review",
+    "idempotency_key"
+  ],
+  "properties": {
+    "design_document": {
+      "oneOf": [
+        {"type": "string", "minLength": 200},
+        {"type": "object"}
+      ],
+      "description": "The same approved UI design the upstream Generate stage consumed. Used at step 2 to extract the truth against which claims are checked."
+    },
+    "target_feature_path": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_./\\-\\[\\]]+$",
+      "minLength": 3,
+      "maxLength": 256,
+      "description": "Same path the Generate stage targeted."
+    },
+    "implement_stage_output": {
+      "type": "object",
+      "description": "Verbatim output payload of implement-frontend-feature for this feature. Structure validated separately against that skill's schemas/output.json.",
+      "additionalProperties": true,
+      "required": [
+        "files_generated",
+        "tests_generated",
+        "a11y_compliance",
+        "security_review",
+        "state_ownership",
+        "bundle_impact_estimate_kb",
+        "compensating_actions",
+        "audit_events_emitted",
+        "uncertainty_flags",
+        "decision_metadata"
+      ]
+    },
+    "code_under_review": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Production files emitted by Generate, with the declared pillar. Reviewer needs the pillar to apply Primitive / Feature / Page rules.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "content", "component_pillar"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "content": {"type": "string"},
+          "component_pillar": {
+            "type": "string",
+            "enum": ["Page", "Feature", "Primitive", "Hook", "Type", "Util"]
+          }
+        }
+      }
+    },
+    "tests_under_review": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Companion tests emitted by Generate.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "content", "test_type"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "content": {"type": "string"},
+          "test_type": {
+            "type": "string",
+            "enum": ["unit", "component", "integration", "e2e", "visual", "a11y"]
+          }
+        }
+      }
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "UUID v4 carried from the workflow. Same input MUST produce the same verdict bytes."
+    },
+    "convention_overrides": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional. Same shape as the implement stage's overrides — passed to the reviewer so a divergence from defaults is not mis-flagged."
+    },
+    "severity_floor": {
+      "type": "string",
+      "enum": ["P1", "P2", "P3"],
+      "default": "P3",
+      "description": "Findings below this severity are dropped from output. Default P3 (emit everything). Note: P1 in a11y / token storage / PII still routes human-queue regardless of floor."
+    }
+  }
+}

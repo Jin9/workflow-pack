@@ -1,0 +1,46 @@
+{
+  "verdict": "approve",
+  "loop_back_target_stage": null,
+  "findings": [],
+  "claims_verified": [
+    "a11y_compliance.wcag_level AA — semantic <section>/<h2>/<dl>, aria-pressed on reveal, role=status + aria-live for announcement, no <div onClick>, no tabindex>0",
+    "a11y_compliance.axe_clean — jest-axe assertion present in UserProfileCard.test.tsx 'is axe-clean'",
+    "a11y_compliance.focus_management_implemented — revealButtonRef.current?.focus() after reveal in UserProfileCard.tsx",
+    "security_review.xss_surfaces empty — no dangerouslySetInnerHTML in any reviewed file",
+    "security_review.token_storage_strategy n/a — no localStorage/sessionStorage writes; display-only feature",
+    "security_review.pii_fields_handled — MaskedField for account_number/email, RedactedField for government_id; display_name treated as 'none' (public)",
+    "audit_events_emitted ['pii.government_id.viewed'] — track({event_type: 'pii.government_id.viewed', ...}) called inside onReveal in UserProfileCard.tsx",
+    "compensating_actions [] — no mutation in the feature, empty array consistent",
+    "state_ownership: profile_data=server (props from Feature parent), is_government_id_revealed=local (useState)",
+    "decision_metadata.pillar_choices: UserProfileCard.tsx as Primitive — no fetching imports present; UserProfileCard.types.ts as Type — only type declarations, no runtime values",
+    "decision_metadata.repo_conventions_followed: Pillar separation honored (no Feature/Page import), getByRole/getByLabel queries used, codegen narrowing in *.types.ts, MaskedField/RedactedField reused, audit-on-view emits pii.<field>.viewed"
+  ],
+  "claims_unverified": [],
+  "a11y_verdict": {
+    "wcag_level_verified": "AA",
+    "axe_run_evidence_present": true,
+    "role_label_queries_present": true,
+    "focus_management_evident": true
+  },
+  "security_verdict": {
+    "xss_mitigations_verified": true,
+    "token_storage_verified": true,
+    "pii_helpers_verified": true,
+    "csrf_protections_verified": true,
+    "dependency_additions_detected": []
+  },
+  "audit_metadata": {
+    "rules_evaluated": 26,
+    "files_scanned": 3,
+    "lines_scanned": 92,
+    "claims_checked": 11,
+    "review_duration_inferred_seconds": 60
+  },
+  "uncertainty_flags": [
+    {
+      "kind": "out_of_scope_observation",
+      "location": "UserProfileCard.test.tsx — 'renders masked PII by default'",
+      "note": "Test uses synthetic PII (Synthetic Person / 1234567890 / SYN-0000-0000) which is correct. Consider extracting fixture to mocks/fixtures/profile.ts so other tests can reuse — P3 style note, not blocking approve."
+    }
+  ]
+}

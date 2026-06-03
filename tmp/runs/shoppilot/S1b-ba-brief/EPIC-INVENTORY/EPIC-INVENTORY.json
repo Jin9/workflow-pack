@@ -1,0 +1,84 @@
+{
+  "id": "EPIC-INVENTORY",
+  "title": "Stock reservation and audit",
+  "problem_statement": "Stock must never oversell or go negative under concurrent checkouts, reservations must release on failure/timeout/cancel, and every admin stock change must be audited with a reason and before/after values.",
+  "why_now": "Inventory integrity underpins checkout correctness and the no-oversell reliability promise.",
+  "hypothesis": "Reserve-on-confirm with a TTL release plus an audited adjustment log gives correct stock under races without holding inventory at add-to-cart.",
+  "success_criteria": [
+    {
+      "metric": "negative stock occurrences",
+      "baseline": "n/a",
+      "target": "0",
+      "measurement_method": "concurrency / race tests"
+    },
+    {
+      "metric": "last-item race double-success",
+      "baseline": "n/a",
+      "target": "0 (exactly one winner)",
+      "measurement_method": "race-path integration test"
+    }
+  ],
+  "scope": {
+    "in": [
+      "available/reserved/sold per SKU",
+      "reserve on confirm",
+      "TTL auto-release",
+      "convert to sold on payment",
+      "release on failure/timeout/cancel",
+      "admin adjust with reason",
+      "no reduce below reserved",
+      "audit on every change"
+    ],
+    "out_explicit": [
+      "multi-warehouse",
+      "inter-warehouse transfer"
+    ],
+    "out_deferred": [
+      "automated low-stock reordering"
+    ]
+  },
+  "stakeholders": [
+    {
+      "role": "Operations Lead",
+      "name_or_team": "Khun Mali",
+      "raci": "R"
+    },
+    {
+      "role": "Merchant Owner",
+      "name_or_team": "Khun Wirat",
+      "raci": "A"
+    }
+  ],
+  "legal_status": "present",
+  "inferred_tier": "T2",
+  "tier_signals": [
+    {
+      "signal": "concurrency-safety and audit, no PII",
+      "weight": "med",
+      "evidence_quote": "Stock may never go negative - concurrent last-item checkouts must resolve to exactly one winner"
+    }
+  ],
+  "story_refs": [
+    {
+      "id": "STORY-INVENTORY-01",
+      "slug": "stock-reservation-lifecycle-last-item-race",
+      "file": "STORY-INVENTORY-01-stock-reservation-lifecycle-last-item-race.json",
+      "title": "Stock reservation lifecycle and last-item race",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-INVENTORY-02",
+      "slug": "admin-adjusts-stock-audit-trail",
+      "file": "STORY-INVENTORY-02-admin-adjusts-stock-audit-trail.json",
+      "title": "Admin adjusts stock with an audit trail",
+      "priority": "Should"
+    }
+  ],
+  "change_log": [
+    {
+      "date": "2026-06-01",
+      "author": "eliciting-banking-brief-v1.4.1",
+      "change": "Created from requirement shoppilot-mvp"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cognitive-os/skills/generate-ux-pack/output.schema.json",
+  "title": "generate-ux-pack output",
+  "description": "Output of the generate-ux-pack skill. Discriminated by output_type: ux_pack (clean run), partial_ux_pack (some artifacts missing or TBD), blocked_ux_pack (preconditions not met), failure_shape (runtime error).",
+  "oneOf": [
+    { "$ref": "#/$defs/ux_pack" },
+    { "$ref": "#/$defs/partial_ux_pack" },
+    { "$ref": "#/$defs/blocked_ux_pack" },
+    { "$ref": "#/$defs/failure_shape" }
+  ],
+  "$defs": {
+    "ux_pack": {
+      "type": "object",
+      "required": [
+        "output_type", "pack_dir", "maturity_level", "artifacts_present",
+        "tokens_path", "route_map_path", "component_inventory_path",
+        "microcopy_path", "screen_states_path", "form_validation_path",
+        "responsive_spec_path", "accessibility_spec_path",
+        "flows_dir", "screens_dir", "audit_id", "processing_metadata"
+      ],
+      "properties": {
+        "output_type": { "const": "ux_pack" },
+        "pack_dir": { "type": "string", "description": "Absolute path to the emitted ux-design-{idem8}/ directory." },
+        "maturity_level": { "type": "integer", "enum": [0, 1, 2, 3], "description": "v1.1 §4 audit triage: 0=skeleton, 1=basic, 2=draft, 3=ready-for-implementation." },
+        "status": { "type": "string", "enum": ["draft", "ready-for-audit", "ready-for-implementation"] },
+        "artifacts_present": { "type": "array", "items": { "type": "string" }, "description": "List of emitted artifact filenames (target 9/9)." },
+        "tokens_path": { "type": "string" },
+        "route_map_path": { "type": "string" },
+        "component_inventory_path": { "type": "string" },
+        "microcopy_path": { "type": "string" },
+        "screen_states_path": { "type": "string" },
+        "form_validation_path": { "type": "string" },
+        "responsive_spec_path": { "type": "string" },
+        "accessibility_spec_path": { "type": "string" },
+        "flows_dir": { "type": "string" },
+        "screens_dir": { "type": "string" },
+        "p1_findings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/finding" },
+          "description": "Blocks ready-for-implementation. Examples: WCAG AA contrast failure, Thai microcopy TBD, missing Figma URL."
+        },
+        "p2_findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "ba_stories_without_ux_coverage": { "type": "array", "items": { "type": "string" } },
+        "ux_routes_without_ba_story": { "type": "array", "items": { "type": "string" } },
+        "audit_id": { "type": "string", "format": "uuid" },
+        "processing_metadata": { "$ref": "#/$defs/processing_metadata" }
+      }
+    },
+    "partial_ux_pack": {
+      "type": "object",
+      "required": ["output_type", "pack_dir", "artifacts_present", "artifacts_missing", "reason", "audit_id"],
+      "properties": {
+        "output_type": { "const": "partial_ux_pack" },
+        "pack_dir": { "type": "string" },
+        "artifacts_present": { "type": "array", "items": { "type": "string" } },
+        "artifacts_missing": { "type": "array", "items": { "type": "string" } },
+        "reason": { "type": "string" },
+        "audit_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "blocked_ux_pack": {
+      "type": "object",
+      "required": ["output_type", "blockers", "audit_id"],
+      "properties": {
+        "output_type": { "const": "blocked_ux_pack" },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code", "description"],
+            "properties": {
+              "code": { "type": "string", "description": "Stable identifier (e.g., BLOCK-NO-BA-BRIEF, BLOCK-NO-FRONTEND-SPEC)." },
+              "description": { "type": "string" },
+              "remediation": { "type": "string" }
+            }
+          }
+        },
+        "audit_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "failure_shape": {
+      "type": "object",
+      "required": ["output_type", "error_code", "error_message", "audit_id"],
+      "properties": {
+        "output_type": { "const": "failure_shape" },
+        "error_code": { "type": "string" },
+        "error_message": { "type": "string" },
+        "stack_excerpt": { "type": "string" },
+        "audit_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["severity", "code", "description"],
+      "properties": {
+        "severity": { "type": "string", "enum": ["P1", "P2", "P3"] },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "affected_artifact": { "type": "string" },
+        "remediation": { "type": "string" },
+        "owner": { "type": "string", "description": "Who should resolve (UX team, PO, frontend lead, etc.)" }
+      }
+    },
+    "processing_metadata": {
+      "type": "object",
+      "required": ["skill_name", "skill_version", "started_at", "completed_at", "tier"],
+      "properties": {
+        "skill_name": { "const": "generate-ux-pack" },
+        "skill_version": { "type": "string" },
+        "started_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" },
+        "tier": { "type": "string", "enum": ["T1", "T2", "T3"] },
+        "idempotency_key": { "type": "string", "format": "uuid" }
+      }
+    }
+  }
+}

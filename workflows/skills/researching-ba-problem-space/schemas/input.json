@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "researching-ba-problem-space input",
+  "type": "object",
+  "required": ["initiative", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "initiative": { "type": "string", "description": "Raw problem / opportunity statement (no real PII)." },
+    "context": { "type": ["string", "null"], "description": "Optional market / user / regulatory context." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T1" },
+    "idempotency_key": { "type": "string" }
+  }
+}

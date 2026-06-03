@@ -1,0 +1,111 @@
+// Template: service_<action>_test.go
+// Replace <DOMAIN>, <action>, <Dep>, <dep>, <Method>, <Model>, <Result>, and field references.
+// File path: app/<DOMAIN>/service_<action>_test.go
+//
+// Internal package (NOT <DOMAIN>_test): service helpers are unexported *handler methods.
+// Cover success + each sentinel error (errors.Is) + each access `if err != nil`. See testing-pattern.md.
+
+package <DOMAIN>
+
+import (
+	"context"
+	"testing"
+
+	access_mocks "gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access/mocks"
+
+	"gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func Test_<action>(t *testing.T) {
+	validID := uuid.New()
+
+	type mockArgs struct {
+		<dep>Storage *access_mocks.<Dep>StorageMock
+	}
+
+	type args struct {
+		ctx context.Context
+		id  uuid.UUID
+	}
+
+	type want struct {
+		result <Result>
+		err    error // a sentinel to assert with errors.Is; nil on the success path
+	}
+
+	tests := []struct {
+		name    string
+		prepare func(m mockArgs, ctx context.Context)
+		args    args
+		want    want
+	}{
+		{
+			name: "success",
+			prepare: func(m mockArgs, ctx context.Context) {
+				m.<dep>Storage.
+					EXPECT().
+					<Method>(ctx, mock.Anything).
+					Return(access.<Model>{<ModelIDField>: validID.String()}, nil)
+			},
+			args: args{id: validID},
+			want: want{
+				result: <Result>{ /* expected value */ },
+				err:    nil,
+			},
+		},
+		{
+			name: "fail, sentinel error from business rule",
+			prepare: func(m mockArgs, ctx context.Context) {
+				m.<dep>Storage.
+					EXPECT().
+					<Method>(ctx, mock.Anything).
+					Return(access.<Model>{}, access.Err<Something>)
+			},
+			args: args{id: validID},
+			want: want{err: Err<SentinelTheHelperReturns>},
+		},
+		{
+			name: "fail, access error wrapped",
+			prepare: func(m mockArgs, ctx context.Context) {
+				m.<dep>Storage.
+					EXPECT().
+					<Method>(ctx, mock.Anything).
+					Return(access.<Model>{}, assert.AnError)
+			},
+			args: args{id: validID},
+			want: want{err: assert.AnError},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := require.New(t)
+
+			m := mockArgs{
+				<dep>Storage: access_mocks.New<Dep>StorageMock(t),
+			}
+
+			// IMPORTANT: assign ctx BEFORE calling prepare so mock matchers see it.
+			tt.args.ctx = context.Background()
+			tt.prepare(m, tt.args.ctx)
+
+			h := NewHandler(HandlerConfig{
+				<Dep>Storage: m.<dep>Storage,
+			})
+
+			got, err := h.<action>(tt.args.ctx, tt.args.id)
+
+			if tt.want.err != nil {
+				r.ErrorIs(err, tt.want.err)
+				return
+			}
+			r.NoError(err)
+			r.Equal(tt.want.result, got)
+		})
+	}
+}

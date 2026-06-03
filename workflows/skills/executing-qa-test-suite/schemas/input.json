@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "executing-qa-test-suite input",
+  "type": "object",
+  "required": ["test_roster", "target_env", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "test_roster": { "type": "object", "description": "The planned QA suite (from planning-banking-tests qa-plan.json)." },
+    "target_env": { "type": "string", "description": "Reachable running system / sandbox to execute against." },
+    "signoff_criteria": { "type": ["object", "null"], "description": "Pass conditions the run is judged against." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T1" },
+    "idempotency_key": { "type": "string" }
+  }
+}

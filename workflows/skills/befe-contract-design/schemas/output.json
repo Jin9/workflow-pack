@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "befe-contract-design output",
+  "type": "object",
+  "required": ["contract_spec", "fe_state_binding", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_spec": { "type": "string", "description": "Reference or inline OpenAPI/AsyncAPI single source of truth." },
+    "client_types": { "type": ["string", "null"], "description": "Generated client type bindings / how they are generated." },
+    "mock_plan": { "type": ["string", "null"], "description": "Consumer mock/stub enabling parallel FE dev before BE exists." },
+    "list_conventions": { "type": ["string", "null"], "description": "Pagination + list shape (cursor/keyset, has_more/next_cursor)." },
+    "bff": { "type": ["string", "null"], "description": "BFF-per-client shaping, if client classes differ." },
+    "fe_state_binding": { "type": "string", "description": "Loading/empty/error/optimistic states per operation." },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

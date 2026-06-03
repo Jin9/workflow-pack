@@ -1,0 +1,39 @@
+{
+  "task_id": "REQ-<slug>",
+  "audit_id": "<audit_id:UUID>",
+  "stage": "S1",
+  "state": "<ready-for-tl|needs-clarification>",
+  "confidence": "<high|medium|low>",
+  "produced_by": "researching-ba-problem-space ^1.0.0 (discovery) + eliciting-banking-brief ^1.5.0 (brief) + deterministic render",
+  "owner": "BA lead",
+  "schemaVersion": "1.1",
+  "discovery_file": "../S1a-ba-discovery/discovery.json",
+  "brief_file": "brief.json",
+  "viewer_file": "ba-research-viewer.html",
+  "layers": {
+    "discovery": { "file": "../S1a-ba-discovery/discovery.json", "skill": "researching-ba-problem-space ^1.0.0", "stage_type": "analyze", "recommendation": "<proceed>", "audit_id": "<audit_id:UUID>" },
+    "brief": { "file": "brief.json", "skill": "eliciting-banking-brief ^1.5.0", "status": "<ready-for-tl>", "audit_id": "<audit_id:UUID>" },
+    "epics": { "count": 1, "ref": "epics[]" },
+    "stories": { "count": 2, "ref": "story_files[]" }
+  },
+  "epics": [
+    {
+      "id": "EPIC-<DOMAIN>",
+      "slug": "<domain-slug>",
+      "file": "EPIC-<DOMAIN>/EPIC-<DOMAIN>.json",
+      "title": "<epic title>",
+      "story_ids": ["STORY-<DOMAIN>-01", "STORY-<DOMAIN>-02"]
+    }
+  ],
+  "story_files": [
+    { "id": "STORY-<DOMAIN>-01", "epic_id": "EPIC-<DOMAIN>", "slug": "<story-slug>", "file": "EPIC-<DOMAIN>/STORY-<DOMAIN>-01-<story-slug>.json", "title": "<story title>", "priority": "<Must|Should|Could|Won't>" },
+    { "id": "STORY-<DOMAIN>-02", "epic_id": "EPIC-<DOMAIN>", "slug": "<story-slug>", "file": "EPIC-<DOMAIN>/STORY-<DOMAIN>-02-<story-slug>.json", "title": "<story title>", "priority": "<Must|Should|Could|Won't>" }
+  ],
+  "governance_gaps": [
+    { "id": "GAP-1", "class": "<Legal-absent|tipping-off|missing-PII-inventory|unresolved-regulator-citation>", "severity": "<P1|P2>", "routes_to": "<named human>" }
+  ],
+  "open_questions": [
+    { "id": "OQ-1", "severity": "<P1|P2|P3>", "question": "<the open question, >=12 chars>", "why_matters": "<why it matters, >=20 chars>", "suggested_resolver": "<role>", "related_story_ids": ["STORY-<DOMAIN>-01"] }
+  ],
+  "count_check": { "epics": 1, "stories": 2, "story_files": 2, "index_rows": 2, "discovery_present": true, "brief_present": true, "holds": true }
+}

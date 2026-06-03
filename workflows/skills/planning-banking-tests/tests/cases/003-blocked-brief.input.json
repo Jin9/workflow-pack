@@ -1,0 +1,6 @@
+{
+  "_comment": "Verifies TM-03 refusal pathway: BA brief has blocks_tl_handoff=true. The holdout already satisfies this condition (blocks_tl_handoff=true).",
+  "ba_brief_ref": "../../e-commerce-v5/output-e5f8b9c2/",
+  "idempotency_key": "33333333-3333-4333-8333-333333333333",
+  "audit_mode": "enhanced"
+}

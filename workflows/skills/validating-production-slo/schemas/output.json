@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "validating-production-slo output",
+  "type": "object",
+  "required": ["verdict", "grade", "per_slo", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["promote", "hold", "rollback"] },
+    "grade": { "type": "string", "enum": ["Pass", "Marginal", "Fail"] },
+    "per_slo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "judgement"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "target": { "type": ["number", "null"] },
+          "observed": { "type": ["number", "null"] },
+          "burn_rate": { "type": ["number", "null"] },
+          "judgement": { "type": "string", "enum": ["within_budget", "approaching", "breaching"] }
+        }
+      }
+    },
+    "window": { "type": ["string", "null"] },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

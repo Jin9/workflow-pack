@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "befe-contract-design input",
+  "type": "object",
+  "required": ["stories", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "stories": { "type": "array", "items": { "type": "string" }, "description": "Behavior the contract must serve (epic + stories)." },
+    "api_contracts": { "type": ["object", "null"], "description": "Backend endpoints from designing-tech-lead-handoff / api-contract-design to reuse." },
+    "client_classes": { "type": ["array", "null"], "items": { "type": "string", "enum": ["web", "mobile", "partner"] }, "description": "Client classes for BFF shaping." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

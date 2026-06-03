@@ -1,0 +1,795 @@
+{
+  "tier": {
+    "T1": "T1",
+    "T2": "T2",
+    "T3": "T3"
+  },
+  "stages": [
+    {
+      "id": "S0",
+      "name": "Intake",
+      "skill": "orchestrator + Iteration-Planner",
+      "owner": "Delivery Ops",
+      "model": "Opus 4.8 / Gemini 3.1 Pro",
+      "tier": "T1",
+      "gate": "auto",
+      "input": "raw_request · requester · idempotency_key",
+      "output": "normalized intake + run plan",
+      "contract": "pipeline-input + run-plan",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Run plan",
+      "caps": "—",
+      "schema": "pipeline-input (raw_request, requester, idempotency_key)",
+      "fail": "GAP — unowned stage (OI-003)",
+      "deferred": true,
+      "tip": "Normalizes the raw ask and produces an approved run plan. Currently <b>deferred / unowned (OI-003)</b>."
+    },
+    {
+      "id": "S1a",
+      "name": "BA Discovery",
+      "skill": "researching-ba-problem-space ^1.0.0",
+      "owner": "BA lead",
+      "model": "Opus 4.8",
+      "tier": "T1",
+      "gate": "async",
+      "input": "raw_request",
+      "output": "discovery (problem framing · 4 product risks · regulatory regimes · recommendation)",
+      "contract": "discovery.json → [human gate on recommendation: proceed | needs-work | do-not-build]",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Discovery review doc (problem-space layer)",
+      "caps": "human-queue (ba-discovery-review) · max_retries 0",
+      "schema": "discovery.json",
+      "fail": "regulatory hard-blocker → human gate; recommendation ≠ proceed → blocks S1b",
+      "tip": "<b>S1a · Problem-space extraction (YAML node <code>s1-discovery</code>).</b> <b>researching-ba-problem-space</b> drafts a discovery artifact: problem framing · opportunities · the four product risks · regulatory regimes · a <b>proceed / needs-work / do-not-build</b> recommendation. <b>AI drafts; a named human decides</b> on that recommendation (the supervision gate). Only <b>proceed</b> releases S1b — <code>needs-work</code> loops back, <code>do-not-build</code> stops the pipeline. This gate is the irreversible-decision boundary, surfaced as its own card."
+    },
+    {
+      "id": "S1b",
+      "name": "BA Brief",
+      "skill": "eliciting-banking-brief ^1.5.0",
+      "owner": "BA lead",
+      "model": "Opus 4.8",
+      "tier": "T1",
+      "gate": "async",
+      "input": "discovery + raw_request",
+      "output": "epics (EPIC-*) · stories (STORY-*) · governance_gaps",
+      "contract": "ba-brief.json INDEX → EPIC-* files (story refs) → STORY-* files",
+      "json": "manifest",
+      "verify": true,
+      "reviewDoc": "Four-layer pack · one unified HTML viewer",
+      "caps": "retry 2 → human-queue (delivery-failures)",
+      "schema": "ba-brief.json (manifest → epic refs → STORY-* files)",
+      "fail": "brief: transient→retry; governance P1→human (never auto-resolve)",
+      "tip": "<b>S1b · Epics & stories (YAML node <code>ba-research</code>; id preserved so downstream refs are untouched).</b> On <b>proceed</b>, <b>eliciting-banking-brief</b> takes the discovery (advisory) and splits the requirement into <b>one EPIC-* file per epic</b>, each referencing its <b>STORY-* story files</b> (one per story, under the epic; <b>nothing inlined</b>). Machine handoff is a <b>4-layer ref chain</b>: INDEX manifest → discovery + brief → epic files (story refs) → story files (load only what you need). Human-view = a single self-contained offline <b>HTML viewer</b> rendering all four layers (discovery · brief · epics · stories). <b>Governance/P1 blockers escalate to a human</b>, never auto-resolved."
+    },
+    {
+      "id": "S1.5",
+      "name": "UX Intake",
+      "skill": "generate-ux-pack ^0.1.0",
+      "owner": "Tech Lead",
+      "model": "Opus 4.8",
+      "tier": "T2",
+      "gate": "async",
+      "input": "epic · stories",
+      "output": "tokens · route_map · maturity",
+      "contract": "ux-intake.json (+ pack files)",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "UX pack maturity report",
+      "caps": "retry 1 → human-queue (ux-intake-pending)",
+      "schema": "ux-intake.json",
+      "fail": "transient→retry; else human-queue",
+      "tip": "Produces design tokens, route map and a maturity level for the UI work."
+    },
+    {
+      "id": "S2",
+      "name": "TL Design",
+      "skill": "designing-tech-lead-handoff ^0.1.0",
+      "owner": "Tech Lead",
+      "model": "Opus 4.8 / GPT-5.5",
+      "tier": "T1",
+      "gate": "sync",
+      "input": "epic · stories · gaps · ux",
+      "output": "component_map · api_contracts",
+      "contract": "tl-design.json (+ ADR docs)",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "TL Design doc + ADRs",
+      "caps": "no retry → human-queue (tl-design-pending)",
+      "schema": "tl-design.json",
+      "fail": "no auto-retry — design ripples to N components, so a human owns it",
+      "tip": "Architecture + API contracts + component map. <b>T1: L3 sync named approval</b> — TL decisions ripple to every downstream component."
+    },
+    {
+      "id": "S2.5",
+      "name": "Plan-Review gate",
+      "skill": "Plan-Reviewer (adversarial red-team)",
+      "owner": "Tech Lead",
+      "model": "GPT-5.5 / Opus 4.8",
+      "tier": "T1",
+      "gate": "gate",
+      "input": "BA + TL outputs",
+      "output": "pass / reroute / HardFail + findings",
+      "contract": "plan-review.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Plan-review findings",
+      "caps": "cap 1 per diagnosis → HardFail",
+      "schema": "plan-review.json",
+      "fail": "reroute high to BA/TL; cap exceeded → HardFail (no fan-out)",
+      "tip": "Red-teams the BA+TL plan <b>before</b> the expensive fan-out. Cheap to reverse, but high blast radius if a bad plan fans out — so it gates. Human reviews on HardFail."
+    },
+    {
+      "id": "S3a/3b",
+      "name": "Contracts (BE/FE)",
+      "skill": "dev-squad",
+      "owner": "dev-squad",
+      "model": "GPT-5.5 / Opus 4.8",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "api_contracts",
+      "output": "API paths · events · request/response (typed BE/FE contracts)",
+      "contract": "OpenAPI / typed JSON",
+      "json": "full",
+      "verify": false,
+      "reviewDoc": "",
+      "caps": "—",
+      "schema": "(deferred)",
+      "fail": "GAP — unowned stage (OI-003)",
+      "deferred": true,
+      "tip": "Splits contracts into typed backend/frontend boundaries. Currently <b>deferred (OI-003)</b>."
+    },
+    {
+      "id": "S4a",
+      "name": "Backend Impl",
+      "skill": "implement-backend-feature ^1.0.0",
+      "owner": "dev-squad",
+      "model": "Sonnet 4.6 → Opus 4.8",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "api_contracts · component_map",
+      "output": "go_files · test_files",
+      "contract": "backend-artifacts.json + Go code",
+      "json": "manifest",
+      "verify": false,
+      "reviewDoc": "",
+      "caps": "retry 2 → backend-implement-failures",
+      "schema": "backend-artifacts.json",
+      "fail": "transient→retry; runs in sandbox (ALLOW: tests-in-sandbox)",
+      "tip": "Generates Go service code + tests <b>in a sandbox</b>. Reversible — auto-gated. Output is code referenced by a JSON manifest."
+    },
+    {
+      "id": "S4a-r",
+      "name": "Backend Review",
+      "skill": "review-backend-code ^1.0.0",
+      "owner": "dev-squad",
+      "model": "Opus 4.8",
+      "tier": "T2",
+      "gate": "async",
+      "input": "go_files · contracts",
+      "output": "verdict · findings",
+      "contract": "backend-review.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Backend review report",
+      "caps": "loop_back ↔ Dev, max_loops 2",
+      "schema": "backend-review.json",
+      "fail": "high/medium route back to Dev (cap 2); low → ADVISORY",
+      "tip": "Severity-graded review. <b>An agent never approves its own code</b> — review identity is separate from impl identity; human async-confirms the verdict."
+    },
+    {
+      "id": "S4b",
+      "name": "Frontend Impl",
+      "skill": "implement-frontend-feature ^1.0.0",
+      "owner": "dev-squad",
+      "model": "Opus 4.8",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "api_contracts · ux pack",
+      "output": "tsx_files · test_files",
+      "contract": "frontend-artifacts.json + TSX code",
+      "json": "manifest",
+      "verify": false,
+      "reviewDoc": "",
+      "caps": "retry 2 → frontend-implement-failures",
+      "schema": "frontend-artifacts.json",
+      "fail": "transient→retry; sandboxed",
+      "tip": "Generates Next.js / TSX code + tests in a sandbox. Output is code referenced by a JSON manifest."
+    },
+    {
+      "id": "S4b-r",
+      "name": "Frontend Review",
+      "skill": "review-frontend-code ^1.0.0",
+      "owner": "dev-squad",
+      "model": "Opus 4.8",
+      "tier": "T2",
+      "gate": "async",
+      "input": "tsx_files · contracts",
+      "output": "verdict · findings",
+      "contract": "frontend-review.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Frontend review report",
+      "caps": "loop_back ↔ Dev, max_loops 2",
+      "schema": "frontend-review.json",
+      "fail": "high/medium route back to Dev (cap 2); low → ADVISORY",
+      "tip": "Quality + security review of the UI; routes findings by severity; human async-confirms the verdict."
+    },
+    {
+      "id": "S4c",
+      "name": "QA Test Design",
+      "skill": "planning-banking-tests ^1.0.0",
+      "owner": "qa-squad",
+      "model": "GPT-5.5 / Opus 4.8",
+      "tier": "T2",
+      "gate": "sync",
+      "input": "epic · stories · review verdicts",
+      "output": "test_roster · signoff_criteria",
+      "contract": "qa-plan.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Test plan & sign-off criteria",
+      "caps": "retry 2 → human-queue",
+      "schema": "qa-plan.json",
+      "fail": "L3 sync on conditional-go; else retry→human-queue",
+      "tip": "Maps business logic to a test roster + sign-off criteria. <b>Conditional-go → L3 sync named approval.</b>"
+    },
+    {
+      "id": "S5",
+      "name": "QA Validation",
+      "skill": "qa-squad (execute)",
+      "owner": "qa-squad",
+      "model": "Opus 4.8 / Gemini 3.1 Pro",
+      "tier": "T1",
+      "gate": "sync",
+      "input": "test_roster",
+      "output": "pass/fail evidence",
+      "contract": "qa-evidence (pass/fail)",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "QA evidence report",
+      "caps": "—",
+      "schema": "(deferred)",
+      "fail": "GAP — execution node missing (OI-003 / GAP-05)",
+      "deferred": true,
+      "tip": "Executes the test roster and produces pass/fail evidence. Currently <b>deferred — only test design exists, not execution</b>."
+    },
+    {
+      "id": "S6",
+      "name": "Deploy",
+      "skill": "handoff-to-deploy ^0.1.0 → release",
+      "owner": "Release Manager",
+      "model": "Gemini 3.1 Pro",
+      "tier": "T1",
+      "gate": "sync",
+      "input": "signoff_criteria",
+      "output": "receipt_id + LIVE RELEASE",
+      "contract": "handoff-receipt.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Release runbook + KNOWN_ISSUES + sign-off packet",
+      "caps": "no retry; compensate via handoff-revoke (600s)",
+      "schema": "handoff-receipt.json",
+      "fail": "IRREVERSIBLE — mandatory sync named approval; skill missing (OI-002)",
+      "deferred": true,
+      "tip": "<b>IRREVERSIBLE / control-plane.</b> Requires <b>synchronous named-human approval regardless of agent confidence</b>. Skill + approver are a GAP (OI-002). Credentials must be short-lived OIDC tokens."
+    },
+    {
+      "id": "S7",
+      "name": "Prod Validation",
+      "skill": "ops + observability",
+      "owner": "On-call / Release Mgr",
+      "model": "GPT-5.5 / Gemini 3.1 Pro",
+      "tier": "T2",
+      "gate": "sync",
+      "input": "live release",
+      "output": "smoke/SLO verdict + rollback decision",
+      "contract": "smoke/SLO metrics + rollback record",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Smoke/SLO report + rollback decision record",
+      "caps": "—",
+      "schema": "(deferred)",
+      "fail": "GAP — unowned (OI-003); named rollback decision required",
+      "deferred": true,
+      "tip": "Smoke + SLO check on the live release with a <b>named human rollback decision</b>. Currently <b>deferred (OI-003)</b>."
+    }
+  ],
+  "events": {
+    "S0": {
+      "consumes": ["raw_request"],
+      "emits": "intake.normalized",
+      "sdlc": "Requirements & Design"
+    },
+    "S1a": {
+      "consumes": ["raw_request"],
+      "emits": "ba.discovery",
+      "sdlc": "Requirements & Design"
+    },
+    "S1b": {
+      "consumes": ["ba.discovery"],
+      "emits": "ba.brief",
+      "sdlc": "Requirements & Design"
+    },
+    "S1.5": {
+      "consumes": ["ba.brief"],
+      "emits": "ux.pack",
+      "sdlc": "Requirements & Design"
+    },
+    "S2": {
+      "consumes": ["ba.brief", "ux.pack"],
+      "emits": "tl.design",
+      "sdlc": "Requirements & Design"
+    },
+    "S2.5": {
+      "consumes": ["ba.brief", "tl.design"],
+      "emits": "plan.reviewed",
+      "sdlc": "Design gate"
+    },
+    "S3a/3b": {
+      "consumes": ["tl.design"],
+      "emits": "contracts.published",
+      "sdlc": "Requirements & Design"
+    },
+    "S4a": {
+      "consumes": ["tl.design"],
+      "emits": "be.artifacts",
+      "sdlc": "Development"
+    },
+    "S4a-r": {
+      "consumes": ["be.artifacts", "tl.design"],
+      "emits": "be.review",
+      "sdlc": "Pre-merge CI"
+    },
+    "S4b": {
+      "consumes": ["tl.design", "ux.pack"],
+      "emits": "fe.artifacts",
+      "sdlc": "Development"
+    },
+    "S4b-r": {
+      "consumes": ["fe.artifacts", "tl.design"],
+      "emits": "fe.review",
+      "sdlc": "Pre-merge CI"
+    },
+    "S4c": {
+      "consumes": ["ba.brief", "be.review", "fe.review"],
+      "emits": "qa.plan",
+      "sdlc": "SIT → UAT"
+    },
+    "S5": {
+      "consumes": ["qa.plan"],
+      "emits": "qa.evidence",
+      "sdlc": "SIT → UAT"
+    },
+    "S6": {
+      "consumes": ["qa.evidence"],
+      "emits": "deploy.receipt",
+      "sdlc": "Release"
+    },
+    "S7": {
+      "consumes": ["deploy.receipt"],
+      "emits": "prod.validated",
+      "sdlc": "Operate"
+    }
+  },
+  "templates": {
+    "S0": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S0-run-plan.md",
+      "f": "markdown"
+    },
+    "S1a": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S1-ba-research/ (discovery layer)",
+      "f": "discovery review doc (problem-space: framing · 4 product risks · regimes · recommendation)"
+    },
+    "S1b": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S1-ba-research/",
+      "f": "one unified offline HTML viewer (ba-research-viewer.html, all four layers) + 4-layer JSON pack (discovery.json · brief.json · EPIC-*/STORY-*)"
+    },
+    "S1.5": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S1_5-ux-pack-maturity-report.md",
+      "f": "HTML viewer (planned) · md template today"
+    },
+    "S2": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S2-tl-design-index.md",
+      "f": "draw.io (house style) + markdown"
+    },
+    "S2.5": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S2_5-plan-review-findings.md",
+      "f": "HTML viewer (planned) · md template today"
+    },
+    "S3a/3b": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S3-befe-contract.md",
+      "f": "OpenAPI · API-Path · event · request/response"
+    },
+    "S4a": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S4a-backend-artifacts.md",
+      "f": "code-skeleton + manifest"
+    },
+    "S4a-r": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S4a_r-backend-review-report.md",
+      "f": "HTML viewer (planned) · md template today"
+    },
+    "S4b": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S4b-frontend-artifacts.md",
+      "f": "code-skeleton + manifest"
+    },
+    "S4b-r": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S4b_r-frontend-review-report.md",
+      "f": "HTML viewer (planned) · md template today"
+    },
+    "S4c": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S4c-test-plan-and-signoff.md",
+      "f": "HTML viewer (planned) · md template today"
+    },
+    "S5": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S5-qa-evidence-report.md",
+      "f": "HTML viewer (planned) · md+CSV today"
+    },
+    "S6": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S6-release-runbook-packet.md",
+      "f": "markdown"
+    },
+    "S7": {
+      "p": "agentic-delivery-pipeline/reference/integration/templates/S7-smoke-slo-rollback.md",
+      "f": "HTML viewer (planned) · md template today"
+    }
+  },
+  "json_only": ["S3a/3b", "S4a", "S4b"],
+  "tests": [
+    {
+      "name": "Unit — Backend",
+      "level": "unit",
+      "on": "be.artifacts · CI",
+      "runner": "executing-backend-unit-tests",
+      "metric": "pass/fail + coverage %",
+      "threshold": "0 fail · coverage ≥ 0.80",
+      "gate": "auto",
+      "note": "runner removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "name": "Unit — Frontend",
+      "level": "unit",
+      "on": "fe.artifacts · CI",
+      "runner": "executing-frontend-unit-tests",
+      "metric": "pass/fail + per-file coverage %",
+      "threshold": "0 fail · coverage ≥ threshold",
+      "gate": "auto",
+      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "star": true
+    },
+    {
+      "name": "Integration",
+      "level": "integration",
+      "on": "post-impl · SIT",
+      "runner": "executing-integration-tests",
+      "metric": "pass/fail + teardown integrity",
+      "threshold": "0 fail · teardown_ok=true",
+      "gate": "auto+exc",
+      "note": "runner removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "name": "Contract (Pact / CDCT)",
+      "level": "contract",
+      "on": "pre-merge · can-i-deploy · CI",
+      "runner": "contract-testing-pact",
+      "metric": "provider verification + can-i-deploy",
+      "threshold": "all pacts verify · can_i_deploy=true",
+      "gate": "auto",
+      "note": "runner removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "name": "End-to-end (E2E)",
+      "level": "e2e",
+      "on": "post-deploy · SIT/UAT",
+      "runner": "authoring-e2e-test-suite",
+      "metric": "scenario pass/fail + flaky rate",
+      "threshold": "0 journey/assertion fail",
+      "gate": "auto+exc",
+      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "star": true
+    },
+    {
+      "name": "Security — SAST / code (BOLA·IDOR·secrets)",
+      "level": "security",
+      "on": "pre-merge · CI",
+      "runner": "running-sast-security-gate",
+      "metric": "findings by severity + secrets + new-vs-baseline",
+      "threshold": "0 secrets · 0 new ≥ severity",
+      "gate": "auto",
+      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "star": true
+    },
+    {
+      "name": "Security — DAST / SCA / secrets-scan",
+      "level": "security",
+      "on": "CI · SIT",
+      "runner": "scanning-appsec-pipeline-gate",
+      "metric": "DAST/SCA findings + CVE + secrets",
+      "threshold": "0 secrets · 0 known-exploited CVE · 0 new ≥ severity",
+      "gate": "auto",
+      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "star": true
+    },
+    {
+      "name": "Security — adversarial / pentest (OWASP·chaos)",
+      "level": "security",
+      "on": "pre-deploy · UAT",
+      "runner": "validating-banking-implementation (persona)",
+      "metric": "adversarial persona findings",
+      "threshold": "persona judgment (no machine threshold)",
+      "gate": "human",
+      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "star": true
+    },
+    {
+      "name": "Performance / Load",
+      "level": "performance",
+      "on": "pre-prod · staging/UAT",
+      "runner": "running-performance-load-test",
+      "metric": "p95 · p99 · error-rate · throughput",
+      "threshold": "all within budget",
+      "gate": "auto",
+      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "star": true
+    },
+    {
+      "name": "Accessibility (WCAG 2.1 AA)",
+      "level": "a11y",
+      "on": "FE review · SIT",
+      "runner": "running-accessibility-tests",
+      "metric": "WCAG AA violations + manual checks",
+      "threshold": "0 AA violations",
+      "gate": "auto+exc",
+      "note": "runner removed 2026-06-02 — unused (OI-004 open)"
+    },
+    {
+      "name": "Smoke / sanity",
+      "level": "smoke",
+      "on": "post-deploy · PRD",
+      "runner": "running-smoke-tests",
+      "metric": "probe pass/fail + latency",
+      "threshold": "all probes green",
+      "gate": "auto",
+      "note": "runner removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "name": "Canary analysis",
+      "level": "progressive",
+      "on": "post-deploy · PRD",
+      "runner": "analyzing-canary-rollout",
+      "metric": "per-metric vs baseline + sample adequacy",
+      "threshold": "success ≥ 95% over 3 windows · sample adequate",
+      "gate": "auto+exc",
+      "note": "runner removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "name": "SLO validation (prod)",
+      "level": "slo",
+      "on": "post-deploy · PRD",
+      "runner": "validating-production-slo",
+      "metric": "multi-window error-budget burn-rate",
+      "threshold": "burn ≤ 14.4×/1h · 6×/6h · 3×/24h",
+      "gate": "auto+exc",
+      "note": "wired in delivery-pipeline.yaml (S7)"
+    }
+  ],
+  "skillmap": [
+    {
+      "step": "S0 Intake",
+      "skill": "scoping-ba-intake",
+      "cov": "full",
+      "missing": "",
+      "src": "vault",
+      "cite": "[[product-requirements/ai-assisted-ba-workflow]]"
+    },
+    {
+      "step": "S1a BA Discovery",
+      "skill": "researching-ba-problem-space",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "✦ workflows/skills/researching-ba-problem-space (problem-space → discovery + recommendation gate)"
+    },
+    {
+      "step": "S1b BA Brief",
+      "skill": "eliciting-banking-brief",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "✦ workflows/skills/eliciting-banking-brief (epics EPIC-* + stories STORY-*, 4-layer ref chain)"
+    },
+    {
+      "step": "S1.5 UX Intake",
+      "skill": "generate-ux-pack",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/generate-ux-pack · ux-intake-audit draft removed"
+    },
+    {
+      "step": "S2 TL Design",
+      "skill": "designing-tech-lead-handoff",
+      "cov": "full",
+      "missing": "",
+      "src": "vault",
+      "cite": "[[ddd-architecture/orchestrator-vs-domain-service]]"
+    },
+    {
+      "step": "S2.5 Plan-Review",
+      "skill": "red-teaming-implementation-plan",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/red-teaming-implementation-plan"
+    },
+    {
+      "step": "S3 Contracts (BE/FE)",
+      "skill": "befe-contract-design",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/befe-contract-design"
+    },
+    {
+      "step": "S4a Backend Impl",
+      "skill": "implement-backend-feature",
+      "cov": "full",
+      "missing": "",
+      "src": "vault",
+      "cite": "[[agent-orchestration/agentic-software-delivery-lifecycle]]"
+    },
+    {
+      "step": "S4a-r Backend Review",
+      "skill": "review-backend-code",
+      "cov": "full",
+      "missing": "",
+      "src": "vault",
+      "cite": "[[llm-routing-cost/using-frontier-models-for-review]]"
+    },
+    {
+      "step": "S4b Frontend Impl",
+      "skill": "implement-frontend-feature",
+      "cov": "full",
+      "missing": "",
+      "src": "web",
+      "cite": "deque.com (axe-core WCAG 2.1)"
+    },
+    {
+      "step": "S4b-r Frontend Review",
+      "skill": "review-frontend-code",
+      "cov": "full",
+      "missing": "",
+      "src": "vault",
+      "cite": "[[capabilities/code-review-capability]]"
+    },
+    {
+      "step": "S4c QA Test Design",
+      "skill": "planning-banking-tests",
+      "cov": "full",
+      "missing": "",
+      "src": "vault",
+      "cite": "[[product-requirements/requirement-to-test-pipeline]]"
+    },
+    {
+      "step": "S5 QA Validation",
+      "skill": "executing-qa-test-suite",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/executing-qa-test-suite"
+    },
+    {
+      "step": "S6 Deploy / release",
+      "skill": "",
+      "cov": "none",
+      "missing": "handoff-to-deploy / handoff-revoke",
+      "src": "unbuilt",
+      "cite": "OI-002 — S6 deploy + SAGA compensation not built; planning-release-handoff draft removed"
+    },
+    {
+      "step": "S7 Prod Validation / SLO",
+      "skill": "validating-production-slo",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/validating-production-slo"
+    },
+    {
+      "step": "Unit — Backend (exec)",
+      "skill": "",
+      "cov": "none",
+      "missing": "executing-backend-unit-tests",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Unit — Frontend (exec)",
+      "skill": "",
+      "cov": "none",
+      "missing": "executing-frontend-unit-tests",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Integration (exec)",
+      "skill": "",
+      "cov": "none",
+      "missing": "executing-integration-tests",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Contract (Pact/CDCT)",
+      "skill": "",
+      "cov": "none",
+      "missing": "contract-testing-pact",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "End-to-end (E2E)",
+      "skill": "",
+      "cov": "none",
+      "missing": "authoring-e2e-test-suite",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Security — SAST/code",
+      "skill": "",
+      "cov": "none",
+      "missing": "running-sast-security-gate",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Security — DAST/SCA/secrets",
+      "skill": "",
+      "cov": "none",
+      "missing": "scanning-appsec-pipeline-gate",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Security — pentest (OWASP·chaos)",
+      "skill": "",
+      "cov": "none",
+      "missing": "validating-banking-implementation",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Performance / Load",
+      "skill": "",
+      "cov": "none",
+      "missing": "running-performance-load-test",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Accessibility (WCAG 2.1 AA)",
+      "skill": "",
+      "cov": "none",
+      "missing": "running-accessibility-tests",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused (OI-004 open)"
+    },
+    {
+      "step": "Smoke / sanity",
+      "skill": "",
+      "cov": "none",
+      "missing": "running-smoke-tests",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    },
+    {
+      "step": "Canary / progressive",
+      "skill": "",
+      "cov": "none",
+      "missing": "analyzing-canary-rollout",
+      "src": "removed",
+      "cite": "draft removed 2026-06-02 — unused by pipeline"
+    }
+  ]
+}

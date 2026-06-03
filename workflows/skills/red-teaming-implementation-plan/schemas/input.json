@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "red-teaming-implementation-plan input",
+  "type": "object",
+  "required": ["plan", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "plan": {
+      "type": "object",
+      "description": "The Tech-Lead design / implementation plan under review (component_map, api_contracts, ADRs, infra notes, etc.)."
+    },
+    "ba_brief": {
+      "type": ["object", "null"],
+      "description": "The epic + stories the plan must satisfy; enables criteria-coverage findings."
+    },
+    "author_model": {
+      "type": ["string", "null"],
+      "description": "Model id that authored the plan. The critic SHOULD differ (heterogeneous reviewer)."
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["T1", "T2", "T3"],
+      "default": "T2"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Stable key; same key + same plan must yield the same verdict."
+    }
+  }
+}

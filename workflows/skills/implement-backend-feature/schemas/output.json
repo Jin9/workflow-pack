@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/implement-backend-feature/schemas/output.json",
+  "title": "implement-backend-feature output",
+  "description": "Output contract for the implement-backend-feature Generate stage. Validated by the workflow engine after the stage returns. Failure to validate triggers one retry, then human-queue.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "files_generated",
+    "tests_generated",
+    "idempotency_strategy",
+    "compensating_actions",
+    "audit_events_emitted",
+    "uncertainty_flags",
+    "decision_metadata"
+  ],
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Production files emitted by step 4. At least one entry. Empty array is invalid — a Generate stage that emits no files must signal loop_back instead.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "content_hash", "lines_added"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "content_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "lines_added": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "tests_generated": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Companion test files emitted by step 5. At least one entry — banking-grade Generate never emits production without tests.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "content_hash", "coverage_pct"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "content_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "coverage_pct": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+        }
+      }
+    },
+    "idempotency_strategy": {
+      "type": "string",
+      "minLength": 8,
+      "description": "Plain-text explanation of how idempotency is enforced. For naturally idempotent paths state 'GET is naturally idempotent — no persistence' or equivalent."
+    },
+    "compensating_actions": {
+      "type": "array",
+      "description": "Empty if no irreversible external side-effect. Required for any code path that publishes events, calls partner APIs, writes to a ledger, or sends notifications.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["trigger", "action_skill_ref", "timeout_seconds"],
+        "properties": {
+          "trigger": {"type": "string"},
+          "action_skill_ref": {"type": "string"},
+          "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 3600}
+        }
+      }
+    },
+    "audit_events_emitted": {
+      "type": "array",
+      "description": "Canonical event_type strings that the generated code will emit. Every state-changing path contributes at least one entry. Empty array indicates a read-only feature.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+      }
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "description": "Ambiguities surfaced during steps 1-6. Non-empty triggers downstream loop_back to design.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "location", "note"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "design_ambiguity",
+              "convention_conflict",
+              "dependency_addition",
+              "scope_overrun",
+              "compensation_impossible",
+              "other"
+            ]
+          },
+          "location": {"type": "string"},
+          "note": {"type": "string", "minLength": 8}
+        }
+      }
+    },
+    "decision_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complexity", "pattern_choices", "repo_conventions_followed"],
+      "properties": {
+        "complexity": {"type": "string", "enum": ["low", "medium", "high"]},
+        "pattern_choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["decision", "rationale"],
+            "properties": {
+              "decision": {"type": "string"},
+              "rationale": {"type": "string"}
+            }
+          }
+        },
+        "repo_conventions_followed": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}

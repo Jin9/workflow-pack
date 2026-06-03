@@ -1,0 +1,95 @@
+{
+  "epic": {
+    "id": "EPIC-CHECKOUT",
+    "title": "Customer checkout and payment",
+    "problem_statement": "Customers can fill a cart but cannot complete a purchase; there is no flow that reserves inventory, authorizes payment, and confirms an order atomically, so abandoned carts and oversells both occur.",
+    "why_now": "MVP launch requires a working revenue path before any marketing spend.",
+    "success_criteria": [
+      {
+        "metric": "checkout completion rate",
+        "baseline": "0% (no flow)",
+        "target": ">= 60% of started checkouts",
+        "measurement_method": "funnel events checkout.started vs checkout.completed"
+      }
+    ],
+    "scope": {
+      "in": ["cart submit", "inventory reservation", "payment authorize", "order confirm"],
+      "out_explicit": ["refunds", "split shipment"],
+      "out_deferred": ["saved payment methods"]
+    },
+    "stakeholders": [
+      { "role": "Product Owner", "type": "owner", "decision_authority": "scope and priority" },
+      { "role": "Payments SME", "type": "sme", "decision_authority": "PSP integration rules" }
+    ],
+    "legal_status": "mentioned_only",
+    "inferred_tier": "T2",
+    "tier_signals": [
+      { "signal": "handles money movement", "weight": "high", "evidence_quote": "authorize payment and confirm an order" }
+    ]
+  },
+  "stories": [
+    {
+      "id": "EPIC-CHECKOUT-1",
+      "title": "Customer completes checkout happy path",
+      "format": "classic_user_story",
+      "card": {
+        "as_a": "customer",
+        "i_want": "to submit my cart and pay",
+        "so_that": "I receive a confirmed order"
+      },
+      "context": "Customer has a non-empty cart and a valid address; checkout coordinates inventory, payment and order.",
+      "acceptance_criteria": [
+        {
+          "scenario_name": "Happy path checkout",
+          "scenario_type": "happy",
+          "given": ["a cart with one in-stock item", "a valid shipping address"],
+          "when": "the customer submits checkout",
+          "then": ["inventory is reserved", "payment is authorized", "an order is confirmed"]
+        },
+        {
+          "scenario_name": "Payment authorization fails",
+          "scenario_type": "error",
+          "given": ["a cart with one in-stock item"],
+          "when": "the PSP rejects the payment authorization",
+          "then": ["the inventory reservation is released", "the order is not confirmed"]
+        },
+        {
+          "scenario_name": "Idempotent resubmit of the same checkout",
+          "scenario_type": "banking_grade_idempotency",
+          "given": ["a checkout already completed for an idempotency key"],
+          "when": "the same checkout request is replayed with the same key",
+          "then": ["the original order is returned", "no second authorization occurs"]
+        }
+      ],
+      "banking_grade_concerns": {
+        "pii_fields": { "status": "applies", "justification": "shipping address and name are customer PII." },
+        "audit_events": { "status": "applies", "justification": "money movement requires an audit trail of authorize/confirm." },
+        "idempotency": { "status": "applies", "justification": "payment submit must be replay-safe across retries." },
+        "reversibility": { "status": "applies", "justification": "inventory reservation must be released on payment failure." },
+        "authn_authz": { "status": "applies", "justification": "only the authenticated cart owner may check out." },
+        "regulatory": { "status": "not_applicable", "justification": "MVP uses a mock PSP; no card data is stored." },
+        "tipping_off": { "status": "not_applicable", "justification": "no AML/sanctions messaging in this consumer flow." }
+      },
+      "priority": "Must",
+      "sizing": { "story_points": 8, "complexity": "high" },
+      "dependencies": { "depends_on": [], "blocks": [] },
+      "dor_checklist": {
+        "format_clear": true,
+        "happy_path_present": true,
+        "error_path_present": true,
+        "banking_grade_evaluated": true,
+        "priority_set": true,
+        "dependencies_identified": true,
+        "sizing_done": true,
+        "no_blocking_ambiguities": true
+      }
+    }
+  ],
+  "governance_gaps": [],
+  "tokens_path": "ux-design-3f1a2b4c/tokens.json",
+  "route_map_path": "ux-design-3f1a2b4c/route-map.md",
+  "component_inventory_path": "ux-design-3f1a2b4c/component-inventory.md",
+  "idempotency_key": "3f1a2b4c-5d6e-4a7b-8c9d-0e1f2a3b4c5d",
+  "mode": "full",
+  "tier_hint": "T2"
+}
