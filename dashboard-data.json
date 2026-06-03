@@ -28,7 +28,7 @@
     {
       "id": "S1a",
       "name": "BA Discovery",
-      "skill": "researching-ba-problem-space ^1.0.0",
+      "skill": "researching-ba-problem-space 1.0.0",
       "owner": "BA lead",
       "model": "Opus 4.8",
       "tier": "T1",
@@ -47,7 +47,7 @@
     {
       "id": "S1b",
       "name": "BA Brief",
-      "skill": "eliciting-banking-brief ^1.5.0",
+      "skill": "eliciting-banking-brief 1.5.0",
       "owner": "BA lead",
       "model": "Opus 4.8",
       "tier": "T1",
@@ -66,7 +66,7 @@
     {
       "id": "S1.5",
       "name": "UX Intake",
-      "skill": "generate-ux-pack ^0.1.0",
+      "skill": "generate-ux-pack 0.1.0",
       "owner": "Tech Lead",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -85,7 +85,7 @@
     {
       "id": "S2",
       "name": "TL Design",
-      "skill": "designing-tech-lead-handoff ^0.1.0",
+      "skill": "designing-tech-lead-handoff 0.1.0",
       "owner": "Tech Lead",
       "model": "Opus 4.8 / GPT-5.5",
       "tier": "T1",
@@ -143,7 +143,7 @@
     {
       "id": "S4a",
       "name": "Backend Impl",
-      "skill": "implement-backend-feature ^1.0.0",
+      "skill": "implement-backend-feature 1.0.0",
       "owner": "dev-squad",
       "model": "Sonnet 4.6 → Opus 4.8",
       "tier": "T2",
@@ -162,7 +162,7 @@
     {
       "id": "S4a-r",
       "name": "Backend Review",
-      "skill": "review-backend-code ^1.0.0",
+      "skill": "review-backend-code 1.0.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -181,7 +181,7 @@
     {
       "id": "S4b",
       "name": "Frontend Impl",
-      "skill": "implement-frontend-feature ^1.0.0",
+      "skill": "implement-frontend-feature 1.0.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -200,7 +200,7 @@
     {
       "id": "S4b-r",
       "name": "Frontend Review",
-      "skill": "review-frontend-code ^1.0.0",
+      "skill": "review-frontend-code 1.0.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -219,7 +219,7 @@
     {
       "id": "S4c",
       "name": "QA Test Design",
-      "skill": "planning-banking-tests ^1.0.0",
+      "skill": "planning-banking-tests 1.0.0",
       "owner": "qa-squad",
       "model": "GPT-5.5 / Opus 4.8",
       "tier": "T2",
@@ -258,7 +258,7 @@
     {
       "id": "S6",
       "name": "Deploy",
-      "skill": "handoff-to-deploy ^0.1.0 → release",
+      "skill": "handoff-to-deploy 0.1.0 → release",
       "owner": "Release Manager",
       "model": "Gemini 3.1 Pro",
       "tier": "T1",
