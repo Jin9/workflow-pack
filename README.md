@@ -1,5 +1,10 @@
 # Squad Delivery — Design Reference
 
+![status](https://img.shields.io/badge/status-research%20%26%20design-blue)
+![pipeline](https://img.shields.io/badge/pipeline-cognitive--os%2Fv1-6f42c1)
+![live skills](https://img.shields.io/badge/live%20skills-14-success)
+![dashboard](https://img.shields.io/badge/dashboard-offline--first-orange)
+
 > **Visual core-plan:** open **`squad-delivery-dashboard.standalone.html`** — the
 > self-contained, offline, interactive overview of the whole pipeline (stages, gates,
 > event bus, test matrix, skill coverage, model roster, verdict). This `README.md` is the
