@@ -5,7 +5,7 @@
   "description": "Top-level workflow input for delivery-pipeline.yaml.",
   "type": "object",
   "required": ["raw_request", "requester", "idempotency_key"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "raw_request": { "type": "string", "minLength": 1, "description": "The raw requirement / initiative text." },
     "requester": { "type": "string" },

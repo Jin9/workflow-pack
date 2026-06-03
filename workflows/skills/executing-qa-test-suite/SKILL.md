@@ -16,6 +16,7 @@ stage_type: validate
 input_schema: schemas/input.json
 output_schema: schemas/output.json
 banking_grade: {idempotent: true, reversible: n/a, audit_level: detailed, pii_handling: none, tier_default: T1, tier_adaptable: [T1, T2, T3]}
+requires_capabilities: [code_execution, sandbox_network_access]
 expected_duration_p95_seconds: 900
 max_retries_recommended: 1
 fallback: human-queue

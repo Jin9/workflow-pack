@@ -5,7 +5,7 @@
   "description": "Top-level workflow output stub for delivery-pipeline.yaml. Permissive: the per-field shapes live in each stage's own schema; spec.output.required_fields in the YAML enumerates the expected keys. audit_id threads the banking-grade audit trail end to end.",
   "type": "object",
   "required": ["audit_id"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "ba_brief": { "type": "object" },
     "ux_pack": { "type": "object" },

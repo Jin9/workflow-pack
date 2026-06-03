@@ -5,7 +5,7 @@
   "description": "Boundary contract for the S1 discovery node (s1-discovery). Mirrors researching-ba-problem-space/schemas/output.json; permissive at the envelope (additionalProperties:true) so the handoff_to_intake block and future fields pass. The recommendation enum drives the S1 human gate (proceed_when: proceed).",
   "type": "object",
   "required": ["problem_framing", "assumptions", "recommendation", "audit_id"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "problem_framing": { "type": "string" },
     "opportunities": { "type": "array", "items": { "type": "string" } },

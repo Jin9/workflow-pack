@@ -1,0 +1,39 @@
+# Risk-tiered universal-spec-validator config for the LIVE delivery pipeline.
+# Recommended draft produced by the spec review (2026-06-03). Copy to the repo
+# ROOT as .spec-validator.yaml and pass via --config to activate. Inert until used.
+# Full rationale + per-rule audit: spec-review/SPEC-REVIEW.md.
+# Precedence: ignore -> gate_overrides -> fail_on.
+
+compatibility_mode: backward
+transitive: false
+target_models: [openai, anthropic, gemini] # informs portability P1/P2/P5
+
+# Severities that count as a blocking gate (non-zero exit). C1 (destructive) and
+# any real high finding (P1/P4 lock-in, breaking evolution) still fail the build.
+fail_on: [critical, high]
+
+gate_overrides:
+  # Audited 2026-06-03: none of the 14 BUILT skills performs a deploy / IAM / publish
+  # side-effect -- they are BA / design / implement / review / test stages. The C4 and
+  # C3 hits on those SKILL.md / YAML specs are substring matches ("prod" inside
+  # "product") and co-occurrence ("comment" + "path" in a review skill), not real
+  # command surfaces. Tier block -> warn so they stay VISIBLE for review without
+  # killing the build. RE-ESCALATE to block once the genuinely irreversible deploy
+  # skills (handoff-to-deploy / handoff-revoke, OPEN_ISSUE OI-002) are authored.
+  C4: warn
+  C3: warn
+
+ignore:
+  # No --baseline is passed in pre-merge runs, so the schema-evolution axis is inert;
+  # this silences the skipped-axis info if a baseline path is ever added.
+  - { rule: E0, locator: "*" }
+  # Data contracts are SHAPES, not action / command surfaces -- the command-safety
+  # axis is misapplied to them. Drop C4 / C3 on schema files entirely (cleaner report).
+  - { rule: C4, locator: "*/schemas/*.json" }
+  - { rule: C3, locator: "*/schemas/*.json" }
+  # A JSON-Schema "pattern": "^EPIC-..." regex anchor is NOT a floating version ref;
+  # the "^ substring is a false positive. Drop C5 on schema files only.
+  - { rule: C5, locator: "*/schemas/*.json" }
+  # NB: C5 on workflows/delivery-pipeline.yaml was REAL (caret skill_version ranges) and is
+  # intentionally NOT ignored. As of 2026-06-04 those versions are exact-pinned (fix-list item 1),
+  # so C5 no longer fires there. Kept as warn (not escalated to block) by decision.

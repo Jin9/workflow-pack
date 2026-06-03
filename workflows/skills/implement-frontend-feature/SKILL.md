@@ -23,6 +23,7 @@ metadata:
   banking_grade: {idempotent: true, reversible: soft, audit_level: detailed}
   expected_duration_p95_seconds: 180
   max_retries_recommended: 2
+  requires_capabilities: [code_generation, file_write]
 ---
 
 # Implement Frontend Feature
