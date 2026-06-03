@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "validating-banking-implementation input",
+  "type": "object",
+  "required": ["implementation_ref", "threat_personas", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "implementation_ref": {
+      "type": "object",
+      "description": "The implementation under test, deployed into a sandbox for adversarial probing."
+    },
+    "threat_personas": {
+      "type": ["array", "null"],
+      "description": "Adversarial personas to drive against the implementation. Null uses the default roster.",
+      "items": { "type": "object" }
+    },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T1" },
+    "idempotency_key": { "type": "string" }
+  }
+}

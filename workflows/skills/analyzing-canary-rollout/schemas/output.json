@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "analyzing-canary-rollout output",
+  "type": "object",
+  "required": ["verdict", "per_metric", "sample_adequate", "windows_passed", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["promote", "hold", "rollback"] },
+    "per_metric": {
+      "type": "array",
+      "description": "Per-metric comparison from the statistical test, not asserted by an agent.",
+      "items": {
+        "type": "object",
+        "required": ["name", "judgement"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "baseline": { "type": ["number", "null"] },
+          "canary": { "type": ["number", "null"] },
+          "judgement": { "type": "string", "enum": ["pass", "marginal", "fail"] }
+        }
+      }
+    },
+    "sample_adequate": { "type": "boolean" },
+    "windows_passed": { "type": "integer", "minimum": 0 },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

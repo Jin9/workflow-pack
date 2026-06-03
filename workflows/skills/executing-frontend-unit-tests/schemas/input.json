@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "executing-frontend-unit-tests input",
+  "type": "object",
+  "required": ["frontend_artifacts", "target_env", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "frontend_artifacts": { "type": "object", "description": "Built frontend artifacts: file/test manifest to execute unit tests against." },
+    "target_env": { "type": "string", "description": "Reachable sandbox to execute the frontend unit suite in." },
+    "coverage_threshold": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.80, "description": "Minimum measured per-file coverage required to pass." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

@@ -271,9 +271,9 @@
       "reviewDoc": "Release runbook + KNOWN_ISSUES + sign-off packet",
       "caps": "no retry; compensate via handoff-revoke (600s)",
       "schema": "handoff-receipt.json",
-      "fail": "IRREVERSIBLE — mandatory sync named approval; skill missing (OI-002)",
-      "deferred": true,
-      "tip": "<b>IRREVERSIBLE / control-plane.</b> Requires <b>synchronous named-human approval regardless of agent confidence</b>. Skill + approver are a GAP (OI-002). Credentials must be short-lived OIDC tokens."
+      "fail": "IRREVERSIBLE — mandatory sync named approval (handoff-to-deploy built 2026-06-04; OI-002 closed)",
+      "deferred": false,
+      "tip": "<b>IRREVERSIBLE / control-plane.</b> Requires <b>synchronous named-human approval regardless of agent confidence</b>. handoff-to-deploy / handoff-revoke are built (OI-002 closed 2026-06-04); a named approver must be assigned at run time. Credentials must be short-lived OIDC tokens."
     },
     {
       "id": "S7",
@@ -445,7 +445,7 @@
       "metric": "pass/fail + coverage %",
       "threshold": "0 fail · coverage ≥ 0.80",
       "gate": "auto",
-      "note": "runner removed 2026-06-02 — unused by pipeline"
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)"
     },
     {
       "name": "Unit — Frontend",
@@ -455,7 +455,7 @@
       "metric": "pass/fail + per-file coverage %",
       "threshold": "0 fail · coverage ≥ threshold",
       "gate": "auto",
-      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)",
       "star": true
     },
     {
@@ -466,7 +466,7 @@
       "metric": "pass/fail + teardown integrity",
       "threshold": "0 fail · teardown_ok=true",
       "gate": "auto+exc",
-      "note": "runner removed 2026-06-02 — unused by pipeline"
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)"
     },
     {
       "name": "Contract (Pact / CDCT)",
@@ -476,7 +476,7 @@
       "metric": "provider verification + can-i-deploy",
       "threshold": "all pacts verify · can_i_deploy=true",
       "gate": "auto",
-      "note": "runner removed 2026-06-02 — unused by pipeline"
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)"
     },
     {
       "name": "End-to-end (E2E)",
@@ -486,7 +486,7 @@
       "metric": "scenario pass/fail + flaky rate",
       "threshold": "0 journey/assertion fail",
       "gate": "auto+exc",
-      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)",
       "star": true
     },
     {
@@ -497,7 +497,7 @@
       "metric": "findings by severity + secrets + new-vs-baseline",
       "threshold": "0 secrets · 0 new ≥ severity",
       "gate": "auto",
-      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)",
       "star": true
     },
     {
@@ -508,7 +508,7 @@
       "metric": "DAST/SCA findings + CVE + secrets",
       "threshold": "0 secrets · 0 known-exploited CVE · 0 new ≥ severity",
       "gate": "auto",
-      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)",
       "star": true
     },
     {
@@ -519,7 +519,7 @@
       "metric": "adversarial persona findings",
       "threshold": "persona judgment (no machine threshold)",
       "gate": "human",
-      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)",
       "star": true
     },
     {
@@ -530,7 +530,7 @@
       "metric": "p95 · p99 · error-rate · throughput",
       "threshold": "all within budget",
       "gate": "auto",
-      "note": "runner removed 2026-06-02 — unused by pipeline",
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)",
       "star": true
     },
     {
@@ -541,7 +541,7 @@
       "metric": "WCAG AA violations + manual checks",
       "threshold": "0 AA violations",
       "gate": "auto+exc",
-      "note": "runner removed 2026-06-02 — unused (OI-004 open)"
+      "note": "runner wired 2026-06-04 (built; OI-004 a11y gate now present)"
     },
     {
       "name": "Smoke / sanity",
@@ -551,7 +551,7 @@
       "metric": "probe pass/fail + latency",
       "threshold": "all probes green",
       "gate": "auto",
-      "note": "runner removed 2026-06-02 — unused by pipeline"
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)"
     },
     {
       "name": "Canary analysis",
@@ -561,7 +561,7 @@
       "metric": "per-metric vs baseline + sample adequacy",
       "threshold": "success ≥ 95% over 3 windows · sample adequate",
       "gate": "auto+exc",
-      "note": "runner removed 2026-06-02 — unused by pipeline"
+      "note": "runner wired 2026-06-04 (built under workflows/skills/)"
     },
     {
       "name": "SLO validation (prod)",
@@ -681,11 +681,11 @@
     },
     {
       "step": "S6 Deploy / release",
-      "skill": "",
-      "cov": "none",
-      "missing": "handoff-to-deploy / handoff-revoke",
-      "src": "unbuilt",
-      "cite": "OI-002 — S6 deploy + SAGA compensation not built; planning-release-handoff draft removed"
+      "skill": "handoff-to-deploy + handoff-revoke",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/handoff-to-deploy + handoff-revoke (S6 release + SAGA revoke; OI-002 closed 2026-06-04)"
     },
     {
       "step": "S7 Prod Validation / SLO",
@@ -697,99 +697,99 @@
     },
     {
       "step": "Unit — Backend (exec)",
-      "skill": "",
-      "cov": "none",
-      "missing": "executing-backend-unit-tests",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "executing-backend-unit-tests",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/executing-backend-unit-tests (built 2026-06-04)"
     },
     {
       "step": "Unit — Frontend (exec)",
-      "skill": "",
-      "cov": "none",
-      "missing": "executing-frontend-unit-tests",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "executing-frontend-unit-tests",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/executing-frontend-unit-tests (built 2026-06-04)"
     },
     {
       "step": "Integration (exec)",
-      "skill": "",
-      "cov": "none",
-      "missing": "executing-integration-tests",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "executing-integration-tests",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/executing-integration-tests (built 2026-06-04)"
     },
     {
       "step": "Contract (Pact/CDCT)",
-      "skill": "",
-      "cov": "none",
-      "missing": "contract-testing-pact",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "contract-testing-pact",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/contract-testing-pact (built 2026-06-04)"
     },
     {
       "step": "End-to-end (E2E)",
-      "skill": "",
-      "cov": "none",
-      "missing": "authoring-e2e-test-suite",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "authoring-e2e-test-suite",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/authoring-e2e-test-suite (built 2026-06-04)"
     },
     {
       "step": "Security — SAST/code",
-      "skill": "",
-      "cov": "none",
-      "missing": "running-sast-security-gate",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "running-sast-security-gate",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/running-sast-security-gate (built 2026-06-04)"
     },
     {
       "step": "Security — DAST/SCA/secrets",
-      "skill": "",
-      "cov": "none",
-      "missing": "scanning-appsec-pipeline-gate",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "scanning-appsec-pipeline-gate",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/scanning-appsec-pipeline-gate (built 2026-06-04)"
     },
     {
       "step": "Security — pentest (OWASP·chaos)",
-      "skill": "",
-      "cov": "none",
-      "missing": "validating-banking-implementation",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "validating-banking-implementation",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/validating-banking-implementation (built 2026-06-04)"
     },
     {
       "step": "Performance / Load",
-      "skill": "",
-      "cov": "none",
-      "missing": "running-performance-load-test",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "running-performance-load-test",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/running-performance-load-test (built 2026-06-04)"
     },
     {
       "step": "Accessibility (WCAG 2.1 AA)",
-      "skill": "",
-      "cov": "none",
-      "missing": "running-accessibility-tests",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused (OI-004 open)"
+      "skill": "running-accessibility-tests",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/running-accessibility-tests (built 2026-06-04; OI-004 a11y gate)"
     },
     {
       "step": "Smoke / sanity",
-      "skill": "",
-      "cov": "none",
-      "missing": "running-smoke-tests",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "running-smoke-tests",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/running-smoke-tests (built 2026-06-04)"
     },
     {
       "step": "Canary / progressive",
-      "skill": "",
-      "cov": "none",
-      "missing": "analyzing-canary-rollout",
-      "src": "removed",
-      "cite": "draft removed 2026-06-02 — unused by pipeline"
+      "skill": "analyzing-canary-rollout",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "workflows/skills/analyzing-canary-rollout (built 2026-06-04)"
     }
   ]
 }

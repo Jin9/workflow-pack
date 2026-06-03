@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-performance-load-test input",
+  "type": "object",
+  "required": ["load_profile", "budget", "target_env", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "load_profile": {
+      "type": "object",
+      "description": "The load to apply: virtual users, duration, and the scenario/journey to drive.",
+      "required": ["vus", "duration"],
+      "additionalProperties": false,
+      "properties": {
+        "vus": { "type": "integer", "minimum": 1, "description": "Concurrent virtual users." },
+        "duration": { "type": "string", "description": "e.g. 5m / 300s." },
+        "scenario": { "type": ["string", "null"], "description": "Named journey / endpoint script to drive." }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "description": "Declared performance budget (authored by observability-design); consumed, not re-derived.",
+      "required": ["p95", "error_rate"],
+      "additionalProperties": false,
+      "properties": {
+        "p95": { "type": "number", "minimum": 0, "description": "p95 latency target in ms (observed must stay under this)." },
+        "p99": { "type": ["number", "null"], "minimum": 0, "description": "p99 latency target in ms." },
+        "error_rate": { "type": "number", "minimum": 0, "maximum": 1, "description": "Max error ratio, e.g. 0.01." }
+      }
+    },
+    "target_env": { "type": "string", "description": "The staging/UAT target to load-test. Never production." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

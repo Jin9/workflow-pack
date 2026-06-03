@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "authoring-e2e-test-suite input",
+  "type": "object",
+  "required": ["journeys", "target_env", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "journeys": { "type": ["object", "array"], "description": "User journeys or stories to derive end-to-end scenarios from." },
+    "target_env": { "type": "string", "description": "Reachable running system / sandbox to execute the e2e scenarios against." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

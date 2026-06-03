@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-smoke-tests output",
+  "type": "object",
+  "required": ["verdict", "probes", "all_green", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "probes": {
+      "type": "array",
+      "description": "Per-probe results from the runner, not asserted by an agent.",
+      "items": {
+        "type": "object",
+        "required": ["name", "green"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "green": { "type": "boolean" },
+          "latency_ms": { "type": ["number", "null"], "minimum": 0 }
+        }
+      }
+    },
+    "all_green": { "type": "boolean" },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

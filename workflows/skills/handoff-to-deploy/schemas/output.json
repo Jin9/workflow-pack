@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "handoff-to-deploy output",
+  "type": "object",
+  "required": ["receipt_id", "status", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": { "type": "string", "description": "Immutable handoff receipt identifier." },
+    "status": { "type": "string", "enum": ["handed_off", "blocked", "failed"] },
+    "release_ref": { "type": ["string", "null"] },
+    "approver": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" }
+      }
+    },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

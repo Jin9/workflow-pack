@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "contract-testing-pact input",
+  "type": "object",
+  "required": ["pacts", "provider_ref", "environment", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "pacts": { "type": "object", "description": "Consumer-driven contracts (pacts) to verify the provider against." },
+    "provider_ref": { "type": "string", "description": "Provider to verify against the consumer pacts." },
+    "environment": { "type": "string", "description": "Deploy environment for the can-i-deploy broker query." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

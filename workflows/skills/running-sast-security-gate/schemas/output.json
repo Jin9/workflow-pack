@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-sast-security-gate output",
+  "type": "object",
+  "required": ["verdict", "secrets", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "rule", "file", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+          "rule": { "type": "string", "description": "Scanner rule / check id that fired." },
+          "file": { "type": "string", "description": "Source file (path:line) the finding maps to." },
+          "summary": { "type": "string", "description": "Finding summary; secrets redacted as PII:REDACTED." }
+        }
+      }
+    },
+    "secrets": { "type": "integer", "minimum": 0, "description": "Count of detected secrets; any non-zero is a hard fail." },
+    "new_vs_baseline": {
+      "type": "object",
+      "required": ["new", "fixed"],
+      "additionalProperties": false,
+      "properties": {
+        "new": { "type": "integer", "minimum": 0, "description": "Findings not present in the baseline." },
+        "fixed": { "type": "integer", "minimum": 0, "description": "Baseline findings no longer present." }
+      }
+    },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

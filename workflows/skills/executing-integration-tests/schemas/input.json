@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "executing-integration-tests input",
+  "type": "object",
+  "required": ["target_env", "idempotency_key"],
+  "anyOf": [
+    { "required": ["test_roster"] },
+    { "required": ["artifacts"] }
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "test_roster": { "type": "object", "description": "Planned integration suite (from planning-banking-tests)." },
+    "artifacts": { "type": "object", "description": "Built system artifacts to derive integration runs from when no roster is supplied." },
+    "target_env": { "type": "string", "description": "Reachable sandbox to execute the integration suite (SIT) in." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}
