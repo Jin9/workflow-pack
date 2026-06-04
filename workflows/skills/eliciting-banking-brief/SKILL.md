@@ -20,7 +20,7 @@ description: >
   pipeline (use extract-brief-structure).
 compatibility: [claude-code, codex, opencode]
 metadata:
-  version: 1.5.0
+  version: 1.6.0
   stage_type: analyze
   input_schema: schemas/input.json
   output_schema: schemas/output.json
@@ -43,7 +43,7 @@ Accepts one of: **Jira ticket**, **Slack thread**, **Meeting notes**, **Email**,
 
 ## Procedure
 
-Twelve ordered steps, executed in order. Each line is the imperative action + load-bearing markers; binding sub-rules, thresholds, and field names live per-step in **`references/procedure-detail.md`**, with per-FM detection/output/escalation in **`references/edge-case-catalog.md`**.
+Thirteen ordered steps, executed in order. Each line is the imperative action + load-bearing markers; binding sub-rules, thresholds, and field names live per-step in **`references/procedure-detail.md`** (Steps 1–12) and **`references/viewer-rendering-spec.md`** (Step 13), with per-FM detection/output/escalation in **`references/edge-case-catalog.md`**.
 
 1. **Pre-flight — strip ground-truth + detect source type.** Fail closed on strip failure → FM-12.
 2. **Route to parser + extract structural skeleton.** Classify `scope_kind`; never tech-layer split (AP-7.1).
@@ -58,10 +58,11 @@ Twelve ordered steps, executed in order. Each line is the imperative action + lo
 10. **Compose Gherkin acceptance criteria with testability check.** `Given/When/Then` with concrete values; mandatory per story ≥1 happy + ≥1 error/edge + ≥1 banking_grade_*; composite linguistic quality < 5.0 → refuse handoff (FM-01).
 11. **MoSCoW prioritization + tier inference (per epic).** Tier per epic (not per file); inferred tier > `tier_hint` by ≥1 step → require human override (AP-1.3); flag `>70% Must`.
 12. **Failure-mode evaluation + output assembly.** Run the final gates (FM-01, FM-02, FM-05, FM-06, FM-11, FM-12, FM-13, FM-14 count consistency, FM-15 sweep-coverage, FM-16 idempotency-replay enforcement, FM-17 Frame-4 sub-topic coverage), apply bilingual emission when required, emit JSON conforming to `schemas/output.json` as the canonical artifact, then invoke `scripts/render_markdown_tree.py` per `references/markdown-rendering-spec.md`.
+13. **Emit the offline human-view viewer.** Assemble the four-layer pack (`meta · discovery · brief · pack`) from the upstream `discovery.json`, this step's brief, and the `INDEX → EPIC-(DOMAIN) → STORY` ref chain, and inject it into `templates/ba-research-viewer.template.html` to write `ba-research-viewer.html` beside the brief. Presentation-only and **deterministic** (byte-identical for an identical pack); offline, single-file, system-fonts. Binding contract — the `window.PACK` injection point, the four-layer mapping, the `esc()` and no-`*/`-in-`/* INJECT */` rules, and the offline invariants — in `references/viewer-rendering-spec.md`.
 
 ## Output Contract
 
-**Dual emission — JSON is canonical, Markdown directory tree is mechanically derived.** The authoritative output is a JSON document conforming to `schemas/output.json` (the contract the downstream TL-handoff step consumes and the caller validates). Alongside it, `scripts/render_markdown_tree.py` deterministically renders a per-epic/per-story Markdown tree per `references/markdown-rendering-spec.md` for human review and fan-out routing; the tree is presentation-only and re-derivable, and the JSON is authoritative on any conflict.
+**JSON is canonical; the Markdown tree and the HTML viewer are derived presentation surfaces.** The authoritative output is a JSON document conforming to `schemas/output.json` (the contract the downstream TL-handoff step consumes and the caller validates). Alongside it, `scripts/render_markdown_tree.py` deterministically renders a per-epic/per-story Markdown tree per `references/markdown-rendering-spec.md` (Step 12) for human review and fan-out routing, and Step 13 emits the single offline `ba-research-viewer.html` (the four-layer human-view) per `references/viewer-rendering-spec.md`. Both presentation surfaces are re-derivable; the JSON is authoritative on any conflict.
 
 **Bilingual emission.** When `processing_metadata.bilingual_output` lists more than one ISO-639-1 code (lowercase, e.g., `["en", "th"]`; default `["en"]`), the renderer emits one Markdown subtree per language under `output-{idem8}/<LANG_UPPER>/...`; the canonical JSON lives once at `output-{idem8}/output.json` with per-object `translations` maps (`schemas/output.json#/definitions/Translations`), missing entries falling back to English. Full contract (which fields need translations, UI-string localization via `references/ui-strings.json`, version history): `references/bilingual-emission.md`, `references/version-notes.md`.
 
@@ -114,6 +115,7 @@ Progressive disclosure — load only what each step needs (load point in parenth
 - `references/edge-case-catalog.md` — 18 edge cases + 17 failure modes (FM-01…FM-17, full detection/output/escalation) + EC×FM matrix (Steps 1, 4, 5, 12).
 - `references/non-tipping-vocabulary.md` — approved phrases + forbidden terms (Step 9, on forbidden-term hit).
 - `references/markdown-rendering-spec.md` — directory tree structure, per-file-type frontmatter, slug rules, cross-link conventions (Step 12).
+- `references/viewer-rendering-spec.md` — offline human-view contract: `window.PACK` injection point, four-layer pack mapping, `esc()` + no-`*/`-in-`/* INJECT */` rules, offline/system-font invariants, determinism (Step 13). Renders into `templates/ba-research-viewer.template.html`.
 - `references/hidden-requirements-frames.md` — the 10 elicitation-gap frames with activation triggers, severity floors, caps, output pattern (Step 9.5).
 - `references/frame-rule-data.json` (v1.3.0+) — runtime source-of-truth for FM-17 Frame-4 sub-topic coverage; loaded by `scripts/render_markdown_tree.py` at import, mirrored in `hidden-requirements-frames.md` (drift caught by `scripts/check_frame_rule_data_drift.py` F-7).
 - `references/bilingual-emission.md` (v1.4.0+) — multilingual-brief contract: which fields require `translations[<lang>]`, fallback, sub-agent prompt guidance, verification checklist (Step 12, multi-language).

@@ -47,7 +47,7 @@
     {
       "id": "S1b",
       "name": "BA Brief",
-      "skill": "eliciting-banking-brief 1.5.0",
+      "skill": "eliciting-banking-brief 1.6.0",
       "owner": "BA lead",
       "model": "Opus 4.8",
       "tier": "T1",
@@ -526,137 +526,202 @@
   ],
   "events": {
     "S0": {
-      "consumes": ["raw_request"],
+      "consumes": [
+        "raw_request"
+      ],
       "emits": "intake.normalized",
       "sdlc": "Requirements & Design"
     },
     "S1a": {
-      "consumes": ["raw_request"],
+      "consumes": [
+        "raw_request"
+      ],
       "emits": "ba.discovery",
       "sdlc": "Requirements & Design"
     },
     "S1b": {
-      "consumes": ["ba.discovery"],
+      "consumes": [
+        "ba.discovery"
+      ],
       "emits": "ba.brief",
       "sdlc": "Requirements & Design"
     },
     "S1.5": {
-      "consumes": ["ba.brief"],
+      "consumes": [
+        "ba.brief"
+      ],
       "emits": "ux.pack",
       "sdlc": "Requirements & Design"
     },
     "S2": {
-      "consumes": ["ba.brief", "ux.pack"],
+      "consumes": [
+        "ba.brief",
+        "ux.pack"
+      ],
       "emits": "tl.design",
       "sdlc": "Requirements & Design"
     },
     "S2.5": {
-      "consumes": ["ba.brief", "tl.design"],
+      "consumes": [
+        "ba.brief",
+        "tl.design"
+      ],
       "emits": "plan.reviewed",
       "sdlc": "Design gate"
     },
     "S3a/3b": {
-      "consumes": ["tl.design"],
+      "consumes": [
+        "tl.design"
+      ],
       "emits": "contracts.published",
       "sdlc": "Requirements & Design"
     },
     "S4a": {
-      "consumes": ["tl.design"],
+      "consumes": [
+        "tl.design"
+      ],
       "emits": "be.artifacts",
       "sdlc": "Development"
     },
     "S4a-r": {
-      "consumes": ["be.artifacts", "tl.design"],
+      "consumes": [
+        "be.artifacts",
+        "tl.design"
+      ],
       "emits": "be.review",
       "sdlc": "Pre-merge CI"
     },
     "S4b": {
-      "consumes": ["tl.design", "ux.pack"],
+      "consumes": [
+        "tl.design",
+        "ux.pack"
+      ],
       "emits": "fe.artifacts",
       "sdlc": "Development"
     },
     "S4b-r": {
-      "consumes": ["fe.artifacts", "tl.design"],
+      "consumes": [
+        "fe.artifacts",
+        "tl.design"
+      ],
       "emits": "fe.review",
       "sdlc": "Pre-merge CI"
     },
     "S4c": {
-      "consumes": ["ba.brief", "be.review", "fe.review"],
+      "consumes": [
+        "ba.brief",
+        "be.review",
+        "fe.review"
+      ],
       "emits": "qa.plan",
       "sdlc": "SIT → UAT"
     },
     "S5": {
-      "consumes": ["qa.plan"],
+      "consumes": [
+        "qa.plan"
+      ],
       "emits": "qa.evidence",
       "sdlc": "SIT → UAT"
     },
     "S6": {
-      "consumes": ["qa.evidence"],
+      "consumes": [
+        "qa.evidence"
+      ],
       "emits": "deploy.receipt",
       "sdlc": "Release"
     },
     "S7": {
-      "consumes": ["deploy.receipt"],
+      "consumes": [
+        "deploy.receipt"
+      ],
       "emits": "prod.validated",
       "sdlc": "Operate"
     },
     "T1": {
-      "consumes": ["be.artifacts"],
+      "consumes": [
+        "be.artifacts"
+      ],
       "emits": "test.be.unit",
       "sdlc": "Pre-merge CI"
     },
     "T2": {
-      "consumes": ["be.artifacts"],
+      "consumes": [
+        "be.artifacts"
+      ],
       "emits": "sec.sast",
       "sdlc": "Pre-merge CI"
     },
     "T3": {
-      "consumes": ["fe.artifacts"],
+      "consumes": [
+        "fe.artifacts"
+      ],
       "emits": "test.fe.unit",
       "sdlc": "Pre-merge CI"
     },
     "T4": {
-      "consumes": ["fe.artifacts"],
+      "consumes": [
+        "fe.artifacts"
+      ],
       "emits": "test.a11y",
       "sdlc": "FE review · SIT"
     },
     "T5": {
-      "consumes": ["contracts.published", "be.artifacts", "fe.artifacts"],
+      "consumes": [
+        "contracts.published",
+        "be.artifacts",
+        "fe.artifacts"
+      ],
       "emits": "test.contract",
       "sdlc": "Pre-merge CI"
     },
     "T6": {
-      "consumes": ["be.artifacts", "fe.artifacts"],
+      "consumes": [
+        "be.artifacts",
+        "fe.artifacts"
+      ],
       "emits": "test.integration",
       "sdlc": "SIT → UAT"
     },
     "T7": {
-      "consumes": ["be.artifacts", "fe.artifacts"],
+      "consumes": [
+        "be.artifacts",
+        "fe.artifacts"
+      ],
       "emits": "sec.appsec",
       "sdlc": "CI → SIT"
     },
     "T8": {
-      "consumes": ["qa.evidence"],
+      "consumes": [
+        "qa.evidence"
+      ],
       "emits": "test.e2e",
       "sdlc": "SIT → UAT"
     },
     "T9": {
-      "consumes": ["qa.evidence"],
+      "consumes": [
+        "qa.evidence"
+      ],
       "emits": "test.perf",
       "sdlc": "Pre-prod"
     },
     "T10": {
-      "consumes": ["qa.evidence"],
+      "consumes": [
+        "qa.evidence"
+      ],
       "emits": "sec.pentest",
       "sdlc": "Pre-deploy UAT"
     },
     "T11": {
-      "consumes": ["deploy.receipt"],
+      "consumes": [
+        "deploy.receipt"
+      ],
       "emits": "ops.smoke",
       "sdlc": "Operate"
     },
     "T12": {
-      "consumes": ["deploy.receipt"],
+      "consumes": [
+        "deploy.receipt"
+      ],
       "emits": "ops.canary",
       "sdlc": "Operate"
     }
