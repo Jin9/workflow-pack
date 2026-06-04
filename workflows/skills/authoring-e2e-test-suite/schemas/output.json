@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "authoring-e2e-test-suite output",
+  "type": "object",
+  "required": ["verdict", "scenarios", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "result", "steps_total", "steps_failed"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "result": { "type": "string", "enum": ["pass", "fail", "flaky", "error"] },
+          "steps_total": { "type": "integer", "minimum": 0 },
+          "steps_failed": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "flaky_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Fraction of scenarios surfaced as flaky by bounded re-run; a flaky pass is not a pass." },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

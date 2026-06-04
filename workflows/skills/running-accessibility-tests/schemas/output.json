@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-accessibility-tests output",
+  "type": "object",
+  "required": ["verdict", "manual_checks", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "wcag_violations": {
+      "type": "array",
+      "description": "Machine-decidable AA failures from the a11y engine.",
+      "items": {
+        "type": "object",
+        "required": ["rule", "impact"],
+        "additionalProperties": false,
+        "properties": {
+          "rule": { "type": "string" },
+          "impact": { "type": "string", "enum": ["critical", "serious", "moderate", "minor"] },
+          "wcag_ref": { "type": ["string", "null"], "description": "e.g. 1.4.3, 2.4.7." }
+        }
+      }
+    },
+    "needs_review": {
+      "type": "array",
+      "description": "Engine 'incomplete' items the automation cannot decide; require a human.",
+      "items": {
+        "type": "object",
+        "required": ["rule", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "rule": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "manual_checks": {
+      "type": "array",
+      "description": "Required human checks beyond automation coverage.",
+      "items": { "type": "string" }
+    },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

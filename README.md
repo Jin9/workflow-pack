@@ -20,7 +20,12 @@
 > `workflows/schemas/`); the **S1 BA-research composite is wired live** (**two stages** — `s1-discovery` →
 > recommendation gate → `ba-research`);
 > and the Rust `squad-engine` is archived, so **pipeline validation is now static** (YAML well-formedness +
-> `ajv`/`jsonschema` on the boundary schemas + a `depends_on` graph check).
+> `ajv`/`jsonschema` on the boundary schemas + a `depends_on` graph check), plus an **optional offline
+> `universal-spec-validator` gate** (command-safety / portability / capability heuristics; risk-tiered
+> config + reports under `spec-review/`).
+>
+> **Hardened 2026-06-04:** all built `skill_ref`s in `workflows/delivery-pipeline.yaml` are **exact-pinned**
+> (no caret ranges) and the three workflow-boundary schemas enforce root `additionalProperties: false`.
 >
 > **As of 2026-06-02** the retired trees — `agentic-delivery-pipeline/` and `business-analyse/` — live in
 > the **sibling** `../archive/` directory (named `archive`, no leading dot, **outside** `workflow-pack/`);
@@ -58,27 +63,27 @@ of agent confidence.** Reversible artifact-producing stages run exception-only.
 | # | Stage | Agent / skill (ver) | Input | Output (artifact) | Reversibility | Human owner | Status |
 |---|---|---|---|---|---|---|---|
 | **S0** | Intake | orchestrator + Iteration-Planner | `raw_request, requester, idempotency_key` | normalized intake + approved run plan | reversible | **Delivery Ops** | ⚠ GAP (OI-003) |
-| **S1a** | BA Discovery | `researching-ba-problem-space ^1.0.0` | raw_request | `discovery` (framing · 4 product risks · regimes · recommendation) | reversible (gated decision) | **BA lead** | ✅ wired (live) |
-| **S1b** | BA Brief | `eliciting-banking-brief ^1.5.0` | discovery + raw_request | `epic, stories, governance_gaps, audit_id` | reversible | **BA lead** | ✅ wired (live) |
-| **S1.5** | UX Intake | `generate-ux-pack ^0.1.0` · dev-squad | epic, stories | `pack_dir, tokens, route_map, maturity, audit_id` | reversible | **Tech Lead** | ✅ wired |
-| **S2** | TL Design | `tl-design-from-brief ^0.1.0` · dev-squad | epic, stories, gaps, ux | `component_map, api_contracts, audit_id` | reversible (high blast) | **Tech Lead** | ✅ wired |
+| **S1a** | BA Discovery | `researching-ba-problem-space 1.0.0` | raw_request | `discovery` (framing · 4 product risks · regimes · recommendation) | reversible (gated decision) | **BA lead** | ✅ wired (live) |
+| **S1b** | BA Brief | `eliciting-banking-brief 1.5.0` | discovery + raw_request | `epic, stories, governance_gaps, audit_id` | reversible | **BA lead** | ✅ wired (live) |
+| **S1.5** | UX Intake | `generate-ux-pack 0.1.0` · dev-squad | epic, stories | `pack_dir, tokens, route_map, maturity, audit_id` | reversible | **Tech Lead** | ✅ wired |
+| **S2** | TL Design | `designing-tech-lead-handoff 0.1.0` · dev-squad | epic, stories, gaps, ux | `component_map, api_contracts, audit_id` | reversible (high blast) | **Tech Lead** | ✅ wired |
 | **S2.5** | **Plan-Review gate** | Plan-Reviewer (adversarial red-team) | BA + TL outputs | pass / reroute / **HardFail** | gate | **Tech Lead** | ✅ wired |
 | **S3a/3b** | Contracts (BE/FE) | dev-squad | api_contracts | typed BE/FE contracts | reversible | **dev-squad** | ⚠ GAP (OI-003) |
-| **S4a** | Backend Impl | `implement-backend-feature ^1.0.0` | api_contracts, component_map | `go_files, test_files, audit_id` | reversible (sandbox) | **dev-squad** | ✅ wired |
-| **S4a-r** | Backend Review | `review-backend-code ^1.0.0` | go_files, contracts | `verdict, findings, audit_id` | reversible | **dev-squad** | ✅ wired |
-| **S4b** | Frontend Impl | `implement-frontend-feature ^1.0.0` | api_contracts, ux pack | `tsx_files, test_files, audit_id` | reversible (sandbox) | **dev-squad** | ✅ wired |
-| **S4b-r** | Frontend Review | `review-frontend-code ^1.0.0` | tsx_files, contracts | `verdict, findings, audit_id` | reversible | **dev-squad** | ✅ wired |
-| **S4c** | QA Test Design | `planning-banking-tests ^1.0.0` · qa-squad | epic, stories, review verdicts | `test_roster, signoff_criteria, audit_id` | reversible | **qa-squad** | ✅ wired |
+| **S4a** | Backend Impl | `implement-backend-feature 1.0.0` | api_contracts, component_map | `go_files, test_files, audit_id` | reversible (sandbox) | **dev-squad** | ✅ wired |
+| **S4a-r** | Backend Review | `review-backend-code 1.0.0` | go_files, contracts | `verdict, findings, audit_id` | reversible | **dev-squad** | ✅ wired |
+| **S4b** | Frontend Impl | `implement-frontend-feature 1.0.0` | api_contracts, ux pack | `tsx_files, test_files, audit_id` | reversible (sandbox) | **dev-squad** | ✅ wired |
+| **S4b-r** | Frontend Review | `review-frontend-code 1.0.0` | tsx_files, contracts | `verdict, findings, audit_id` | reversible | **dev-squad** | ✅ wired |
+| **S4c** | QA Test Design | `planning-banking-tests 1.0.0` · qa-squad | epic, stories, review verdicts | `test_roster, signoff_criteria, audit_id` | reversible | **qa-squad** | ✅ wired |
 | **S5** | QA Validation (execute) | qa-squad | test_roster | pass/fail evidence | reversible | **qa-squad** | ⚠ GAP (OI-003 / GAP-05) |
-| **S6** | **Deploy** | `handoff-to-deploy ^0.1.0` → release runner | signoff_criteria | `receipt_id, audit_id` + **live release** | **IRREVERSIBLE / control-plane** | **Release Manager** | ⚠ GAP (OI-002) |
+| **S6** | **Deploy** | `handoff-to-deploy 0.1.0` → release runner | signoff_criteria | `receipt_id, audit_id` + **live release** | **IRREVERSIBLE / control-plane** | **Release Manager** | ⚠ GAP (OI-002) |
 | **S7** | **Prod Validation** | ops + observability | live release | smoke/SLO verdict + rollback decision | **production-touching** | **On-call / Release Mgr** | ⚠ GAP (OI-003) |
 
 **S1 BA Research is a discovery→brief composite** — shown above (and on the dashboard) as the two
 cards **S1a · BA Discovery** and **S1b · BA Brief** — wired as two pipeline nodes in
 `workflows/delivery-pipeline.yaml` with a human gate between: `s1-discovery`
-(`researching-ba-problem-space ^1.0.0` — problem framing · four product risks · regulatory regimes ·
+(`researching-ba-problem-space 1.0.0` — problem framing · four product risks · regulatory regimes ·
 a `proceed`/`needs-work`/`do-not-build` recommendation; **AI drafts, a named human decides**) →
-`ba-research` (`eliciting-banking-brief ^1.5.0` — the brief + a **3-level ref chain**: `INDEX.json`
+`ba-research` (`eliciting-banking-brief 1.5.0` — the brief + a **3-level ref chain**: `INDEX.json`
 manifest → one `EPIC-*` file per epic → one `STORY-*` file per story; nothing inlined). Boundary
 schemas: `workflows/schemas/discovery.json`, `workflows/schemas/ba-brief.json`.
 
@@ -92,6 +97,9 @@ a pure JSON contract** the downstream agent consumes directly (deterministic, ch
 **2 implementation stages (S4a/S4b)** are the exception: they emit **code artifacts referenced by a JSON
 manifest** (`backend-artifacts.json` / `frontend-artifacts.json`). The **exactly-one-writer** rule holds
 for every artifact (verified in the ShopPilot run). Live boundary schemas live in `workflows/schemas/`.
+**Boundary-schema closure (2026-06-04):** `delivery-pipeline-input.json`, `delivery-pipeline-output.json`,
+and `discovery.json` now enforce root `additionalProperties: false` (OpenAI strict-mode cross-vendor
+portability); per-stage sub-schemas and `ba-brief.json` (the manifest layer) stay open by design.
 
 **Lean decision (2026-05-31 — Codex GPT-5.5 xHigh brainstorm, Claude final decision):** the 3 autonomous
 stages — **S3a/3b Contracts · S4a Backend Impl · S4b Frontend Impl** (no human gate, machine-only
@@ -308,7 +316,7 @@ catalog was consolidated by actual use:** the 14 skills the live pipeline refere
 `workflows/skills/` (see `workflows/skills/README.md`); the ~100 unused skills (incl. the 13 unused
 gap-fill skills and the old `manifest.json`) were quarantined and then **deleted** — permanently, since
 this workspace has no git and the upstream `treasury/` is not present here. Two skills are **promoted + wired live**:
-`researching-ba-problem-space ^1.0.0` (S1 `s1-discovery`) and `eliciting-banking-brief ^1.5.0` (S1
+`researching-ba-problem-space 1.0.0` (S1 `s1-discovery`) and `eliciting-banking-brief 1.5.0` (S1
 `ba-research`). Wiring the remaining draft runners into `workflows/delivery-pipeline.yaml` is a separate step.
 
 ## Human approval gate (sign-off)

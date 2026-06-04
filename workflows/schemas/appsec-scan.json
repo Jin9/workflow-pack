@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test appsec-scan boundary — DAST/SCA/secrets findings",
+  "type": "object",
+  "required": ["verdict", "secrets", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "dast_findings": { "type": "array", "items": { "type": "object" } },
+    "sca_cves": { "type": "array", "items": { "type": "object" } },
+    "secrets": { "type": "integer", "minimum": 0 },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

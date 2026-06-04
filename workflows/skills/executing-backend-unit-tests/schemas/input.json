@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "executing-backend-unit-tests input",
+  "type": "object",
+  "required": ["backend_artifacts", "target_env", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "backend_artifacts": { "type": "object", "description": "Built backend artifacts: Go/test file manifest to execute unit tests against." },
+    "target_env": { "type": "string", "description": "Reachable sandbox to execute the backend unit suite in." },
+    "coverage_threshold": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.80, "description": "Minimum measured line coverage required to pass." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

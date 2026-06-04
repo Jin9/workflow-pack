@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test perf-load-test boundary — performance/load results",
+  "type": "object",
+  "required": ["verdict", "metrics", "within_budget", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "p95": { "type": ["number", "null"] },
+        "p99": { "type": ["number", "null"] },
+        "error_rate": { "type": ["number", "null"] },
+        "throughput": { "type": ["number", "null"] }
+      }
+    },
+    "within_budget": { "type": "boolean" },
+    "breaches": { "type": "array", "items": { "type": "object" } },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

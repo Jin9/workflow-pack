@@ -53,7 +53,7 @@
         "owner": { "type": "string" },
         "model": { "type": "string" },
         "tier": { "type": "string", "enum": ["T1", "T2", "T3"] },
-        "gate": { "type": "string", "enum": ["auto", "async", "sync", "gate"] },
+        "gate": { "type": "string", "enum": ["auto", "async", "sync", "gate", "auto+exc", "human"] },
         "input": { "type": "string" },
         "output": { "type": "string" },
         "contract": { "type": "string" },

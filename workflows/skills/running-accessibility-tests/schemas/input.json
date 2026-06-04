@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-accessibility-tests input",
+  "type": "object",
+  "required": ["target", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "type": "object",
+      "description": "The built front end to scan: pages and/or components, or a served build URL within the sandbox.",
+      "additionalProperties": false,
+      "properties": {
+        "pages": { "type": "array", "items": { "type": "string" }, "description": "Page routes/paths to scan." },
+        "components": { "type": "array", "items": { "type": "string" }, "description": "Component selectors/ids to scan." },
+        "build_url": { "type": ["string", "null"], "description": "Served build endpoint reachable in the sandbox." }
+      }
+    },
+    "wcag_level": { "type": "string", "enum": ["A", "AA", "AAA"], "default": "AA" },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

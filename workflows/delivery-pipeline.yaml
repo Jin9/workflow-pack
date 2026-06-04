@@ -41,15 +41,20 @@
 #
 # ── Deferred / GAP roster (present for completeness; NOT yet wired to a runnable skill+schema) ──
 #   S0 intake (OI-003 unowned) · S3 contract-design (OI-003) · S5 qa-validate (GAP-05 execution node) ·
-#   S6 release-handoff (OI-002 handoff-to-deploy / handoff-revoke missing) · S7 prod-validate (OI-003).
+#   S7 prod-validate (OI-003).
+#   OI-002 CLOSED 2026-06-04: S6 release-handoff (handoff-to-deploy) + the handoff-revoke compensation are
+#   now BUILT, exact-pinned, and carry requires_approval: true (C4 re-escalates to block for them).
 #   GAP-05 (S1 render→pack wiring) is now CLOSED: S1 is the live discovery→brief composite below.
+#   2026-06-04: a 12-stage post-development test/verification group (T1–T12) was wired off its natural SDLC
+#   anchors — unit (BE/FE) · SAST · a11y · contract(Pact) · integration · AppSec(DAST/SCA) · e2e · perf ·
+#   adversarial-pentest(human) · smoke · canary. Each is a LEAF gate, so the depends_on DAG stays acyclic.
 
 apiVersion: cognitive-os/v1
 kind: Workflow
 
 metadata:
   name: delivery-pipeline
-  version: 2.4.0
+  version: 2.5.0
   owner: delivery
   description: >
     Complete banking-grade delivery pipeline from a raw requirement to a validated production release,
@@ -113,6 +118,7 @@ spec:
     - id: intake
       type: analyze
       skill_ref: skills/scoping-ba-intake
+      skill_version: "1.0.0"
       input:
         from_workflow_input: [raw_request, requester, idempotency_key]
       output:
@@ -134,7 +140,7 @@ spec:
     - id: s1-discovery
       type: analyze
       skill_ref: skills/researching-ba-problem-space
-      skill_version: "^1.0.0"
+      skill_version: "1.0.0"
       depends_on: [intake]
       input:
         from_workflow_input: [raw_request, requester]
@@ -163,7 +169,7 @@ spec:
     - id: ba-research
       type: analyze
       skill_ref: skills/eliciting-banking-brief
-      skill_version: "^1.5.0"
+      skill_version: "1.5.0"
       depends_on: [intake, s1-discovery]
       input:
         from_workflow_input: [raw_request, requester]
@@ -196,7 +202,7 @@ spec:
     - id: ux-intake
       type: analyze
       skill_ref: skills/generate-ux-pack
-      skill_version: "^0.1.0"
+      skill_version: "0.1.0"
       depends_on: [ba-research]
       input:
         from_workflow_input: [requester]
@@ -219,7 +225,7 @@ spec:
     - id: tl-design
       type: design
       skill_ref: skills/designing-tech-lead-handoff
-      skill_version: "^0.1.0"
+      skill_version: "0.1.0"
       depends_on: [ba-research, ux-intake]
       input:
         from_stage:
@@ -239,6 +245,7 @@ spec:
     - id: plan-review
       type: review
       skill_ref: skills/red-teaming-implementation-plan
+      skill_version: "0.1.0"
       depends_on: [ba-research, tl-design]
       input:
         from_stage:
@@ -260,6 +267,7 @@ spec:
     - id: contract-design
       type: generate
       skill_ref: skills/befe-contract-design
+      skill_version: "0.1.0"
       depends_on: [tl-design, plan-review]
       input:
         from_stage:
@@ -274,7 +282,7 @@ spec:
     - id: backend-implement
       type: generate
       skill_ref: skills/implement-backend-feature
-      skill_version: "^1.0.0"
+      skill_version: "1.0.0"
       depends_on: [tl-design, plan-review]
       input:
         from_stage:
@@ -295,7 +303,7 @@ spec:
     - id: backend-review
       type: review
       skill_ref: skills/review-backend-code
-      skill_version: "^1.0.0"
+      skill_version: "1.0.0"
       depends_on: [backend-implement]
       input:
         from_stage:
@@ -317,7 +325,7 @@ spec:
     - id: frontend-implement
       type: generate
       skill_ref: skills/implement-frontend-feature
-      skill_version: "^1.0.0"
+      skill_version: "1.0.0"
       depends_on: [tl-design, ux-intake, plan-review]
       input:
         from_stage:
@@ -345,7 +353,7 @@ spec:
     - id: frontend-review
       type: review
       skill_ref: skills/review-frontend-code
-      skill_version: "^1.0.0"
+      skill_version: "1.0.0"
       depends_on: [frontend-implement]
       input:
         from_stage:
@@ -367,7 +375,7 @@ spec:
     - id: qa-plan
       type: analyze
       skill_ref: skills/planning-banking-tests
-      skill_version: "^1.0.0"
+      skill_version: "1.0.0"
       depends_on: [ba-research, backend-review, frontend-review]
       input:
         from_stage:
@@ -390,6 +398,7 @@ spec:
     - id: qa-validate
       type: validate
       skill_ref: skills/executing-qa-test-suite
+      skill_version: "0.1.0"
       depends_on: [qa-plan]
       input:
         from_stage:
@@ -405,11 +414,12 @@ spec:
 
     # ── S6 · Deploy (handoff → release) ─────────────────────────────────────────
     # gate: SYNC NAMED (L3) — Release Manager — MANDATORY. IRREVERSIBLE: no retry, SAGA-compensated by
-    # handoff-revoke (600s). DEFERRED — handoff-to-deploy / handoff-revoke skills missing (OI-002).
+    # handoff-revoke (600s). BUILT 2026-06-04 (OI-002 CLOSED) — handoff-to-deploy + handoff-revoke authored,
+    # exact-pinned, requires_approval: true; output schema workflows/schemas/handoff-receipt.json now present.
     - id: release-handoff
       type: notify
       skill_ref: skills/handoff-to-deploy
-      skill_version: "^0.1.0"
+      skill_version: "0.1.0"
       depends_on: [qa-validate]
       input:
         from_stage:
@@ -425,6 +435,7 @@ spec:
       compensating_action:
         type: revoke-handoff
         skill_ref: skills/handoff-revoke
+        skill_version: "0.1.0"
         timeout_seconds: 600
 
     # ── S7 · Prod Validation ────────────────────────────────────────────────────
@@ -433,6 +444,7 @@ spec:
     - id: prod-validate
       type: validate
       skill_ref: skills/validating-production-slo
+      skill_version: "0.1.0"
       depends_on: [release-handoff]
       input:
         from_stage:
@@ -445,3 +457,255 @@ spec:
         on_failure: human-queue
         max_retries: 0
         human_queue_name: prod-validation-pending
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # T · Post-development test & verification gates (added 2026-06-04)
+    # 12 runnable gate stages wired off their natural SDLC anchors, grounded in the
+    # squad-delivery-dashboard tests[] roster. Each is a LEAF (no downstream
+    # consumer) so the depends_on DAG stays acyclic; each emits a schema-validated
+    # verdict. Gate semantics: auto = retry→human-queue · auto+exc = same + exception
+    # escalation · human = sync named verification (no machine threshold).
+    # ════════════════════════════════════════════════════════════════════════════
+
+    # T1 · Backend unit tests — be.artifacts · pre-merge CI (auto). coverage floor 0.80.
+    - id: backend-unit-tests
+      type: validate
+      skill_ref: skills/executing-backend-unit-tests
+      skill_version: "0.1.0"
+      depends_on: [backend-implement]
+      input:
+        from_stage:
+          backend-implement: [go_files, test_files]
+      output:
+        schema_ref: schemas/backend-unit-tests.json
+        required_fields: [verdict, totals, audit_id]
+      timeout_seconds: 360
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: backend-unit-test-failures
+
+    # T2 · SAST security gate (BOLA·IDOR·secrets) — pre-merge CI (auto). 0 secrets · 0 new at/above severity.
+    - id: sast-gate
+      type: validate
+      skill_ref: skills/running-sast-security-gate
+      skill_version: "0.1.0"
+      depends_on: [backend-implement]
+      input:
+        from_stage:
+          backend-implement: [go_files]
+      output:
+        schema_ref: schemas/sast-gate.json
+        required_fields: [verdict, findings, secrets, audit_id]
+      timeout_seconds: 300
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: sast-gate-failures
+
+    # T3 · Frontend unit tests — fe.artifacts · pre-merge CI (auto).
+    - id: frontend-unit-tests
+      type: validate
+      skill_ref: skills/executing-frontend-unit-tests
+      skill_version: "0.1.0"
+      depends_on: [frontend-implement]
+      input:
+        from_stage:
+          frontend-implement: [tsx_files, test_files]
+      output:
+        schema_ref: schemas/frontend-unit-tests.json
+        required_fields: [verdict, totals, audit_id]
+      timeout_seconds: 360
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: frontend-unit-test-failures
+
+    # T4 · Accessibility tests (WCAG 2.1 AA) — FE review · SIT (auto+exc). 0 AA violations.
+    - id: accessibility-tests
+      type: validate
+      skill_ref: skills/running-accessibility-tests
+      skill_version: "0.1.0"
+      depends_on: [frontend-implement]
+      input:
+        from_stage:
+          frontend-implement: [tsx_files]
+      output:
+        schema_ref: schemas/accessibility-tests.json
+        required_fields: [verdict, wcag_violations, audit_id]
+      timeout_seconds: 300
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: accessibility-exceptions
+
+    # T5 · Contract tests (Pact / CDCT) — pre-merge · can-i-deploy · CI (auto). all pacts verify · can_i_deploy.
+    - id: contract-tests
+      type: validate
+      skill_ref: skills/contract-testing-pact
+      skill_version: "0.1.0"
+      depends_on: [contract-design, backend-implement, frontend-implement]
+      input:
+        from_stage:
+          contract-design: [api_paths, request_response]
+          backend-implement: [go_files]
+          frontend-implement: [tsx_files]
+      output:
+        schema_ref: schemas/contract-tests.json
+        required_fields: [verdict, can_i_deploy, audit_id]
+      timeout_seconds: 360
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: contract-test-failures
+
+    # T6 · Integration tests — post-impl · SIT (auto+exc). 0 fail · teardown_ok=true.
+    - id: integration-tests
+      type: validate
+      skill_ref: skills/executing-integration-tests
+      skill_version: "0.1.0"
+      depends_on: [backend-implement, frontend-implement]
+      input:
+        from_stage:
+          backend-implement: [go_files]
+          frontend-implement: [tsx_files]
+      output:
+        schema_ref: schemas/integration-tests.json
+        required_fields: [verdict, totals, teardown_ok, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: integration-test-exceptions
+
+    # T7 · AppSec scan (DAST / SCA / secrets) — CI · SIT (auto). 0 secrets · 0 known-exploited CVE.
+    - id: appsec-scan
+      type: validate
+      skill_ref: skills/scanning-appsec-pipeline-gate
+      skill_version: "0.1.0"
+      depends_on: [backend-implement, frontend-implement]
+      input:
+        from_stage:
+          backend-implement: [go_files]
+          frontend-implement: [tsx_files]
+      output:
+        schema_ref: schemas/appsec-scan.json
+        required_fields: [verdict, secrets, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: appsec-scan-failures
+
+    # T8 · End-to-end suite — post-deploy · SIT/UAT (auto+exc). 0 journey/assertion fail.
+    - id: e2e-tests
+      type: validate
+      skill_ref: skills/authoring-e2e-test-suite
+      skill_version: "0.1.0"
+      depends_on: [ba-research, qa-validate]
+      input:
+        from_stage:
+          ba-research: [epic, stories]
+          qa-validate: [verdict]
+      output:
+        schema_ref: schemas/e2e-tests.json
+        required_fields: [verdict, scenarios, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: e2e-test-exceptions
+
+    # T9 · Performance / load test — pre-prod · staging/UAT (auto). all within budget.
+    - id: perf-load-test
+      type: validate
+      skill_ref: skills/running-performance-load-test
+      skill_version: "0.1.0"
+      depends_on: [qa-validate]
+      input:
+        from_stage:
+          qa-validate: [evidence, verdict]
+      output:
+        schema_ref: schemas/perf-load-test.json
+        required_fields: [verdict, metrics, within_budget, audit_id]
+      timeout_seconds: 900
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: perf-load-failures
+
+    # T10 · Adversarial pentest (OWASP · chaos) — pre-deploy · UAT (HUMAN gate; persona judgment, no threshold).
+    - id: adversarial-pentest
+      type: validate
+      skill_ref: skills/validating-banking-implementation
+      skill_version: "0.1.0"
+      depends_on: [qa-validate]
+      input:
+        from_stage:
+          qa-validate: [evidence, verdict]
+      output:
+        schema_ref: schemas/adversarial-pentest.json
+        required_fields: [verdict, persona_findings, audit_id]
+      timeout_seconds: 900
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: adversarial-pentest-review
+
+    # T11 · Smoke / sanity — post-deploy · PRD (auto). all probes green.
+    - id: smoke-tests
+      type: validate
+      skill_ref: skills/running-smoke-tests
+      skill_version: "0.1.0"
+      depends_on: [release-handoff]
+      input:
+        from_stage:
+          release-handoff: [receipt_id]
+      output:
+        schema_ref: schemas/smoke-tests.json
+        required_fields: [verdict, probes, all_green, audit_id]
+      timeout_seconds: 180
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: smoke-test-failures
+
+    # T12 · Canary analysis — post-deploy · PRD (auto+exc). success at/above 95% over 3 windows · sample adequate.
+    - id: canary-analysis
+      type: validate
+      skill_ref: skills/analyzing-canary-rollout
+      skill_version: "0.1.0"
+      depends_on: [release-handoff]
+      input:
+        from_stage:
+          release-handoff: [receipt_id]
+      output:
+        schema_ref: schemas/canary-analysis.json
+        required_fields: [verdict, per_metric, sample_adequate, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: canary-analysis-exceptions

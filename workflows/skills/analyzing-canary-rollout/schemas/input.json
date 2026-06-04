@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "analyzing-canary-rollout input",
+  "type": "object",
+  "required": ["canary_metrics", "baseline_metrics", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "canary_metrics": {
+      "type": "object",
+      "description": "Windowed metric series for the canary, keyed by metric name."
+    },
+    "baseline_metrics": {
+      "type": "object",
+      "description": "Windowed metric series for the baseline, keyed by metric name (same keys as canary_metrics)."
+    },
+    "windows": { "type": "integer", "minimum": 1, "default": 3, "description": "Number of comparison windows." },
+    "success_threshold": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.95, "description": "Min fraction of metric-windows that must pass to promote." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T1" },
+    "idempotency_key": { "type": "string" }
+  }
+}

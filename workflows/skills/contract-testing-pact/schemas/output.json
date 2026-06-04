@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "contract-testing-pact output",
+  "type": "object",
+  "required": ["verdict", "provider_verified", "can_i_deploy", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "provider_verified": { "type": "boolean", "description": "True when the provider verified against every consumer pact." },
+    "pacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["consumer", "verified"],
+        "additionalProperties": false,
+        "properties": {
+          "consumer": { "type": "string" },
+          "verified": { "type": "boolean" }
+        }
+      }
+    },
+    "can_i_deploy": { "type": "boolean", "description": "Pact Broker can-i-deploy result: the final gate confirming all consumer contracts are verified before deploy." },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test accessibility-tests boundary — WCAG 2.1 AA results",
+  "type": "object",
+  "required": ["verdict", "wcag_violations", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "wcag_violations": { "type": "array", "items": { "type": "object" } },
+    "needs_review": { "type": "array", "items": { "type": "object" }, "description": "Incomplete/manual-review items the automated engine could not decide." },
+    "manual_checks": { "type": "array", "items": { "type": "string" } },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

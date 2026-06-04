@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test contract-tests boundary — Pact/CDCT results",
+  "type": "object",
+  "required": ["verdict", "can_i_deploy", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "provider_verified": { "type": "boolean" },
+    "pacts": { "type": "array", "items": { "type": "object" } },
+    "can_i_deploy": { "type": "boolean" },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

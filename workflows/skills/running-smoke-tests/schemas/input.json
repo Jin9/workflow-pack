@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-smoke-tests input",
+  "type": "object",
+  "required": ["probes", "target_env", "idempotency_key"],
+  "additionalProperties": false,
+  "properties": {
+    "probes": {
+      "type": "array",
+      "description": "Critical-path smoke probes to run against the live release.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "endpoint"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "Human-readable probe name, e.g. login-golden-path." },
+          "endpoint": { "type": "string", "description": "The endpoint / journey to probe." },
+          "expect": { "type": ["string", "null"], "description": "Expected end-state, not merely HTTP 200." }
+        }
+      }
+    },
+    "target_env": { "type": "string", "description": "The live release to probe (post-deploy)." },
+    "tier": { "type": "string", "enum": ["T1", "T2", "T3"], "default": "T2" },
+    "idempotency_key": { "type": "string" }
+  }
+}

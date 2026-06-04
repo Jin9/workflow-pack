@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test sast-gate boundary — SAST findings",
+  "type": "object",
+  "required": ["verdict", "findings", "secrets", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "findings": { "type": "array", "items": { "type": "object" } },
+    "secrets": { "type": "integer", "minimum": 0 },
+    "new_vs_baseline": { "type": "object" },
+    "audit_id": { "type": "string", "format": "uuid" }
+  }
+}

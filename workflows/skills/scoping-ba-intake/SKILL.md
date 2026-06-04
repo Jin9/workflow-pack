@@ -1,5 +1,6 @@
 ---
 name: scoping-ba-intake
+version: 1.0.0
 description: >
   Stage 1 of the BA pipeline: ingest a raw requirement (Jira, email, meeting notes, document) and emit a typed Scope Sheet contract wrapped in the pipeline's shared envelope, ready for the BA/PM scope-confirm gate (G1) before stories are drafted. Produces business goal, in-scope and out-of-scope, quantified NFRs, open questions, assumptions, risk flags, and a ready-for-stories or needs-clarification state. Use when the user is running the BA pipeline and asks to "do intake", "produce the Scope Sheet", "scope this for the pipeline", or "is this requirement ready for stories". Do NOT use for standalone requirement scoping outside the pipeline (use scoping-technical-requirements); do NOT draft user stories here (use drafting-ba-stories).
 compatibility: claude-code, codex, gemini-cli, opencode
