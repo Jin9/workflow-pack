@@ -179,6 +179,44 @@
       "tip": "Severity-graded review. <b>An agent never approves its own code</b> — review identity is separate from impl identity; human async-confirms the verdict."
     },
     {
+      "id": "T1",
+      "name": "Unit · Backend",
+      "skill": "executing-backend-unit-tests 0.1.0",
+      "owner": "dev-squad",
+      "model": "Sonnet 4.6",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "go_files · test_files",
+      "output": "verdict · totals · coverage_measured",
+      "contract": "backend-unit-tests.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "",
+      "caps": "retry 1 → backend-unit-test-failures",
+      "schema": "backend-unit-tests.json",
+      "fail": "FAIL on any failed test or coverage under 0.80",
+      "tip": "<b>T1 · Backend unit tests</b> (pre-merge CI, auto). Runner-measured pass/fail + coverage; passes on 0 fail and coverage ≥ 0.80. Sandboxed; failures route to a fixer."
+    },
+    {
+      "id": "T2",
+      "name": "SAST gate",
+      "skill": "running-sast-security-gate 0.1.0",
+      "owner": "dev-squad",
+      "model": "Opus 4.8",
+      "tier": "T1",
+      "gate": "auto",
+      "input": "go_files",
+      "output": "verdict · findings · secrets · new_vs_baseline",
+      "contract": "sast-gate.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "",
+      "caps": "retry 1 → sast-gate-failures",
+      "schema": "sast-gate.json",
+      "fail": "FAIL on any secret or any NEW finding at/above severity floor",
+      "tip": "<b>T2 · SAST</b> (pre-merge CI, auto). Static scan of developer-authored code for injection · BOLA/IDOR · hardcoded secrets. A detected secret is always a hard fail; gates on NEW findings vs baseline."
+    },
+    {
       "id": "S4b",
       "name": "Frontend Impl",
       "skill": "implement-frontend-feature 1.0.0",
@@ -215,6 +253,101 @@
       "schema": "frontend-review.json",
       "fail": "high/medium route back to Dev (cap 2); low → ADVISORY",
       "tip": "Quality + security review of the UI; routes findings by severity; human async-confirms the verdict."
+    },
+    {
+      "id": "T3",
+      "name": "Unit · Frontend",
+      "skill": "executing-frontend-unit-tests 0.1.0",
+      "owner": "dev-squad",
+      "model": "Sonnet 4.6",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "tsx_files · test_files",
+      "output": "verdict · totals · per_file_coverage",
+      "contract": "frontend-unit-tests.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "",
+      "caps": "retry 1 → frontend-unit-test-failures",
+      "schema": "frontend-unit-tests.json",
+      "fail": "FAIL on any failed test or per-file coverage under threshold",
+      "tip": "<b>T3 · Frontend unit tests</b> (pre-merge CI, auto). Runner-measured pass/fail + per-file coverage. Sandboxed; failures route to a fixer."
+    },
+    {
+      "id": "T4",
+      "name": "Accessibility · WCAG AA",
+      "skill": "running-accessibility-tests 0.1.0",
+      "owner": "dev-squad",
+      "model": "Opus 4.8",
+      "tier": "T2",
+      "gate": "auto+exc",
+      "input": "tsx_files",
+      "output": "verdict · wcag_violations · needs_review",
+      "contract": "accessibility-tests.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Accessibility violations report",
+      "caps": "retry 1 → accessibility-exceptions (exception→human)",
+      "schema": "accessibility-tests.json",
+      "fail": "FAIL on any WCAG 2.1 AA violation; needs-review items flagged for manual follow-up",
+      "tip": "<b>T4 · Accessibility</b> (FE review · SIT, auto+exc). Automated axe-style scan catches ~57% of WCAG issues; surfaces needs-review items for manual checks — never claims full coverage from automation."
+    },
+    {
+      "id": "T5",
+      "name": "Contract · Pact",
+      "skill": "contract-testing-pact 0.1.0",
+      "owner": "dev-squad",
+      "model": "Sonnet 4.6",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "api_paths · go_files · tsx_files",
+      "output": "verdict · provider_verified · can_i_deploy",
+      "contract": "contract-tests.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "",
+      "caps": "retry 1 → contract-test-failures",
+      "schema": "contract-tests.json",
+      "fail": "FAIL unless all pacts verify and can_i_deploy is true",
+      "tip": "<b>T5 · Contract (Pact / CDCT)</b> (pre-merge · can-i-deploy, auto). Provider verification against consumer contracts; can-i-deploy is the final broker gate before release."
+    },
+    {
+      "id": "T6",
+      "name": "Integration",
+      "skill": "executing-integration-tests 0.1.0",
+      "owner": "qa-squad",
+      "model": "Sonnet 4.6 / Opus 4.8",
+      "tier": "T2",
+      "gate": "auto+exc",
+      "input": "go_files · tsx_files",
+      "output": "verdict · totals · teardown_ok",
+      "contract": "integration-tests.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Integration test report",
+      "caps": "retry 1 → integration-test-exceptions (exception→human)",
+      "schema": "integration-tests.json",
+      "fail": "FAIL on any failed test; a dirty teardown is an exception that escalates",
+      "tip": "<b>T6 · Integration</b> (post-impl · SIT, auto+exc). Cross-service tests with teardown-integrity check; passes on 0 fail and teardown_ok."
+    },
+    {
+      "id": "T7",
+      "name": "AppSec · DAST/SCA",
+      "skill": "scanning-appsec-pipeline-gate 0.1.0",
+      "owner": "dev-squad",
+      "model": "Opus 4.8",
+      "tier": "T1",
+      "gate": "auto",
+      "input": "go_files · tsx_files",
+      "output": "verdict · dast · sca_cves · secrets",
+      "contract": "appsec-scan.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "",
+      "caps": "retry 1 → appsec-scan-failures",
+      "schema": "appsec-scan.json",
+      "fail": "FAIL on any secret, any known-exploited CVE, or any NEW finding at/above severity",
+      "tip": "<b>T7 · AppSec (DAST / SCA / secrets)</b> (CI · SIT, auto). DAST attacks the running app; SCA flags known CVEs in dependencies; plus a secrets sweep."
     },
     {
       "id": "S4c",
@@ -256,6 +389,63 @@
       "tip": "Executes the test roster and produces pass/fail evidence. Currently <b>deferred — only test design exists, not execution</b>."
     },
     {
+      "id": "T8",
+      "name": "End-to-end",
+      "skill": "authoring-e2e-test-suite 0.1.0",
+      "owner": "qa-squad",
+      "model": "Opus 4.8",
+      "tier": "T2",
+      "gate": "auto+exc",
+      "input": "epic · stories · qa verdict",
+      "output": "verdict · scenarios · flaky_rate",
+      "contract": "e2e-tests.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "E2E scenario report",
+      "caps": "retry 1 → e2e-test-exceptions (exception→human)",
+      "schema": "e2e-tests.json",
+      "fail": "FAIL on any journey/assertion failure; flaky scenarios surfaced, never passed by luck",
+      "tip": "<b>T8 · End-to-end</b> (SIT/UAT, auto+exc). Derives E2E scenarios from user journeys and runs them; reports scenario pass/fail + flaky rate."
+    },
+    {
+      "id": "T9",
+      "name": "Performance / Load",
+      "skill": "running-performance-load-test 0.1.0",
+      "owner": "qa-squad",
+      "model": "Sonnet 4.6",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "qa evidence · verdict",
+      "output": "verdict · p95/p99 · error_rate · throughput",
+      "contract": "perf-load-test.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "",
+      "caps": "retry 1 → perf-load-failures",
+      "schema": "perf-load-test.json",
+      "fail": "FAIL if any of p95 · p99 · error-rate · throughput breaches its budget",
+      "tip": "<b>T9 · Performance / Load</b> (pre-prod · staging/UAT, auto). k6-style thresholds as pass/fail; a breached threshold fails the run."
+    },
+    {
+      "id": "T10",
+      "name": "Adversarial pentest",
+      "skill": "validating-banking-implementation 0.1.0",
+      "owner": "security",
+      "model": "GPT-5.5 / Opus 4.8",
+      "tier": "T1",
+      "gate": "human",
+      "input": "qa evidence · verdict",
+      "output": "verdict · persona_findings",
+      "contract": "adversarial-pentest.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Adversarial pentest findings",
+      "caps": "human gate · no retry → adversarial-pentest-review",
+      "schema": "adversarial-pentest.json",
+      "fail": "Persona judgment — no machine threshold; advisory verdict confirmed by a named human",
+      "tip": "<b>T10 · Adversarial pentest (OWASP · chaos)</b> (pre-deploy · UAT, human gate). Red-team personas surface findings a scanner cannot; the verdict is advisory and a named human confirms it."
+    },
+    {
       "id": "S6",
       "name": "Deploy",
       "skill": "handoff-to-deploy 0.1.0 → release",
@@ -274,6 +464,44 @@
       "fail": "IRREVERSIBLE — mandatory sync named approval (handoff-to-deploy built 2026-06-04; OI-002 closed)",
       "deferred": false,
       "tip": "<b>IRREVERSIBLE / control-plane.</b> Requires <b>synchronous named-human approval regardless of agent confidence</b>. handoff-to-deploy / handoff-revoke are built (OI-002 closed 2026-06-04); a named approver must be assigned at run time. Credentials must be short-lived OIDC tokens."
+    },
+    {
+      "id": "T11",
+      "name": "Smoke / sanity",
+      "skill": "running-smoke-tests 0.1.0",
+      "owner": "On-call / Rel Mgr",
+      "model": "Sonnet 4.6",
+      "tier": "T2",
+      "gate": "auto",
+      "input": "receipt_id",
+      "output": "verdict · probes · all_green",
+      "contract": "smoke-tests.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "",
+      "caps": "retry 1 → smoke-test-failures",
+      "schema": "smoke-tests.json",
+      "fail": "FAIL unless all critical-path probes are green",
+      "tip": "<b>T11 · Smoke / sanity</b> (post-deploy · PRD, auto). Critical-path probes on the live release; passes only when every probe is green."
+    },
+    {
+      "id": "T12",
+      "name": "Canary analysis",
+      "skill": "analyzing-canary-rollout 0.1.0",
+      "owner": "On-call / Rel Mgr",
+      "model": "Gemini 3.1 Pro / Opus 4.8",
+      "tier": "T1",
+      "gate": "auto+exc",
+      "input": "receipt_id",
+      "output": "verdict · per_metric · sample_adequate",
+      "contract": "canary-analysis.json",
+      "json": "full",
+      "verify": true,
+      "reviewDoc": "Canary analysis report",
+      "caps": "retry 1 → canary-analysis-exceptions (exception→human)",
+      "schema": "canary-analysis.json",
+      "fail": "Verdict promote / hold / rollback; weak evidence or inadequate sample yields hold, never promote",
+      "tip": "<b>T12 · Canary analysis</b> (post-deploy · PRD, auto+exc). Multi-window canary-vs-baseline comparison (non-inferiority); recommends promote / hold / rollback — never shifts traffic itself."
     },
     {
       "id": "S7",
@@ -371,6 +599,66 @@
       "consumes": ["deploy.receipt"],
       "emits": "prod.validated",
       "sdlc": "Operate"
+    },
+    "T1": {
+      "consumes": ["be.artifacts"],
+      "emits": "test.be.unit",
+      "sdlc": "Pre-merge CI"
+    },
+    "T2": {
+      "consumes": ["be.artifacts"],
+      "emits": "sec.sast",
+      "sdlc": "Pre-merge CI"
+    },
+    "T3": {
+      "consumes": ["fe.artifacts"],
+      "emits": "test.fe.unit",
+      "sdlc": "Pre-merge CI"
+    },
+    "T4": {
+      "consumes": ["fe.artifacts"],
+      "emits": "test.a11y",
+      "sdlc": "FE review · SIT"
+    },
+    "T5": {
+      "consumes": ["contracts.published", "be.artifacts", "fe.artifacts"],
+      "emits": "test.contract",
+      "sdlc": "Pre-merge CI"
+    },
+    "T6": {
+      "consumes": ["be.artifacts", "fe.artifacts"],
+      "emits": "test.integration",
+      "sdlc": "SIT → UAT"
+    },
+    "T7": {
+      "consumes": ["be.artifacts", "fe.artifacts"],
+      "emits": "sec.appsec",
+      "sdlc": "CI → SIT"
+    },
+    "T8": {
+      "consumes": ["qa.evidence"],
+      "emits": "test.e2e",
+      "sdlc": "SIT → UAT"
+    },
+    "T9": {
+      "consumes": ["qa.evidence"],
+      "emits": "test.perf",
+      "sdlc": "Pre-prod"
+    },
+    "T10": {
+      "consumes": ["qa.evidence"],
+      "emits": "sec.pentest",
+      "sdlc": "Pre-deploy UAT"
+    },
+    "T11": {
+      "consumes": ["deploy.receipt"],
+      "emits": "ops.smoke",
+      "sdlc": "Operate"
+    },
+    "T12": {
+      "consumes": ["deploy.receipt"],
+      "emits": "ops.canary",
+      "sdlc": "Operate"
     }
   },
   "templates": {
@@ -433,9 +721,57 @@
     "S7": {
       "p": "agentic-delivery-pipeline/reference/integration/templates/S7-smoke-slo-rollback.md",
       "f": "HTML viewer (planned) · md template today"
+    },
+    "T1": {
+      "p": "workflows/schemas/backend-unit-tests.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T2": {
+      "p": "workflows/schemas/sast-gate.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T3": {
+      "p": "workflows/schemas/frontend-unit-tests.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T4": {
+      "p": "workflows/schemas/accessibility-tests.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T5": {
+      "p": "workflows/schemas/contract-tests.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T6": {
+      "p": "workflows/schemas/integration-tests.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T7": {
+      "p": "workflows/schemas/appsec-scan.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T8": {
+      "p": "workflows/schemas/e2e-tests.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T9": {
+      "p": "workflows/schemas/perf-load-test.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T10": {
+      "p": "workflows/schemas/adversarial-pentest.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T11": {
+      "p": "workflows/schemas/smoke-tests.json",
+      "f": "JSON verdict (schema-validated gate)"
+    },
+    "T12": {
+      "p": "workflows/schemas/canary-analysis.json",
+      "f": "JSON verdict (schema-validated gate)"
     }
   },
-  "json_only": ["S3a/3b", "S4a", "S4b"],
+  "json_only": ["S3a/3b", "S4a", "S4b", "T1", "T2", "T3", "T5", "T7", "T9", "T11"],
   "tests": [
     {
       "name": "Unit — Backend",
