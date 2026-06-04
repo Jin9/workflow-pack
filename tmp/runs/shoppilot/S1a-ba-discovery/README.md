@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Stage** | S1a · BA Discovery |
-| **Skill** | `researching-ba-problem-space ^1.0.0` *(this fixture rendered by the pre-promotion `^0.1.0`)* |
+| **Skill** | `researching-ba-problem-space 1.0.0` *(re-run/re-stamped 2026-06-04; output unchanged)* |
 | **Owner** | BA lead |
 | **Input** | `../S0-intake/ecommerce_mvp_business_only.gap-closed.md` (the raw request) |
 | **Output contract** | [`workflows/schemas/discovery.json`](../../../../workflows/schemas/discovery.json) |
@@ -47,8 +47,11 @@ README.md               this file
 
 ## Handoff → S1b
 
-On `proceed`, the discovery's `problem_framing`, `regulatory_regimes`, `recommendation`, `audit_id`
-and `handoff_to_intake` are passed as an **advisory** typed input into `eliciting-banking-brief`
-(it may seed pending-citation rows, stakeholder hints and a tier *floor*, but never suppress a
-detector, lower a tier, or satisfy a citation). The brief, epics and stories are materialised in
+On `proceed`, the discovery normally emits a `handoff_to_intake` block passed as an **advisory**
+typed input into `eliciting-banking-brief` (it may seed pending-citation rows, stakeholder hints and
+a tier *floor*, but never suppress a detector, lower a tier, or satisfy a citation). **For this
+fixture, RB-01 applies** — the source is already a fully-structured requirement — so per the skill
+contract **no `handoff_to_intake` is emitted** (`discovery.json` carries none), and the brief node
+runs on `raw_content` alone. With the discovery handoff absent, the `eliciting-banking-brief 1.5.0`
+node is behaviour-identical to v1.4.x. The brief, epics and stories are materialised in
 [`../S1b-ba-brief/`](../S1b-ba-brief/).

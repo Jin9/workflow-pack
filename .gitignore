@@ -11,3 +11,7 @@ __pycache__/
 .env
 .venv/
 *.local.json
+
+# Session scratch (not committed)
+tmp/.backups/
+*.viewer.html

@@ -1,0 +1,116 @@
+{
+  "output_type": "ux_pack",
+  "pack_dir": "ux-design-c3f8a1d2",
+  "maturity_level": 1,
+  "status": "draft",
+  "artifacts_present": [
+    "README.md",
+    "tokens.json",
+    "route-map.md",
+    "component-inventory.md",
+    "microcopy.json",
+    "screen-states.md",
+    "form-validation.md",
+    "responsive-spec.md",
+    "accessibility-spec.md",
+    "flows/",
+    "screens/"
+  ],
+  "tokens_path": "ux-design-c3f8a1d2/tokens.json",
+  "route_map_path": "ux-design-c3f8a1d2/route-map.md",
+  "component_inventory_path": "ux-design-c3f8a1d2/component-inventory.md",
+  "microcopy_path": "ux-design-c3f8a1d2/microcopy.json",
+  "screen_states_path": "ux-design-c3f8a1d2/screen-states.md",
+  "form_validation_path": "ux-design-c3f8a1d2/form-validation.md",
+  "responsive_spec_path": "ux-design-c3f8a1d2/responsive-spec.md",
+  "accessibility_spec_path": "ux-design-c3f8a1d2/accessibility-spec.md",
+  "flows_dir": "ux-design-c3f8a1d2/flows",
+  "screens_dir": "ux-design-c3f8a1d2/screens",
+  "p1_findings": [
+    {
+      "severity": "P1",
+      "code": "UX-P1-NO-FRONTEND-SPEC",
+      "description": "No frontend spec was supplied; brand, component visuals, route list and recommended stack are BA-derived only and unverified.",
+      "affected_artifact": "route-map.md, component-inventory.md, tokens.json",
+      "remediation": "UX team to supply the Frontend Spec markdown; recompute route/component/brand sections.",
+      "owner": "UX team"
+    },
+    {
+      "severity": "P1",
+      "code": "UX-P1-NO-PROTOTYPE",
+      "description": "No bundled prototype HTML was supplied; visual design and verbatim Thai copy could not be extracted.",
+      "affected_artifact": "microcopy.json, tokens.json",
+      "remediation": "UX team to supply the bundled prototype; extract Thai strings and brand values.",
+      "owner": "UX team"
+    },
+    {
+      "severity": "P1",
+      "code": "UX-P1-BRAND-TBD",
+      "description": "Brand color tokens are TBD (no spec/prototype), so brand-on-background WCAG contrast cannot be computed or gated.",
+      "affected_artifact": "tokens.json, accessibility-spec.md",
+      "remediation": "Provide brand palette; recompute contrast and re-gate the accessibility table.",
+      "owner": "UX team"
+    },
+    {
+      "severity": "P1",
+      "code": "UX-P1-TH-MICROCOPY-TBD",
+      "description": "Every Thai (th) microcopy value is TBD-extract-from-prototype; the storefront is Thai-market and cannot ship copy in English only.",
+      "affected_artifact": "microcopy.json",
+      "remediation": "Extract Thai strings from the prototype or have UX author them.",
+      "owner": "UX team"
+    }
+  ],
+  "p2_findings": [
+    {
+      "severity": "P2",
+      "code": "UX-P2-FIGMA-TBD",
+      "description": "figma_url is TBD-fill-in.",
+      "affected_artifact": "README.md",
+      "remediation": "Provide the Figma source URL.",
+      "owner": "UX team"
+    },
+    {
+      "severity": "P2",
+      "code": "UX-P2-CONTACT-TBD",
+      "description": "ux_team_contact is TBD-fill-in.",
+      "affected_artifact": "README.md",
+      "remediation": "Name the UX team contact.",
+      "owner": "Delivery Ops"
+    },
+    {
+      "severity": "P2",
+      "code": "UX-P2-DESKTOP-INTENT",
+      "description": "Desktop-responsive intent is unconfirmed; the brief says 'web storefront' but gives no desktop layout.",
+      "affected_artifact": "responsive-spec.md",
+      "remediation": "Confirm whether desktop is in MVP scope.",
+      "owner": "Product Manager"
+    },
+    {
+      "severity": "P2",
+      "code": "UX-P2-ROUTES-NO-BA-STORY",
+      "description": "Catalog/detail/cart routes (/, /products/:sku, /cart) are implied by checkout but have no dedicated BA story.",
+      "affected_artifact": "route-map.md",
+      "remediation": "BA to confirm browse/cart scope and add stories if needed.",
+      "owner": "BA"
+    }
+  ],
+  "ba_stories_without_ux_coverage": [
+    "STORY-ORDER-02",
+    "STORY-INVENTORY-01",
+    "STORY-INVENTORY-02"
+  ],
+  "ux_routes_without_ba_story": [
+    "/",
+    "/products/:sku",
+    "/cart"
+  ],
+  "audit_id": "e5b9d740-2a18-4c63-b0f1-7d6c2a3e9f55",
+  "processing_metadata": {
+    "skill_name": "generate-ux-pack",
+    "skill_version": "0.1.0",
+    "started_at": "2026-06-04T00:00:00Z",
+    "completed_at": "2026-06-04T00:00:00Z",
+    "tier": "T2",
+    "idempotency_key": "c3f8a1d2-4b6e-4f09-9a7c-1e2d3b4a5c6d"
+  }
+}

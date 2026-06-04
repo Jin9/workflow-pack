@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | **Stage** | S1b · BA Brief |
-| **Skill** | `eliciting-banking-brief ^1.5.0` *(this fixture rendered by the pre-promotion `^1.4.1`)* |
+| **Skill** | `eliciting-banking-brief 1.5.0` *(re-run/re-stamped 2026-06-04; output unchanged)* |
 | **Owner** | BA lead |
 | **Input** | `../S0-intake/ecommerce_mvp_business_only.gap-closed.md` + the discovery from `../S1a-ba-discovery/` (advisory) |
 | **Output contract** | [`workflows/schemas/ba-brief.json`](../../../../workflows/schemas/ba-brief.json) (INDEX manifest → `EPIC-*` files → `STORY-*` files) |
@@ -22,8 +22,8 @@
 
 | Layer | File(s) | Produced by | Role |
 |---|---|---|---|
-| **L0 · discovery** | `../S1a-ba-discovery/discovery.json` (+ `discovery-input.json`) | `researching-ba-problem-space ^1.0.0` | problem framing · opportunities · the four product risks (value/usability/feasibility/viability) · regulatory regimes · `recommendation` |
-| **L1 · brief** | `brief.json` | `eliciting-banking-brief ^1.5.0` | the boundary brief (initiative, scope, governance, PII inventory, regulatory deps) |
+| **L0 · discovery** | `../S1a-ba-discovery/discovery.json` (+ `discovery-input.json`) | `researching-ba-problem-space 1.0.0` | problem framing · opportunities · the four product risks (value/usability/feasibility/viability) · regulatory regimes · `recommendation` |
+| **L1 · brief** | `brief.json` | `eliciting-banking-brief 1.5.0` | the boundary brief (initiative, scope, governance, PII inventory, regulatory deps) |
 | **L2 · epics** | `EPIC-<DOMAIN>/EPIC-<DOMAIN>.json` | ↳ + deterministic render | one epic file per epic, holding `story_refs[]` |
 | **L3 · stories** | `EPIC-<DOMAIN>/STORY-<DOMAIN>-NN-<slug>.json` | ↳ + deterministic render | one file per story (card · Gherkin AC · banking-grade concerns · DoR) |
 
@@ -44,7 +44,7 @@ The L0 discovery layer (`discovery.json` + `discovery-input.json`) lives in [`..
 ## Caveats
 
 - **Hand-applied extension — do not re-render blindly.** The `discovery`/`brief` manifest refs and this unified viewer are added by hand on top of `render_ba_pack.py`'s 3-level output. Re-running `render_ba_pack.py` would **overwrite** them (it rewrites `INDEX.json` + `ba-research-viewer.html` and deletes `EPIC-*`). Updating the renderer to emit the four-layer pack natively is the next (skills) phase.
-- **S1 contract reconciled, and now split per stage.** `squad-delivery-dashboard.standalone.html` models S1 as the discovery→brief composite **as two cards** (`S1a · BA Discovery` → gate → `S1b · BA Brief`); this run folder mirrors that with two folders. The live `workflows/schemas/ba-brief.json` carries `discovery_file`/`brief_file`/`layers`, with a sibling `workflows/schemas/discovery.json`; the single canonical `workflows/delivery-pipeline.yaml` wires the two-skill chain through the human recommendation gate. This fixture was produced by the pre-promotion skills (`^0.1.0` / `^1.4.1`); the chain now runs `researching-ba-problem-space ^1.0.0` → `eliciting-banking-brief ^1.5.0`.
+- **S1 contract reconciled, and now split per stage.** `squad-delivery-dashboard.standalone.html` models S1 as the discovery→brief composite **as two cards** (`S1a · BA Discovery` → gate → `S1b · BA Brief`); this run folder mirrors that with two folders. The live `workflows/schemas/ba-brief.json` carries `discovery_file`/`brief_file`/`layers`, with a sibling `workflows/schemas/discovery.json`; the single canonical `workflows/delivery-pipeline.yaml` wires the two-skill chain through the human recommendation gate. This fixture is now produced by the pinned skills `researching-ba-problem-space 1.0.0` → `eliciting-banking-brief 1.5.0` (re-run/re-stamped 2026-06-04). The substantive four-layer content is unchanged from the pre-promotion (`^0.1.0` / `^1.4.1`) render: the S1 skills are idempotent, and RB-01 suppresses the discovery handoff so the `eliciting-banking-brief 1.5.0` node runs on `raw_content` alone — behaviour-identical to v1.4.x. Only the version-provenance stamps moved to the exact pins.
 - **RB-01 provenance.** The discovery layer was derived retrospectively from an already-structured requirement (full note inside `../S1a-ba-discovery/discovery.json`'s `problem_framing`).
 
 ## Skills/tooling phase — status

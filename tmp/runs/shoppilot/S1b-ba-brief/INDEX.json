@@ -4,7 +4,7 @@
   "stage": "S1",
   "state": "ready-for-tl",
   "confidence": "high",
-  "produced_by": "researching-ba-problem-space ^0.1.0 (discovery) + eliciting-banking-brief ^1.4.1 (brief) + deterministic render",
+  "produced_by": "researching-ba-problem-space 1.0.0 (discovery) + eliciting-banking-brief 1.5.0 (brief) + deterministic render",
   "owner": "BA lead",
   "schemaVersion": "1.1",
   "discovery_file": "../S1a-ba-discovery/discovery.json",
@@ -14,14 +14,14 @@
     "discovery": {
       "file": "../S1a-ba-discovery/discovery.json",
       "input_file": "../S1a-ba-discovery/discovery-input.json",
-      "skill": "researching-ba-problem-space ^0.1.0",
+      "skill": "researching-ba-problem-space 1.0.0",
       "stage_type": "analyze",
       "recommendation": "proceed",
       "audit_id": "9d4e1f8a-2c07-4b63-a5e9-6f1b0c3d8e24"
     },
     "brief": {
       "file": "brief.json",
-      "skill": "eliciting-banking-brief ^1.4.1",
+      "skill": "eliciting-banking-brief 1.5.0",
       "status": "ready-for-tl",
       "audit_id": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22"
     },

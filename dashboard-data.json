@@ -771,7 +771,18 @@
       "f": "JSON verdict (schema-validated gate)"
     }
   },
-  "json_only": ["S3a/3b", "S4a", "S4b", "T1", "T2", "T3", "T5", "T7", "T9", "T11"],
+  "json_only": [
+    "S3a/3b",
+    "S4a",
+    "S4b",
+    "T1",
+    "T2",
+    "T3",
+    "T5",
+    "T7",
+    "T9",
+    "T11"
+  ],
   "tests": [
     {
       "name": "Unit — Backend",

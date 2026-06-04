@@ -27,6 +27,12 @@
 > **Hardened 2026-06-04:** all built `skill_ref`s in `workflows/delivery-pipeline.yaml` are **exact-pinned**
 > (no caret ranges) and the three workflow-boundary schemas enforce root `additionalProperties: false`.
 >
+> **Demo run 2026-06-04:** the **S1 → S2.5** ShopPilot walkthrough is materialized under
+> `tmp/runs/shoppilot/` — S1 re-stamped to the pinned skills, and **S1.5 / S2 / S2.5 produced**
+> (S2.5 exercised the cap-1 plan-review loop-back: **REVISE → ADR-008 → PROCEED**). A new workspace
+> utility, `.claude/skills/rendering-contract-debug-viewer/`, renders any contract JSON into a
+> self-contained, offline, dashboard-themed debug viewer (light+dark, contract-aware badges, view-source).
+>
 > **As of 2026-06-02** the retired trees — `agentic-delivery-pipeline/` and `business-analyse/` — live in
 > the **sibling** `../archive/` directory (named `archive`, no leading dot, **outside** `workflow-pack/`);
 > `design-diagram/` was **removed** (its house-style draw.io role is now the external `drawio` skill); and
