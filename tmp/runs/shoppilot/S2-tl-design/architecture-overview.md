@@ -1,8 +1,12 @@
 # ShopPilot — architecture overview (S2 TL Design)
 
 > Component map, event catalog, tech stack, NFR mapping, and load-bearing decisions for the ShopPilot MVP, derived
-> from the S1 BA pack. Diagrams: [`diagrams/shoppilot-architecture.drawio`](diagrams/shoppilot-architecture.drawio)
-> (HLD) and [`diagrams/shoppilot-erd.drawio`](diagrams/shoppilot-erd.drawio) (ERD).
+> from the S1 BA pack. Diagram: one consolidated offline 4-tab draw.io —
+> [`diagrams/shoppilot-architecture.drawio`](diagrams/shoppilot-architecture.drawio)
+> (**L1** System Context · **L2** High-Level Design · **L3** Components & Aggregates ·
+> **L4** ER & Aggregate→Table Boundaries), generated deterministically from
+> [`diagrams/shoppilot-architecture.spec.json`](diagrams/shoppilot-architecture.spec.json)
+> by `scripts/spec_to_drawio.py`.
 
 ## Bounded contexts
 

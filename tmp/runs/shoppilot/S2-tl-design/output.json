@@ -74,6 +74,12 @@
     ],
     "process_events": []
   },
+  "diagrams": {
+    "architecture_drawio": "diagrams/shoppilot-architecture.drawio",
+    "architecture_spec": "diagrams/shoppilot-architecture.spec.json",
+    "erd_consolidated": "diagrams/shoppilot-architecture.drawio",
+    "offline": true
+  },
   "coverage_gaps": [
     { "kind": "ba_story_without_ux_route", "detail": "STORY-ORDER-02, STORY-INVENTORY-01, STORY-INVENTORY-02 are admin/back-office or system-driven; no customer UX route by design (carried from S1.5)." },
     { "kind": "ux_route_without_ba_story", "detail": "/, /products/:sku and /cart are implied by checkout but have no dedicated BA story (carried from S1.5; flagged for BA)." }

@@ -167,7 +167,7 @@ class Cell:
     __slots__ = (
         "cid", "parent", "value", "style", "is_vertex", "is_edge",
         "source", "target", "x", "y", "w", "h", "rel_x", "rel_y",
-        "ax", "ay", "points",
+        "ax", "ay", "points", "page",
     )
 
     def __init__(self):
@@ -188,6 +188,7 @@ class Cell:
         self.ax = 0.0      # absolute x (after parent accumulation)
         self.ay = 0.0
         self.points = []   # edge waypoints (absolute) [(x, y), ...]
+        self.page = 0      # source <diagram> page index (for multi-page stacking)
 
 
 def _num(v, default=0.0):
@@ -207,33 +208,41 @@ def load_cells(drawio_path):
     """
     tree = ET.parse(drawio_path)
     root = tree.getroot()
-    cell_els = root.findall(".//mxCell")
+    # Page-aware: each <diagram> (draw.io tab) is its own coordinate frame. We tag
+    # every cell with its page index so transcode() can stack pages vertically
+    # (a 4-tab file would otherwise flatten into one overlapping frame). A file
+    # with no <diagram> wrapper (raw mxGraphModel) is treated as a single page.
+    diagrams = root.findall(".//diagram")
+    groups = ([(di, dg.findall(".//mxCell")) for di, dg in enumerate(diagrams)]
+              if diagrams else [(0, root.findall(".//mxCell"))])
 
     cells = []
     by_id = {}
-    for el in cell_els:
-        c = Cell()
-        c.cid = el.get("id")
-        c.parent = el.get("parent")
-        c.value = el.get("value")
-        c.style = parse_style(el.get("style", ""))
-        c.is_vertex = el.get("vertex") == "1"
-        c.is_edge = el.get("edge") == "1"
-        c.source = el.get("source")
-        c.target = el.get("target")
-        geo = el.find("mxGeometry")
-        if geo is not None:
-            c.rel_x = _num(geo.get("x"))
-            c.rel_y = _num(geo.get("y"))
-            c.w = _num(geo.get("width"))
-            c.h = _num(geo.get("height"))
-            arr = geo.find("Array[@as='points']")
-            if arr is not None:
-                for pt in arr.findall("mxPoint"):
-                    c.points.append((_num(pt.get("x")), _num(pt.get("y"))))
-        cells.append(c)
-        if c.cid is not None:
-            by_id[c.cid] = c
+    for page_idx, cell_els in groups:
+        for el in cell_els:
+            c = Cell()
+            c.cid = el.get("id")
+            c.parent = el.get("parent")
+            c.value = el.get("value")
+            c.style = parse_style(el.get("style", ""))
+            c.is_vertex = el.get("vertex") == "1"
+            c.is_edge = el.get("edge") == "1"
+            c.source = el.get("source")
+            c.target = el.get("target")
+            c.page = page_idx
+            geo = el.find("mxGeometry")
+            if geo is not None:
+                c.rel_x = _num(geo.get("x"))
+                c.rel_y = _num(geo.get("y"))
+                c.w = _num(geo.get("width"))
+                c.h = _num(geo.get("height"))
+                arr = geo.find("Array[@as='points']")
+                if arr is not None:
+                    for pt in arr.findall("mxPoint"):
+                        c.points.append((_num(pt.get("x")), _num(pt.get("y"))))
+            cells.append(c)
+            if c.cid is not None:
+                by_id[c.cid] = c
     return cells, by_id
 
 
@@ -272,6 +281,36 @@ def resolve_absolute(cells, by_id):
 # ---------------------------------------------------------------------------
 # Geometry / bbox
 # ---------------------------------------------------------------------------
+def stack_pages(cells):
+    """E1: stack multi-page (.drawio tab) content vertically.
+
+    Each <diagram> page authors its own coordinate frame (typically near the
+    origin), so a naive flatten overlaps all tabs. We shift every cell on page p
+    down so page p's top aligns just below page p-1's bottom. Deterministic:
+    page order is document order; the offset is a pure function of prior bboxes.
+    Single-page files (one page index) are untouched — no behavior change.
+    """
+    page_ids = sorted({c.page for c in cells})
+    if len(page_ids) <= 1:
+        return
+    PAGE_GAP = 120.0
+    cursor = 0.0
+    for p in page_ids:
+        verts = [c for c in cells if c.page == p and c.is_vertex and (c.w > 0 or c.h > 0)]
+        if not verts:
+            continue
+        top = min(c.ay for c in verts)
+        bottom = max(c.ay + c.h for c in verts)
+        delta = cursor - top
+        for c in cells:
+            if c.page == p:
+                c.ay += delta
+                c.y = c.ay
+                if c.points:
+                    c.points = [(px, py + delta) for (px, py) in c.points]
+        cursor += (bottom - top) + PAGE_GAP
+
+
 def compute_bbox(cells):
     xs, ys, x2s, y2s = [], [], [], []
     for c in cells:
@@ -383,7 +422,15 @@ def render_table(c, by_id, children_by_parent, dx, dy):
 
 
 def render_vertex(c, dx, dy):
-    """Render a generic (non-table) vertex as a rounded rect + wrapped label."""
+    """Render a generic (non-table) vertex as a rounded rect + wrapped label.
+
+    E2 (graceful fallback): this is also the renderer for any vertex whose
+    `shape=` the transcoder does not special-case — e.g. the L2 rich draw.io
+    icons (shape=mxgraph.kubernetes.icon, shape=cylinder3). They degrade to a
+    labeled rounded rect carrying the cell's `value`, so the offline console
+    stays readable while native draw.io shows the full icon. No external assets
+    are ever read, so the hard offline bar is preserved.
+    """
     out = []
     x = c.ax - dx
     y = c.ay - dy
@@ -477,6 +524,7 @@ def transcode(drawio_path):
     """Transcode a .drawio file into a standalone inline <svg> string."""
     cells, by_id = load_cells(drawio_path)
     resolve_absolute(cells, by_id)
+    stack_pages(cells)  # E1: vertically stack multi-page (.drawio tab) content
 
     # Index children by parent for table rendering (document order preserved).
     children_by_parent = {}

@@ -29,5 +29,11 @@
 
 Mermaid is inadequate for runtime topology in this house style. Emit ASCII
 `infra-topology.md` (one fenced block, one screen — see
-`templates/infra-topology.md`). Do NOT attempt to emit binary `.drawio`;
-draw.io runtime deployment views are an explicitly deferred concern.
+`templates/infra-topology.md`).
+
+The consolidated architecture / HLD / ER / DDD-boundary view is the **one
+exception** to "Mermaid only": it is emitted as a single offline 4-tab
+`.drawio` (L1–L4) — but **only** via the deterministic generator
+`scripts/spec_to_drawio.py` from `architecture.spec.json` (see
+`references/drawio-architecture-conventions.md`, step 8.5). **Never hand-author
+`.drawio` XML.**

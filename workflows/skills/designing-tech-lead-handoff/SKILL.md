@@ -88,7 +88,11 @@ the scaffold-v1.1 structural requirements.
    layer-presence table (`templates/layer-presence-table.md`) with a mandatory
    non-"following the pattern" rationale; instantiate an Orchestrator only when
    ≥1 of the 3 signals (multi-Aggregate / compensation / temporal) fires, and
-   cite the signal.
+   cite the signal. **Begin the architecture spec**: record the derived
+   `contexts[]`, `actors[]`, `externals[]`, `aggregates[]` (each with its
+   `root` table + owned `tables[]`), and `process_aggregates[]` into the
+   in-progress `diagrams/{system}-architecture.spec.json` (schema in
+   `references/drawio-architecture-conventions.md`).
 3. **Emit integration contracts (artifact 1 → `api_contracts`).** Per
    `templates/tech-lead-contracts.md`. Every cross-component HTTP action and
    every async event gets one contract with non-vague `idempotency_rules`
@@ -97,7 +101,11 @@ the scaffold-v1.1 structural requirements.
 4. **Emit component map (artifact 2 → `component_map`).** Per
    `templates/tech-lead-components.md`. `dependencies[]` reference ONLY
    `contract_name`s emitted in step 3 — an orphan dependency is a structural
-   failure (`partial_design`, FM-TL-03).
+   failure (`partial_design`, FM-TL-03). **Mirror into the architecture spec**:
+   each component + its datastore → `services[]`/`datastores[]`, and each
+   cross-component HTTP / event edge (from the step-3 contracts) →
+   `topology[]` with `kind: sync|async` — no new analysis, these derive from
+   artifacts already emitted.
 5. **Emit infra summary, topology, connectivity, observability spec
    (artifacts 3–6).** In that exact order, per the four copied templates. Load
    `references/failure-retry-strategy.md` for the L3 §6.5 failure≠rollback
@@ -116,6 +124,26 @@ the scaffold-v1.1 structural requirements.
    `templates/api-spec.md` (scaffold §6.2 frontmatter + §0 Changelog; on a
    first design emit a single `v1.0 — initial` changelog entry — do not
    fabricate prior versions).
+8.5. **Emit the architecture spec + consolidated diagram.** Finalize
+   `diagrams/{system}-architecture.spec.json` per
+   `references/drawio-architecture-conventions.md`: complete the `tables{}` map
+   (one entry per table, `rows: [[flag, "col : TYPE"], …]`, lifting the same
+   schema detail that drives the per-service `erd.md` / `schema.sql` — do not
+   re-author) and the `fks[]` (classed `intra|composition|cross`). Then
+   **invoke the deterministic generator — never hand-write `.drawio`**:
+   `python3 scripts/spec_to_drawio.py --input diagrams/{system}-architecture.spec.json --output diagrams/{system}-architecture.drawio`.
+   This renders ONE offline file with five tabs (L1 System Context · L2
+   High-Level Design · L3 Components & Aggregates · L4 ER & Aggregate→Table
+   Boundaries · Legend / Standard Template), in the hivemind house style
+   (New/Enhanced/Existing/External component colours, Sync/Async/Authorization
+   connections) with edges anchored + gutter-routed so no arrow crosses a box.
+   Record `diagrams.{architecture_drawio, architecture_spec,
+   erd_consolidated, offline:true}` in the output. Emit the optional
+   `data_model` block **only** once the per-service split ER pack exists (its
+   `index` is mandatory, mirroring the boundary); until then the consolidated
+   ER is carried by `diagrams.erd_consolidated`. Both blocks are
+   present-or-absent, **never `null`**. The generator fails closed if any table
+   is unowned or doubly-claimed by an aggregate.
 9. **Emit per-story L4 specs.** One `{story-id}-L4-spec.md` per story per
    `templates/l4-spec.md`: structured `command` (imperative; MUST NOT match
    `Submit*/Process*/Handle*/Manage*`) + `events_emitted[]` (past-tense
@@ -142,7 +170,10 @@ the scaffold-v1.1 structural requirements.
 14. **Assemble + self-validate.** Emit JSON conforming to
     `schemas/output.json`; set `output_type`; compute `audit_id`; populate
     `processing_metadata`. Re-run the four `tests/assertions/*` gates before
-    returning.
+    returning. **Diagram determinism gate:** re-run `scripts/spec_to_drawio.py`
+    a second time and assert byte-identical output; assert the source
+    `.drawio` is offline-clean (no `image=http`, `src=`, `@import`,
+    `@font-face`). Any diff or external reference is a build failure.
 
 ## Modes
 
@@ -158,8 +189,9 @@ the scaffold-v1.1 structural requirements.
   `infra_topology`, `connectivity`, `observability_spec`, `adrs`, `l4_specs`,
   `event_catalog`, `audit_id`, `processing_metadata` (plus optional
   `orchestrators`, `api_specs`, `coverage_gaps`, `architecture_smells`,
-  `open_questions`). The required output fields are exactly
-  `component_map`, `api_contracts`, `audit_id`.
+  `open_questions`, and the step-8.5 `diagrams` + `data_model` blocks). The
+  required output fields are exactly `component_map`, `api_contracts`,
+  `audit_id`.
 - **`partial_design`** — artifacts produced but a contract/naming/dependency
   gate failed; carries `blocking_findings[]`.
 - **`blocked_design`** — pre-architecture stop; carries `blockers[]`, no
@@ -216,6 +248,8 @@ Progressive disclosure — load the file at the step that needs it:
 - `references/event-catalog-split.md` — steps 3, 9, 10, 12
 - `references/ux-input-contract.md` — steps 1, 13
 - `references/mermaid-conventions.md` — steps 5, 7, 9
+- `references/drawio-architecture-conventions.md` — step 8.5 (the consolidated
+  L1–L4 `.drawio` spec + generator)
 
 `audit/RATIONALE.md` is human-only and MUST NOT be loaded into LLM context.
 The scaffold-v1.1 source has been distilled into these references; it is not

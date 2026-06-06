@@ -209,6 +209,30 @@
         }
       }
     },
+    "diagrams": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPTIONAL. The consolidated 4-tab architecture .drawio (L1-L4) + its source spec, produced at step 8.5 by scripts/spec_to_drawio.py. Present-or-absent, never null. A stricter subset of the boundary schema workflows/schemas/tl-design.json diagrams block, so any valid output also satisfies the boundary. erd_consolidated points at the SAME file (its L4 page is the ER pack).",
+      "required": ["architecture_drawio", "architecture_spec", "offline"],
+      "properties": {
+        "architecture_drawio": { "type": "string", "pattern": "\\.drawio$" },
+        "architecture_spec": { "type": "string", "pattern": "\\.spec\\.json$" },
+        "erd_consolidated": { "type": "string", "pattern": "\\.drawio$" },
+        "sequence_diagrams": { "type": "array", "items": { "type": "string", "pattern": "\\.drawio$" } },
+        "offline": { "type": "boolean", "const": true }
+      }
+    },
+    "data_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPTIONAL. Emit ONLY once the per-service split ER pack exists — its INDEX is mandatory (mirrors boundary workflows/schemas/tl-design.json, which requires `index`). Until then the consolidated ER is carried by diagrams.erd_consolidated, and this block is omitted. Present-or-absent, never null.",
+      "required": ["index"],
+      "properties": {
+        "index": { "type": "string" },
+        "consolidated_erd_drawio": { "type": "string", "pattern": "\\.drawio$" },
+        "service_count": { "type": "integer", "minimum": 0 }
+      }
+    },
     "coverage_gaps": {
       "type": "array",
       "items": {
