@@ -2,13 +2,67 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "S-test canary-analysis boundary — multi-window canary verdict",
   "type": "object",
-  "required": ["verdict", "per_metric", "sample_adequate", "audit_id"],
+  "required": [
+    "verdict",
+    "per_metric",
+    "sample_adequate",
+    "audit_id"
+  ],
   "additionalProperties": false,
   "properties": {
-    "verdict": { "type": "string", "enum": ["promote", "hold", "rollback"] },
-    "per_metric": { "type": "array", "items": { "type": "object" } },
-    "sample_adequate": { "type": "boolean" },
-    "windows_passed": { "type": "integer", "minimum": 0 },
-    "audit_id": { "type": "string", "format": "uuid" }
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "promote",
+        "hold",
+        "rollback"
+      ]
+    },
+    "per_metric": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "sample_adequate": {
+      "type": "boolean"
+    },
+    "windows_passed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/ux-intake.json",
+  "title": "S1.5 ux-intake boundary manifest (generate-ux-pack output)",
+  "description": "Boundary manifest for the S1.5 UX-intake node (ux-intake): fronts the S1.5 UX pack produced by generate-ux-pack. Permissive (additionalProperties:true) so the pack can also carry the per-artifact path map, p1/p2 findings and coverage gaps. Exposes the pack directory plus the design-token / route-map paths the TL handoff consumes, and the pack maturity that gates S4b frontend-implement.",
+  "type": "object",
+  "required": ["pack_dir", "tokens_path", "route_map_path", "maturity_level", "audit_id"],
+  "additionalProperties": true,
+  "properties": {
+    "pack_dir": { "type": "string", "description": "Root directory of the UX pack." },
+    "tokens_path": { "type": "string", "description": "Path to the design-token file (tokens.json) the TL handoff consumes." },
+    "route_map_path": { "type": "string", "description": "Path to the route map the frontend leg consumes." },
+    "component_inventory_path": { "type": "string", "description": "Optional path to the component inventory." },
+    "maturity_level": {
+      "type": "integer",
+      "enum": [0, 1, 2, 3],
+      "description": "UX pack maturity (mirrors generate-ux-pack: 0=skeleton, 1=basic, 2=draft, 3=ready-for-implementation); gates S4b frontend-implement (raise the gate as the pack matures)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "ready-for-audit", "ready-for-implementation"],
+      "description": "Pack status discriminator emitted by generate-ux-pack."
+    },
+    "viewer_file": { "type": "string", "description": "Path to the self-contained offline HTML viewer for the pack." },
+    "audit_id": { "type": "string", "format": "uuid" },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": { "type": "string" },
+        "render": { "type": "string", "enum": ["viewer", "native", "fold", "split", "gate-summary"] },
+        "source": { "type": "string" },
+        "renderer": { "type": "string" },
+        "verdict_map": { "type": "object" }
+      }
+    }
+  }
+}

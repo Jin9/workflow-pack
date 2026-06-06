@@ -38,6 +38,16 @@
 > utility, `.claude/skills/rendering-contract-debug-viewer/`, renders any contract JSON into a
 > self-contained, offline, dashboard-themed debug viewer (light+dark, contract-aware badges, view-source).
 >
+> **Added 2026-06-06 — the Delivery Review Console.** `.claude/skills/rendering-delivery-review-console/`
+> assembles **one** run-scoped, offline, byte-deterministic `delivery-review.html` per run folder — a single
+> standalone document whose **left-nav menus are pipeline stages** (Epics&Stories · UX Brief · Design&ADRs ·
+> Plan Review · Quality), **superseding the per-stage viewers** for review. Diagrams embed as offline **inline
+> SVG** (a deterministic `.drawio`→`<svg>` transcoder, never a raster export) + a path chip; the 12 T-gates roll
+> into a **Quality-Gate Board** (worst-of R/A/G). The design is recorded in
+> `reference/plan/output-contract-and-review-design.md`, and the 3 missing boundary schemas
+> (`workflows/schemas/{ux-intake,tl-design,plan-review}.json`) plus an additive `human_view` render-policy
+> field are now in place. Demo: `tmp/runs/shoppilot/delivery-review.html`.
+>
 > **As of 2026-06-02** the retired trees — `agentic-delivery-pipeline/` and `business-analyse/` — live in
 > the **sibling** `../archive/` directory (named `archive`, no leading dot, **outside** `workflow-pack/`);
 > `design-diagram/` was **removed** (its house-style draw.io role is now the external `drawio` skill); and

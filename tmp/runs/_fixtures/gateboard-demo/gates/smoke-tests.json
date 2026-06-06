@@ -1,0 +1,8 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000011-0000-4000-8000-000000000011",
+  "checks": 15,
+  "failed": 0,
+  "headline": "15 post-deploy smoke checks pass.",
+  "verdict": "PASS"
+}

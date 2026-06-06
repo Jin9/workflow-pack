@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000002-0000-4000-8000-000000000002",
+  "coverage_pct": 81,
+  "headline": "188/188 frontend unit tests pass.",
+  "passed": 188,
+  "tests": 188,
+  "verdict": "PASS"
+}

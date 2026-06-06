@@ -1,0 +1,8 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000008-0000-4000-8000-000000000008",
+  "failed": 0,
+  "headline": "9 end-to-end journeys pass.",
+  "journeys": 9,
+  "verdict": "PASS"
+}

@@ -1,0 +1,8 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000012-0000-4000-8000-000000000012",
+  "baseline_pct": 0.3,
+  "error_rate_pct": 4.2,
+  "headline": "Canary error-rate 4.2% vs 0.3% baseline -> rollback.",
+  "verdict": "rollback"
+}

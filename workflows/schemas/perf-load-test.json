@@ -2,22 +2,93 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "S-test perf-load-test boundary — performance/load results",
   "type": "object",
-  "required": ["verdict", "metrics", "within_budget", "audit_id"],
+  "required": [
+    "verdict",
+    "metrics",
+    "within_budget",
+    "audit_id"
+  ],
   "additionalProperties": false,
   "properties": {
-    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
     "metrics": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "p95": { "type": ["number", "null"] },
-        "p99": { "type": ["number", "null"] },
-        "error_rate": { "type": ["number", "null"] },
-        "throughput": { "type": ["number", "null"] }
+        "p95": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "p99": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "error_rate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "throughput": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
       }
     },
-    "within_budget": { "type": "boolean" },
-    "breaches": { "type": "array", "items": { "type": "object" } },
-    "audit_id": { "type": "string", "format": "uuid" }
+    "within_budget": {
+      "type": "boolean"
+    },
+    "breaches": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
   }
 }
