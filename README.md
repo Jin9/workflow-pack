@@ -2,7 +2,7 @@
 
 ![status](https://img.shields.io/badge/status-research%20%26%20design-blue)
 ![pipeline](https://img.shields.io/badge/pipeline-cognitive--os%2Fv1-6f42c1)
-![live skills](https://img.shields.io/badge/live%20skills-14-success)
+![live skills](https://img.shields.io/badge/live%20skills-28-success)
 ![dashboard](https://img.shields.io/badge/dashboard-offline--first-orange)
 
 > **Visual core-plan:** open **`squad-delivery-dashboard.standalone.html`** — the
@@ -42,6 +42,12 @@
 > the **sibling** `../archive/` directory (named `archive`, no leading dot, **outside** `workflow-pack/`);
 > `design-diagram/` was **removed** (its house-style draw.io role is now the external `drawio` skill); and
 > `tmp/runs/shoppilot/` holds a **full S0–S7 walkthrough demo** (one folder per stage).
+>
+> **Refreshed 2026-06-06:** the optional `spec-review/` gate was re-run over the full post-build spec set
+> (**104 specs**; tuned **0 block / 68 warn / exit 0**) and the deletable `templates-review/` review copy was
+> removed. This README is now synced to the post-build reality reflected below — **28 live skills** (badge),
+> the **S6 deploy pair** (`handoff-to-deploy` / `handoff-revoke`) **built + wired** (OI-002 closed), and the
+> **12 T1–T12 test runners wired** (GAP-05 closed).
 
 ---
 
@@ -85,8 +91,8 @@ of agent confidence.** Reversible artifact-producing stages run exception-only.
 | **S4b** | Frontend Impl | `implement-frontend-feature 1.0.0` | api_contracts, ux pack | `tsx_files, test_files, audit_id` | reversible (sandbox) | **dev-squad** | ✅ wired |
 | **S4b-r** | Frontend Review | `review-frontend-code 1.0.0` | tsx_files, contracts | `verdict, findings, audit_id` | reversible | **dev-squad** | ✅ wired |
 | **S4c** | QA Test Design | `planning-banking-tests 1.0.0` · qa-squad | epic, stories, review verdicts | `test_roster, signoff_criteria, audit_id` | reversible | **qa-squad** | ✅ wired |
-| **S5** | QA Validation (execute) | qa-squad | test_roster | pass/fail evidence | reversible | **qa-squad** | ⚠ GAP (OI-003 / GAP-05) |
-| **S6** | **Deploy** | `handoff-to-deploy 0.1.0` → release runner | signoff_criteria | `receipt_id, audit_id` + **live release** | **IRREVERSIBLE / control-plane** | **Release Manager** | ⚠ GAP (OI-002) |
+| **S5** | QA Validation (execute) | `executing-qa-test-suite` · qa-squad | test_roster | pass/fail evidence | reversible | **qa-squad** | ✅ wired (T-gates); owner OI-003 open |
+| **S6** | **Deploy** | `handoff-to-deploy 0.1.0` → release runner | signoff_criteria | `receipt_id, audit_id` + **live release** | **IRREVERSIBLE / control-plane** | **Release Manager** | ✅ wired (OI-002 closed) |
 | **S7** | **Prod Validation** | ops + observability | live release | smoke/SLO verdict + rollback decision | **production-touching** | **On-call / Release Mgr** | ⚠ GAP (OI-003) |
 
 **S1 BA Research is a discovery→brief composite** — shown above (and on the dashboard) as the two
@@ -240,7 +246,7 @@ component with unresolved **high** — the ShopPilot dry-run outcome) · **Faile
 fan out on a bad plan).
 
 Recovery infra: idempotency via `idempotency_key`; compensation enabled (600s) with `handoff-revoke`
-compensating action (currently missing — OI-002). HITL escalation is the final recovery tier. *(No
+compensating action (**built + wired 2026-06-06 — OI-002 closed**). HITL escalation is the final recovery tier. *(No
 replay/checkpoint/idempotency-recovery runtime today → GAP-15; the Rust `squad-engine` that provided this
 is archived.)*
 
@@ -283,35 +289,35 @@ segregation-of-duties**; the event log is an immutable, append-only, signable **
 legally-defensible record of who approved what, when.
 
 ## Test & quality gates — coverage matrix
-**Finding:** the squad **designs** tests well (S4c `planning-banking-tests` emits a
-unit/integration/contract/E2E/smoke roster + NFR derivation) but **executes none in-pipeline** — QA
-execution (S5) is deferred (**GAP-05**).
+**Finding (updated 2026-06-06):** the squad **designs** tests well (S4c `planning-banking-tests` emits a
+unit/integration/contract/E2E/smoke roster + NFR derivation) **and now executes them in-pipeline** — the 12
+runners below are **wired as the T1–T12 test gates** in `workflows/delivery-pipeline.yaml` (**GAP-05 closed**).
 
-**Measurement method.** A **runner skill + auto-gate tier is now defined for every test type** (built as
-draft skills) — see the archived `QUALITY_GATE_MEASUREMENT.md`. The method **measures each result against
+**Measurement method.** A **runner skill + auto-gate tier is defined for every test type** — see the archived
+`QUALITY_GATE_MEASUREMENT.md`. The method **measures each result against
 an explicit threshold, auto-passes on green, and escalates only exceptions** (FAIL · Marginal · flaky · new
 high-severity · `can_i_deploy=false`) to a human — collapsing per-test review into a single **aggregate
-sign-off at S5 / S4c** (HITL stays at the irreversible S6/S7 boundaries). **Wiring the runners into
-`workflows/delivery-pipeline.yaml` (GAP-05 — test-runner wiring) remains the open step.**
+sign-off at S5 / S4c** (HITL stays at the irreversible S6/S7 boundaries). **The runners are now wired into
+`workflows/delivery-pipeline.yaml` as T1–T12 (GAP-05 — test-runner wiring — closed 2026-06-06).**
 
 | Test type | Level | Runner skill | Gate | Status |
 |---|---|---|---|---|
-| Unit — Backend / Frontend | unit | `executing-backend-unit-tests` / `executing-frontend-unit-tests` | auto | runner built (draft) · pending wiring |
-| Integration | integration | `executing-integration-tests` | auto+exc | runner built (draft) · pending wiring |
-| Contract (Pact / CDCT) | contract | `contract-testing-pact` | auto | runner built (draft) · pending wiring |
-| End-to-end (E2E) | e2e | `authoring-e2e-test-suite` | auto+exc | runner built (draft) · pending wiring |
-| Security — SAST / code | security | `running-sast-security-gate` | auto | runner built (draft) · pending wiring |
-| Security — DAST / SCA / secrets | security | `scanning-appsec-pipeline-gate` | auto | runner built (draft) · pending wiring |
-| Security — adversarial / pentest | security | `validating-banking-implementation` (persona) | human | existing skill · review-only |
-| Performance / Load | performance | `running-performance-load-test` | auto | runner built (draft) · pending wiring |
-| Accessibility (WCAG 2.1 AA) | a11y | `running-accessibility-tests` | auto+exc | runner built (draft) · OI-004 open |
-| Smoke / sanity | smoke | `running-smoke-tests` | auto | runner built (draft) · pending wiring |
-| Canary analysis | progressive | `analyzing-canary-rollout` | auto+exc | runner built (draft) · pending wiring |
-| SLO validation (prod) | slo | `validating-production-slo` | auto+exc | runner built (draft) · pending wiring |
+| Unit — Backend / Frontend | unit | `executing-backend-unit-tests` / `executing-frontend-unit-tests` | auto | wired (T1–T12) |
+| Integration | integration | `executing-integration-tests` | auto+exc | wired (T1–T12) |
+| Contract (Pact / CDCT) | contract | `contract-testing-pact` | auto | wired (T1–T12) |
+| End-to-end (E2E) | e2e | `authoring-e2e-test-suite` | auto+exc | wired (T1–T12) |
+| Security — SAST / code | security | `running-sast-security-gate` | auto | wired (T1–T12) |
+| Security — DAST / SCA / secrets | security | `scanning-appsec-pipeline-gate` | auto | wired (T1–T12) |
+| Security — adversarial / pentest | security | `validating-banking-implementation` (persona) | human | wired (T1–T12) · human review-only |
+| Performance / Load | performance | `running-performance-load-test` | auto | wired (T1–T12) |
+| Accessibility (WCAG 2.1 AA) | a11y | `running-accessibility-tests` | auto+exc | wired (T1–T12) · OI-004 open |
+| Smoke / sanity | smoke | `running-smoke-tests` | auto | wired (T1–T12) |
+| Canary analysis | progressive | `analyzing-canary-rollout` | auto+exc | wired (T1–T12) |
+| SLO validation (prod) | slo | `validating-production-slo` | auto+exc | wired (T1–T12) |
 
 ## Verdict: **CONDITIONAL — DESIGN READY** for human sign-off once these GAPS close
-1. **Deploy (S6) & Prod-Validation (S7)** get a **named approver** + the missing `handoff-to-deploy` /
-   `handoff-revoke` skills (**OI-002**) and stage owners (**OI-003**).
+1. **Deploy (S6) & Prod-Validation (S7)** get a **named approver** + stage owners (**OI-003**, still open).
+   The `handoff-to-deploy` / `handoff-revoke` skills (**OI-002**) are now **built + wired** (closed 2026-06-06).
 2. **Deploy credentials → short-lived OIDC tokens** (no long-lived secrets) before the deploy gate is enabled.
 3. **External allow/confirm/deny policy engine** stood up.
 4. **`agent.trace.v1`** tamper-evident, both-halves audit (**GAP-14**) + **typed HITL approval records** (**GAP-13**).

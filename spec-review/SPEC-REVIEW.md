@@ -1,16 +1,16 @@
 # Spec review — `universal-spec-validator` over the live delivery pipeline
 
-**Date:** 2026-06-03 · **Scope:** live pipeline only (`workflows/**` + the `.claude/` workspace skill;
-`reference/repo-generator/**` and root `dashboard-data*.json` excluded) · **Action taken:** 2026-06-03
-review + tuned config; **2026-06-04 fix-list applied**, then **OI-002 closed** — the S6 deploy pair
-(`handoff-to-deploy` / `handoff-revoke`) and a 12-stage post-development test group (T1–T12) were built and
-wired (see the Updates below). NB: the spec/finding counts in the tables below **predate** that build — 28
-new specs were added (14 `SKILL.md` + 14 boundary schemas under `workflows/schemas/`), so a fresh validator
-run is needed to refresh them; the qualitative verdict (false-positive-driven C4/C3) is unchanged.
+**Date:** 2026-06-03 · **Reports refreshed:** 2026-06-06 · **Scope:** live pipeline only (`workflows/**` +
+the `.claude/` workspace skills; `reference/repo-generator/**` and root `dashboard-data*.json` excluded) ·
+**Action taken:** 2026-06-03 review + tuned config; **2026-06-04 fix-list applied**, then **OI-002 closed** —
+the S6 deploy pair (`handoff-to-deploy` / `handoff-revoke`) and a 12-stage post-development test group
+(T1–T12) were built and wired (see the Updates below). **The report tables below were re-run 2026-06-06**
+against the post-build spec set (**104 specs**, up from 47 — 28 `SKILL.md` + 54 skill schemas + 18 boundary
+schemas + 1 YAML + 3 `.claude/` specs); the qualitative verdict (false-positive-driven C4/C3) is unchanged.
 
 ## Verdict
 
-Out of the box the gate **fails (exit 1) with 32 blocking findings**, but **every blocking finding is a
+Out of the box the gate **fails (exit 1) with 50 blocking findings**, but **every blocking finding is a
 heuristic false positive** — substring matches and keyword-vocabulary mismatches, not real unsafe
 surfaces. This is precisely the failure mode the validator's own severity policy warns about ("an
 over-aggressive auto-fail takes a healthy agent offline just as surely as drift does"). The fix is
@@ -21,11 +21,15 @@ With the recommended `.spec-validator.yaml` (in this folder) the gate goes **gre
 
 | Run | specs | block | warn | exit | note |
 |---|---|---|---|---|---|
-| **Raw** (no config) | 47 | **32** | 46 | **1** | block = C4/C3, left to config tiering by decision |
-| **Tuned** (this config) | 47 | **0** | 46 | **0** | green; the 46 warns are all intentional |
+| **Raw** (no config) | 104 | **50** | 61 | **1** | block = 44 C4 + 6 C3, left to config tiering by decision |
+| **Tuned** (this config) | 104 | **0** | 68 | **0** | green; the 68 warns are all intentional |
 
 Reports: `spec-validation.raw.{json,md}` (red baseline) · `spec-validation.{json,md}` (tuned/green).
-Counts above are **post-fix (2026-06-04)**; the original 2026-06-03 baseline was 52 warn.
+Counts above are the **2026-06-06 refresh** over the full 104-spec post-build set (S6 deploy pair + T1–T12
+test group included). Raw warn by rule: 15 C5 · 9 C6 · 13 C7 · 18 P2 · 6 P5. Tuned warn by rule: 18 C4 ·
+4 C3 · 9 C6 · 13 C7 · 18 P2 · 6 P5 (the C4/C3 block→warn tiering surfaces them; the 15 C5 are all on
+`*/schemas/*.json` and are ignored by config). The earlier 47-spec / 32-block run is preserved in this
+file's history.
 
 ## Update — fix-list applied (2026-06-04)
 
@@ -48,9 +52,9 @@ autonomous S3/S4a/S4b stages must not carry HITL markers). Tuned gate still **ex
 
 | Rule | Axis | Raw | What it means | Verdict | Disposition |
 |---|---|---|---|---|---|
-| **C4** irreversible-action w/o HITL | cmd-safety | 26 block | flags `deploy/publish/push/prod/iam/grant/revoke` w/o `approval\|hitl\|confirm` nearby | **False positive** | 17 on schemas → **ignored**; 11 on SKILL.md → **warn** |
+| **C4** irreversible-action w/o HITL | cmd-safety | 44 block | flags `deploy/publish/push/prod/iam/grant/revoke` w/o `approval\|hitl\|confirm` nearby | **False positive** | 26 on schemas → **ignored**; 18 on SKILL.md → **warn** |
 | **C3** injection-field-feeds-command | cmd-safety | 6 block | flags `comment/readme/user_input/…` co-occurring with `command/path/query` | **False positive** | 2 on schemas → **ignored**; 4 on SKILL.md/YAML → **warn** |
-| **C5** floating version | cmd-safety | 16 warn | `"^`, `~`, `:latest` | **Split** | 15 schema `^pattern` → **ignored**; **1 REAL** (`delivery-pipeline.yaml`) → **kept (warn)** |
+| **C5** floating version | cmd-safety | 15 warn | `"^`, `~`, `:latest` | **All false positive** | 15 schema `^pattern` → **ignored**; the once-`1 REAL` `delivery-pipeline.yaml` C5 is **gone** (exact-pinned 2026-06-04) |
 | **P2** no `additionalProperties:false` | portability | 21 warn (9 files) | object input open to extra props (OpenAI strict-mode drift) | **Mixed** | kept (warn); real subset in fix-list |
 | **P5** capability not annotated | portability | 7 warn | implies network/file-write/code-exec, no `requires_capabilities` | **Advisory** | kept (warn) |
 | **C6 / C7** identity / long-lived creds | cmd-safety | 4 / 4 warn | weak audit-identity / static secret heuristics | **Advisory** | kept (warn) |
@@ -79,10 +83,15 @@ test runners still trip C4/C3 as substring/vocabulary false positives; a hard `C
 ignores for those false positives is left to a follow-up run that can confirm, with the validator, exactly
 which specs still trip C4 after the 2026-06-04 build.
 
-The 11 C4 warns (review for context, none blocking): `befe-contract-design`, `designing-tech-lead-handoff`,
+The 18 C4 warns (review for context, none blocking): `befe-contract-design`, `designing-tech-lead-handoff`,
 `executing-qa-test-suite`, `generate-ux-pack`, `implement-backend-feature`, `implement-frontend-feature`,
 `red-teaming-implementation-plan`, `researching-ba-problem-space`, `review-backend-code`,
-`review-frontend-code`, `validating-production-slo`.
+`review-frontend-code`, `validating-production-slo`, plus the 7 new T-gate runners
+`analyzing-canary-rollout`, `authoring-e2e-test-suite`, `executing-backend-unit-tests`,
+`executing-frontend-unit-tests`, `running-accessibility-tests`, `running-performance-load-test`,
+`running-sast-security-gate` (all substring/vocabulary false positives — test runners with no
+deploy/IAM/publish side-effect; the deploy pair `handoff-to-deploy`/`handoff-revoke` carry
+`requires_approval: true` and do **not** trip C4).
 
 The 4 C3 warns: `delivery-pipeline.yaml`, `generate-ux-pack`, `planning-banking-tests`,
 `review-frontend-code` — all co-occurrence, none interpolate untrusted text into a shell.
