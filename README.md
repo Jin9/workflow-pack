@@ -13,8 +13,7 @@
 > **Stage-flow diagram:** `delivery-pipeline-flow.drawio` (workspace root) is an **offline** draw.io view
 > of all **27** pipeline nodes **top-to-bottom** — input/output per stage, the parallel **BE ∥ FE** legs,
 > and the human gates **colour-graded** (🟪 sync/named · 🟨 async/review · 🟦 auto; 👤 on the 12 that need
-> a human). Generated deterministically from `dashboard-data.json` by `tmp/gen_pipeline_drawio.py`
-> (regenerate after data changes; no arrows/characters cross a box).
+> a human). Offline raw-XML draw.io; mirrors `dashboard-data.json` (no arrows/characters cross a box).
 >
 > **Agent/workspace guide:** `CLAUDE.md` remains the authoritative guide for working in this
 > repository (subprojects, conventions, validation). This README is a *design reference*, not
