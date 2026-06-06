@@ -15,3 +15,6 @@ __pycache__/
 # Session scratch (not committed)
 tmp/.backups/
 *.viewer.html
+
+# Large binary animation experiment (GIF/mp4/frames) — not tracked
+tmp/runs/fb-pipeline-reel/
