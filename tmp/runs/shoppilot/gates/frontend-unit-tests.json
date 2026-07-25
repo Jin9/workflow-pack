@@ -1,0 +1,25 @@
+{
+  "verdict": "PASS",
+  "totals": {
+    "executed": 71,
+    "passed": 71,
+    "failed": 0,
+    "skipped": 0
+  },
+  "per_file_coverage": [
+    {
+      "file": "src/lib/money.ts",
+      "coverage": 0.95
+    },
+    {
+      "file": "src/hooks/useIdempotentConfirm.ts",
+      "coverage": 0.9
+    }
+  ],
+  "failures": [],
+  "execution": {
+    "mode": "replay",
+    "target_source": "reference-corpus"
+  },
+  "audit_id": "15d966fa-68b1-5ea7-aefa-b3ef30ab0a76"
+}

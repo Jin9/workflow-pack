@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/handoff-revoke/schemas/input.json",
+  "title": "handoff-revoke input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage ?.",
+  "type": "object",
+  "required": [
+    "reason",
+    "original_receipt",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "reason": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Why the compensation fired (downstream failure context); recorded verbatim in the revoke receipt."
+    },
+    "original_receipt": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "The handoff receipt being reversed (shape: handoff-to-deploy schemas/output.json). The revoke target derives from original_receipt.receipt_id; stop blocked on null or a non-handed_off status.",
+      "properties": {
+        "receipt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "confirmation": {
+      "type": "object",
+      "required": [
+        "actor_ref",
+        "role",
+        "decision"
+      ],
+      "additionalProperties": false,
+      "description": "Optional named revoke confirmation. The engine's compensation trigger supplies none today \u2014 the named decision lives in the typed HITL resolution record; threading it into this payload is a ledgered engine follow-up. NEVER reuse the forward handoff's approver.",
+      "properties": {
+        "actor_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "const": "approve-revoke"
+        }
+      }
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "engine-injected: invocation identity. Business dedupe key is original_receipt.receipt_id \u2014 same key + same normalized input => byte-identical receipt; an already-compensated receipt never triggers a second rollback."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "engine-injected: producer stage id -> artifact path."
+    }
+  }
+}

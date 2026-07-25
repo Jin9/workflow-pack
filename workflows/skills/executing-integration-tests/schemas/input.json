@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/executing-integration-tests/schemas/input.json",
+  "title": "executing-integration-tests input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage integration-tests.",
+  "type": "object",
+  "required": [
+    "files_generated",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "description": "Shape: implement-frontend-feature schemas/output.json#/properties/files_generated. FLAT-MERGE COLLISION: also picked from backend-implement; engine keeps the LAST writer (frontend-implement). Load every producer's value via upstream_artifacts."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    },
+    "integration_test_context": {
+      "type": "object",
+      "description": "Optional workflow-supplied runner context: {suite_ref, target_env, runner_profile_ref, teardown_probe_ref - non-secret refs}. Absent in replay; in live runner mode its absence stops the stage with needs-input - file manifests do not identify a runnable SIT environment.",
+      "additionalProperties": true
+    }
+  }
+}

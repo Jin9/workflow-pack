@@ -1,0 +1,49 @@
+{
+  "verdict": "promote",
+  "grade": "Pass",
+  "receipt_id": "RCPT-shoppilot-20260607-0001",
+  "per_slo": [
+    {
+      "name": "availability",
+      "target": 99.9,
+      "observed": 99.97,
+      "burn_rate": 0.2,
+      "unit": "percent",
+      "comparison": "gte",
+      "judgement": "within_budget"
+    },
+    {
+      "name": "order-confirm p95 (ms)",
+      "target": 800,
+      "observed": 540,
+      "burn_rate": 0.3,
+      "unit": "ms",
+      "comparison": "lte",
+      "judgement": "within_budget"
+    },
+    {
+      "name": "error-rate",
+      "target": 1.0,
+      "observed": 0.1,
+      "burn_rate": 0.1,
+      "unit": "percent",
+      "comparison": "lte",
+      "judgement": "within_budget"
+    },
+    {
+      "name": "double-charge incidents",
+      "target": 0,
+      "observed": 0,
+      "burn_rate": 0.0,
+      "unit": "count",
+      "comparison": "eq",
+      "judgement": "within_budget"
+    }
+  ],
+  "window": "30m + 6h multi-window burn-rate, post-deploy",
+  "execution": {
+    "mode": "replay",
+    "target_source": "reference-corpus"
+  },
+  "audit_id": "a20f2de4-cda9-5762-92b5-b1ead082baf5"
+}

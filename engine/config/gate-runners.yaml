@@ -1,0 +1,30 @@
+# Machine-threshold T-gates run REAL commands — no LLM in the loop. Each runner
+# emits a gate JSON conforming to the stage's dual schemas: verdict PASS|FAIL|ERROR
+# (vocabulary verbatim), totals {executed, passed, failed, skipped}, audit_id,
+# failures[].
+#
+# Targets are the buildable REFERENCE implementation (OI-004 corpus) — the code
+# the replayed S4a/S4b manifests actually describe. Pointing these at freshly
+# code-generated output is the repo-stamping/worktree half of P5, still open:
+# live SDK output is not a buildable module tree yet.
+runners:
+  backend-unit-tests:
+    kind: go-test
+    cwd: tmp/runs/shoppilot/S4a-backend/services # relative to the workspace root
+    services: [auth, checkout, inventory, order]
+    args: [go, test, -race, -count=1, -json, ./app/...]
+    env:
+      GOPROXY: "off" # offline by contract — deps are cached (OI-004)
+      GOFLAGS: -mod=mod
+
+  frontend-unit-tests:
+    kind: vitest
+    cwd: tmp/runs/shoppilot/S4b-frontend/app
+    args:
+      [
+        node,
+        node_modules/vitest/vitest.mjs,
+        run,
+        --reporter=json,
+        --outputFile=.vitest-report.json,
+      ]

@@ -1,0 +1,19 @@
+{
+  "verdict": "PASS",
+  "provider_verified": true,
+  "pacts": [
+    {
+      "consumer": "web",
+      "verified": true
+    },
+    {
+      "consumer": "checkout-service",
+      "verified": true
+    }
+  ],
+  "can_i_deploy": true,
+  "execution": {
+    "mode": "replay"
+  },
+  "audit_id": "3e1410c9-be4c-5f6d-9034-e2335714c6a2"
+}

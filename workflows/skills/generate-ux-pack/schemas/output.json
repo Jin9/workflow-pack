@@ -1,0 +1,422 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/generate-ux-pack/schemas/output.json",
+  "title": "generate-ux-pack output",
+  "description": "Output of the generate-ux-pack skill. Discriminated by output_type: ux_pack (boundary-successful pack, maturity 2/3), partial_ux_pack (maturity 0/1 or artifacts missing), blocked_ux_pack (preconditions not met), failure_shape (runtime error). partial/blocked/failure shapes intentionally fail the stage boundary and route retry -> ux-intake-pending.",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/ux_pack"
+    },
+    {
+      "$ref": "#/definitions/partial_ux_pack"
+    },
+    {
+      "$ref": "#/definitions/blocked_ux_pack"
+    },
+    {
+      "$ref": "#/definitions/failure_shape"
+    }
+  ],
+  "definitions": {
+    "pack_relative_path": {
+      "type": "string",
+      "pattern": "^ux-design-[0-9a-f]{8}(/(?!\\.\\.(/|$))[^/\\x00]+)+$",
+      "description": "POSIX path relative to the directory containing ux-intake's output.json, rooted in the pack dir; no absolute paths, no '..' segments (pattern-enforced), no NUL. Downstream resolution: dirname(upstream_artifacts[\"ux-intake\"]) / path, rejecting symlink escapes and any resolved path outside the pack."
+    },
+    "ux_pack": {
+      "type": "object",
+      "required": [
+        "output_type",
+        "pack_dir",
+        "maturity_level",
+        "status",
+        "artifacts_present",
+        "tokens_path",
+        "route_map_path",
+        "component_inventory_path",
+        "microcopy_path",
+        "screen_states_path",
+        "form_validation_path",
+        "responsive_spec_path",
+        "accessibility_spec_path",
+        "flows_dir",
+        "screens_dir",
+        "p1_findings",
+        "p2_findings",
+        "ba_stories_without_ux_coverage",
+        "ux_routes_without_ba_story",
+        "audit_id",
+        "processing_metadata"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "output_type": {
+          "const": "ux_pack"
+        },
+        "pack_dir": {
+          "type": "string",
+          "pattern": "^ux-design-[0-9a-f]{8}$",
+          "description": "The emitted pack directory, ux-design-{idempotency_key[:8]} — derived from the injected idempotency_key, NEVER a freshly generated UUID; retries validate/update the same pack."
+        },
+        "maturity_level": {
+          "type": "integer",
+          "enum": [
+            2,
+            3
+          ],
+          "description": "ux_pack requires maturity 2 (draft, ready-for-audit) or 3 (ready-for-implementation). Maturity 0/1 is a partial_ux_pack."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready-for-audit",
+            "ready-for-implementation"
+          ]
+        },
+        "artifacts_present": {
+          "type": "array",
+          "minItems": 9,
+          "items": {
+            "type": "string"
+          },
+          "description": "Emitted artifact filenames; a boundary-successful pack carries all nine core files."
+        },
+        "tokens_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "route_map_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "component_inventory_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "microcopy_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "screen_states_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "form_validation_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "responsive_spec_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "accessibility_spec_path": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "flows_dir": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "screens_dir": {
+          "$ref": "#/definitions/pack_relative_path"
+        },
+        "p1_findings": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/finding"
+              },
+              {
+                "properties": {
+                  "severity": {
+                    "const": "P1"
+                  }
+                }
+              }
+            ]
+          },
+          "description": "Blocks ready-for-implementation. Examples: WCAG AA contrast failure, Thai microcopy TBD, missing Figma URL."
+        },
+        "p2_findings": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/finding"
+              },
+              {
+                "properties": {
+                  "severity": {
+                    "const": "P2"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "ba_stories_without_ux_coverage": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ux_routes_without_ba_story": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "audit_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"ux-intake:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id."
+        },
+        "processing_metadata": {
+          "$ref": "#/definitions/processing_metadata"
+        }
+      },
+      "allOf": [
+        {
+          "description": "Maturity 2 is at most ready-for-audit.",
+          "if": {
+            "properties": {
+              "maturity_level": {
+                "const": 2
+              }
+            },
+            "required": [
+              "maturity_level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "ready-for-audit"
+              }
+            }
+          }
+        },
+        {
+          "description": "Maturity 3 means ready-for-implementation with zero P1 findings.",
+          "if": {
+            "properties": {
+              "maturity_level": {
+                "const": 3
+              }
+            },
+            "required": [
+              "maturity_level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "ready-for-implementation"
+              },
+              "p1_findings": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "partial_ux_pack": {
+      "type": "object",
+      "required": [
+        "output_type",
+        "pack_dir",
+        "artifacts_present",
+        "artifacts_missing",
+        "reason",
+        "audit_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "output_type": {
+          "const": "partial_ux_pack"
+        },
+        "pack_dir": {
+          "type": "string",
+          "pattern": "^ux-design-[0-9a-f]{8}$"
+        },
+        "maturity_level": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "Partial packs are maturity 0/1; maturity 2+ with all core files is a ux_pack."
+        },
+        "artifacts_present": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "artifacts_missing": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "audit_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "processing_metadata": {
+          "$ref": "#/definitions/processing_metadata"
+        }
+      }
+    },
+    "blocked_ux_pack": {
+      "type": "object",
+      "required": [
+        "output_type",
+        "blockers",
+        "audit_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "output_type": {
+          "const": "blocked_ux_pack"
+        },
+        "blockers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "code",
+              "description"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Stable identifier (e.g., BLOCK-NO-BA-BRIEF, BLOCK-NO-FRONTEND-SPEC)."
+              },
+              "description": {
+                "type": "string"
+              },
+              "remediation": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "audit_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "processing_metadata": {
+          "$ref": "#/definitions/processing_metadata"
+        }
+      }
+    },
+    "failure_shape": {
+      "type": "object",
+      "required": [
+        "output_type",
+        "error_code",
+        "error_message",
+        "audit_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "output_type": {
+          "const": "failure_shape"
+        },
+        "error_code": {
+          "type": "string"
+        },
+        "error_message": {
+          "type": "string"
+        },
+        "stack_excerpt": {
+          "type": "string"
+        },
+        "audit_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "processing_metadata": {
+          "$ref": "#/definitions/processing_metadata"
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "severity",
+        "code",
+        "description"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "severity": {
+          "type": "string",
+          "enum": [
+            "P1",
+            "P2",
+            "P3"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "affected_artifact": {
+          "type": "string"
+        },
+        "remediation": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Who should resolve (UX team, PO, frontend lead, etc.)"
+        }
+      }
+    },
+    "processing_metadata": {
+      "type": "object",
+      "required": [
+        "skill_name",
+        "skill_version",
+        "started_at",
+        "completed_at",
+        "tier"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "skill_name": {
+          "const": "generate-ux-pack"
+        },
+        "skill_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "SemVer of the producing skill; equals the skill frontmatter version at production time (historical artifacts keep their original producer version)."
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ]
+        },
+        "idempotency_key": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    }
+  }
+}

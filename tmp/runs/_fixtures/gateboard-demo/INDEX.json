@@ -1,0 +1,9 @@
+{
+  "task_id": "REQ-gateboard-demo",
+  "audit_id": "f000ffff-0000-4000-8000-00000000ffff",
+  "stage": "T1-T12",
+  "state": "synthetic-fixture",
+  "produced_by": "SYNTHETIC FIXTURE for the Quality-Gate Board (no real PII)",
+  "schemaVersion": "1.0",
+  "note": "Minimal run header so the console renders. The 12 T*.json under gates/ exercise the worst-of R/A/G roll-up: sast=FAIL (RED), adversarial-pentest=conditional (T10 AMBER), canary-analysis=rollback (T12 RED), rest green/promote/pass."
+}

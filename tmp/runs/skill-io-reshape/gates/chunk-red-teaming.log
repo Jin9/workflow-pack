@@ -1,0 +1,9 @@
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/red-teaming-implementation-plan
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/red-teaming-implementation-plan
+
+0 finding(s) across 1 skills (STRICT mode)
+38 passed, 1 warning in 0.97s
+
+ALL PASS — 0 failure(s)
+
+22 finding(s) across 27 stages (STRICT mode) · baseline: 27 known, 5 fixed, 0 NEW

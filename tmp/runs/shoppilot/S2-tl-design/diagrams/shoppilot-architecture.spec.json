@@ -1,0 +1,96 @@
+{
+  "system": "ShopPilot MVP",
+  "subtitle": "S2 Tech-Lead design — unified L1–L4 view (Domain → Service → Aggregate → Table)",
+  "contexts": [
+    { "id": "auth",      "label": "Auth",      "epic": "EPIC-AUTH" },
+    { "id": "inventory", "label": "Inventory", "epic": "EPIC-INVENTORY" },
+    { "id": "checkout",  "label": "Checkout",  "epic": "EPIC-CHECKOUT" },
+    { "id": "order",     "label": "Order",     "epic": "EPIC-ORDER" },
+    { "id": "audit",     "label": "Audit (cross-cutting)", "epic": "all" }
+  ],
+  "actors": [
+    { "id": "customer", "label": "Customer\n(shopper)",  "uses": "auth",  "edge": "browse · login · checkout · track" },
+    { "id": "admin",    "label": "Ops Admin",            "uses": "inventory", "edge": "manage stock · fulfil orders" }
+  ],
+  "externals": [
+    { "id": "mock-psp",     "label": "Mock PSP\n(payment, external)",  "from": "checkout", "edge": "capture (mock)" },
+    { "id": "mock-courier", "label": "Mock Courier\n(tracking, external)", "from": "order", "edge": "tracking (mock)" }
+  ],
+  "services": [
+    { "id": "web",               "label": "web\n(storefront+admin)", "context": null,        "role": "client" },
+    { "id": "auth-service",      "label": "auth-service",            "context": "auth" },
+    { "id": "inventory-service", "label": "inventory-service",       "context": "inventory" },
+    { "id": "checkout-service",  "label": "checkout-service",        "context": "checkout" },
+    { "id": "order-service",     "label": "order-service",           "context": "order" }
+  ],
+  "datastores": [
+    { "id": "auth-db",      "label": "MySQL\nshoppilot-auth",      "context": "auth",      "kind": "db" },
+    { "id": "inventory-db", "label": "MySQL\nshoppilot-inventory", "context": "inventory", "kind": "db" },
+    { "id": "checkout-db",  "label": "MySQL\nshoppilot-checkout",  "context": "checkout",  "kind": "db" },
+    { "id": "order-db",     "label": "MySQL\nshoppilot-order",     "context": "order",     "kind": "db" },
+    { "id": "redis",        "label": "Redis\n(sessions)",         "context": "auth",      "kind": "cache" },
+    { "id": "events",       "label": "Kafka event bus — at-least-once + idempotent consumers = effectively-once", "kind": "bus" }
+  ],
+  "topology": [
+    { "from": "web", "to": "auth-service",      "kind": "sync" },
+    { "from": "web", "to": "inventory-service", "kind": "sync" },
+    { "from": "web", "to": "checkout-service",  "kind": "sync" },
+    { "from": "web", "to": "order-service",     "kind": "sync" },
+    { "from": "auth-service",      "to": "auth-db",      "kind": "sync" },
+    { "from": "auth-service",      "to": "redis",        "kind": "sync" },
+    { "from": "inventory-service", "to": "inventory-db", "kind": "sync" },
+    { "from": "checkout-service",  "to": "checkout-db",  "kind": "sync" },
+    { "from": "order-service",     "to": "order-db",     "kind": "sync" },
+    { "from": "checkout-service", "to": "inventory-service", "kind": "sync", "label": "reserve" },
+    { "from": "checkout-service", "to": "order-service",     "kind": "sync", "label": "create order" },
+    { "from": "checkout-service", "to": "mock-psp",          "kind": "sync", "label": "capture (mock)" },
+    { "from": "order-service",    "to": "mock-courier",      "kind": "sync", "label": "tracking (mock)" },
+    { "from": "checkout-service",  "to": "events", "kind": "async", "label": "order.created / payment_captured" },
+    { "from": "order-service",     "to": "events", "kind": "async", "label": "order.status_changed" },
+    { "from": "inventory-service", "to": "events", "kind": "async", "label": "stock.*" },
+    { "from": "auth-service",      "to": "events", "kind": "async", "label": "auth.*" },
+    { "from": "events", "to": "order-service",     "kind": "async", "label": "payment_captured" },
+    { "from": "events", "to": "inventory-service", "kind": "async", "label": "payment_captured / cancelled" }
+  ],
+  "aggregates": [
+    { "id": "customer",    "label": "Customer",    "context": "auth",      "root": "customer",     "tables": ["customer"] },
+    { "id": "session",     "label": "Session",     "context": "auth",      "root": "session",      "tables": ["session"] },
+    { "id": "stocklevel",  "label": "StockLevel",  "context": "inventory", "root": "stock",        "tables": ["stock"] },
+    { "id": "reservation", "label": "Reservation", "context": "inventory", "root": "reservation",  "tables": ["reservation"] },
+    { "id": "cart",        "label": "Cart",        "context": "checkout",  "root": "cart",         "tables": ["cart", "cart_item"] },
+    { "id": "coupon",      "label": "Coupon",      "context": "checkout",  "root": "coupon",       "tables": ["coupon"] },
+    { "id": "payment",     "label": "Payment",     "context": "checkout",  "root": "payment",      "tables": ["payment"] },
+    { "id": "order",       "label": "Order",       "context": "order",     "root": "order",        "tables": ["order", "order_item"] },
+    { "id": "shipment",    "label": "Shipment",    "context": "order",     "root": "shipment",     "tables": ["shipment"] },
+    { "id": "auditlog",    "label": "AuditLog",    "context": "audit",     "root": "audit_log",    "tables": ["audit_log"] }
+  ],
+  "process_aggregates": [
+    { "id": "checkout-proc", "label": "Checkout (process — no table)", "context": "checkout", "note": "ADR-007: sync orchestration inline, no standalone Orchestrator" }
+  ],
+  "tables": {
+    "customer":    { "rows": [["PK","customer_id : UUID"],["","email : VARCHAR(255)"],["","name : VARCHAR(120)"],["","status : ENUM(ACTIVE,DISABLED)"],["","+ audit cols"]] },
+    "session":     { "rows": [["PK","session_id : UUID"],["FK","customer_id : UUID"],["","family_id : UUID"],["","status : ENUM(ACTIVE,REVOKED)"],["","refresh_expires_at : DATETIME"],["","+ audit cols"]] },
+    "stock":       { "rows": [["PK","sku : VARCHAR(64)"],["","available : INT"],["","reserved : INT"],["","sold : INT"],["","+ audit cols"]] },
+    "reservation": { "rows": [["PK","reservation_id : UUID"],["FK","order_id : UUID"],["FK","sku : VARCHAR(64)"],["","quantity : INT"],["","ttl_expires_at : DATETIME"],["","state : ENUM(ACTIVE,RELEASED,CONVERTED)"]] },
+    "cart":        { "rows": [["PK","cart_id : UUID"],["FK","customer_id : UUID"],["","status : ENUM(OPEN,CONVERTED,EXPIRED)"],["","expires_at : DATETIME"],["","+ audit cols"]] },
+    "cart_item":   { "rows": [["PK","cart_item_id : UUID"],["FK","cart_id : UUID"],["","sku : VARCHAR(64)"],["","quantity : INT"],["","unit_price : DECIMAL(10,2)"]] },
+    "coupon":      { "rows": [["PK","coupon_id : UUID"],["","code : VARCHAR(40)"],["","discount_amount : DECIMAL(10,2)"],["","valid_to : DATETIME"],["","status : ENUM"]] },
+    "payment":     { "rows": [["PK","payment_id : UUID"],["FK","order_id : UUID"],["","amount : DECIMAL(10,2)"],["","provider_event_id : VARCHAR(128)"],["","state : ENUM(AWAITING,SUCCESS,FAILURE,TIMEOUT)"]] },
+    "order":       { "rows": [["PK","order_id : UUID"],["FK","customer_id : UUID"],["FK","coupon_id : UUID"],["","order_no : VARCHAR(24)"],["","state : ENUM(AWAITING_PAYMENT…CANCELLED)"],["","total : DECIMAL(10,2)"],["","address_snapshot : TEXT (frozen)"]] },
+    "order_item":  { "rows": [["PK","order_item_id : UUID"],["FK","order_id : UUID"],["","sku : VARCHAR(64)"],["","name : VARCHAR(120) (snapshot)"],["","quantity : INT"],["","unit_price : DECIMAL(10,2)"]] },
+    "shipment":    { "rows": [["PK","shipment_id : UUID"],["FK","order_id : UUID"],["","tracking_number : VARCHAR(64)"],["","carrier : VARCHAR(64)"],["","status : ENUM(PENDING,IN_TRANSIT,DELIVERED)"]] },
+    "audit_log":   { "rows": [["PK","audit_id : UUID"],["","event : VARCHAR(64)"],["","actor : VARCHAR(128)"],["","subject_id : VARCHAR(128)"],["","outcome : ENUM(SUCCESS,FAILURE,TIMEOUT)"]] }
+  },
+  "fks": [
+    { "from": "session",     "from_col": "customer_id", "to": "customer", "class": "intra" },
+    { "from": "reservation", "from_col": "sku",         "to": "stock",    "class": "intra" },
+    { "from": "shipment",    "from_col": "order_id",    "to": "order",    "class": "intra" },
+    { "from": "cart_item",   "from_col": "cart_id",     "to": "cart",     "class": "composition" },
+    { "from": "order_item",  "from_col": "order_id",    "to": "order",    "class": "composition" },
+    { "from": "cart",        "from_col": "customer_id", "to": "customer", "class": "cross" },
+    { "from": "order",       "from_col": "customer_id", "to": "customer", "class": "cross" },
+    { "from": "order",       "from_col": "coupon_id",   "to": "coupon",   "class": "cross" },
+    { "from": "payment",     "from_col": "order_id",    "to": "order",    "class": "cross" },
+    { "from": "reservation", "from_col": "order_id",    "to": "order",    "class": "cross" }
+  ]
+}

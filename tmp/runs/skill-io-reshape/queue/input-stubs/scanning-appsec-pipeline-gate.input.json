@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/scanning-appsec-pipeline-gate/schemas/input.json",
+  "title": "scanning-appsec-pipeline-gate input",
+  "description": "ADVISORY \u2014 documents the assembled stage input; the engine validates workflow input and stage OUTPUTS only (engine/validation.py). Shape below is the POST-adapter payload delivered at stage appsec-scan.",
+  "type": "object",
+  "required": [
+    "appsec_scan_context",
+    "files_generated",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "appsec_scan_context": {
+      "type": "object",
+      "description": "From workflow input (optional): OPTIONAL runner context for the T7 AppSec gate (live runner mode). Absent in replay. All refs are non-secret.",
+      "required": [
+        "target_ref",
+        "target_kind",
+        "build_ref",
+        "sbom_ref",
+        "severity_floor"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_kind": {
+          "type": "string",
+          "enum": [
+            "ci-sandbox",
+            "sit-sandbox"
+          ]
+        },
+        "build_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sbom_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SBOM reference \u2014 REQUIRED: the integrated gate cannot certify CVE cleanliness without SCA evidence."
+        },
+        "severity_floor": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "baseline_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dast_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sca_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "files_generated": {
+      "type": "array",
+      "description": "COLLISION (documented): picked from BOTH implement stages; the engine merges last-writer-wins, so this top-level field is the FRONTEND manifest only \u2014 a hint, never the enumeration source. Resolve BOTH full artifacts via upstream_artifacts['backend-implement'/'frontend-implement'] and scan the union. A per-producer nested shape is reserved for a future contract."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

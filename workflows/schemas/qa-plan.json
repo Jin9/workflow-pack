@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/qa-plan.json",
+  "title": "S4c qa-plan boundary — QA test plan (planning-banking-tests output)",
+  "description": "Boundary for the S4c qa-plan node: permissive superset over planning-banking-tests/schemas/output.json; required mirrors the YAML required_fields [output_type, blocks_qa_execution, frontmatter, test_cases, signoff_criteria, audit_id]. Blocked/failure plans carry EMPTY test_cases + no-go signoff and fail qa-validate's const guards.",
+  "type": "object",
+  "required": [
+    "output_type",
+    "blocks_qa_execution",
+    "frontmatter",
+    "test_cases",
+    "signoff_criteria",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "output_type": {
+      "type": "string",
+      "enum": [
+        "test_plan",
+        "blocked_test_plan",
+        "partial_test_plan",
+        "failure_shape"
+      ]
+    },
+    "blocks_qa_execution": {
+      "type": "boolean"
+    },
+    "frontmatter": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "signoff_criteria": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "test_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "OPTIONAL — planning-banking-tests uses frontmatter.test_plan_id; the run wrapper may add a stage audit_id."
+    },
+    "human_view": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

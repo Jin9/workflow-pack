@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S6 release-handoff SAGA compensation — revoke receipt",
+  "type": "object",
+  "required": [
+    "revoke_id",
+    "original_receipt_id",
+    "status",
+    "reason",
+    "effects",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "revoke_id": {
+      "type": "string",
+      "description": "Identifier of this compensation record (handoff-revoke)."
+    },
+    "original_receipt_id": {
+      "type": "string",
+      "description": "The handoff receipt that was reversed."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "revoked",
+        "partial",
+        "blocked"
+      ]
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 10
+    },
+    "effects": {
+      "type": "object",
+      "required": [
+        "credentials",
+        "promotion"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "credentials": {
+          "type": "string",
+          "enum": [
+            "revoked",
+            "revoke-failed",
+            "not-attempted"
+          ]
+        },
+        "promotion": {
+          "type": "string",
+          "enum": [
+            "withheld",
+            "withhold-failed",
+            "not-attempted"
+          ]
+        }
+      }
+    },
+    "failure_code": {
+      "type": "string"
+    },
+    "confirmation": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

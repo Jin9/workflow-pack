@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/contract-testing-pact/schemas/input.json",
+  "title": "contract-testing-pact input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage contract-tests.",
+  "type": "object",
+  "required": [
+    "contract_spec",
+    "fe_state_binding",
+    "files_generated",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_spec": {
+      "type": "object",
+      "required": [
+        "summary",
+        "documents"
+      ],
+      "description": "Structured contract source of truth from contract-design: {summary, documents[]{kind, context, path}}. Full shape: befe-contract-design schemas/output.json#/properties/contract_spec."
+    },
+    "fe_state_binding": {
+      "type": "object",
+      "required": [
+        "summary",
+        "states"
+      ],
+      "description": "Structured FE state binding from contract-design. Full shape: befe-contract-design schemas/output.json#/properties/fe_state_binding."
+    },
+    "files_generated": {
+      "type": "array",
+      "description": "FLAT-MERGE COLLISION (engine/mapping.py, last-writer-wins): both backend-implement and frontend-implement supply files_generated; frontend-implement is last in YAML order, so THIS FIELD IS THE FRONTEND MANIFEST ONLY. Load both manifests explicitly via upstream_artifacts[\"backend-implement\"] and upstream_artifacts[\"frontend-implement\"].",
+      "items": {
+        "type": "object"
+      }
+    },
+    "contract_test_context": {
+      "type": "object",
+      "description": "Optional workflow-supplied runner context: {pact_refs[]{consumer, ref}, provider_ref, environment, broker_profile_ref}. Absent in replay; in live runner mode its absence stops the stage with needs-input \u2014 broker/environment identity cannot be safely derived from prose or manifests.",
+      "additionalProperties": true
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir. Use to load BOTH implementation manifests past the flat-merge collision.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

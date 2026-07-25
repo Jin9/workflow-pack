@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/analyzing-canary-rollout/schemas/output.json",
+  "title": "analyzing-canary-rollout output",
+  "type": "object",
+  "required": ["verdict", "per_metric", "sample_adequate", "windows_passed", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["promote", "hold", "rollback"]
+    },
+    "per_metric": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Per-metric comparison from the statistical test, not asserted by an agent.",
+      "items": {
+        "type": "object",
+        "required": ["name", "judgement"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "baseline": { "type": ["number", "null"], "description": "Baseline summary statistic for the window set (null when the runner did not export summaries)." },
+          "canary": { "type": ["number", "null"], "description": "Canary summary statistic for the window set (null when the runner did not export summaries)." },
+          "judgement": { "type": "string", "enum": ["pass", "marginal", "fail"] },
+          "test_evidence": {
+            "type": "object",
+            "description": "Statistical evidence backing the judgement. Optional: replay artifacts predate it; live runner-backed analyses SHOULD emit it.",
+            "required": ["method", "baseline_n", "canary_n"],
+            "additionalProperties": false,
+            "properties": {
+              "method": { "type": "string", "minLength": 1 },
+              "baseline_n": { "type": "integer", "minimum": 0 },
+              "canary_n": { "type": "integer", "minimum": 0 },
+              "non_inferiority_margin": { "type": "number" },
+              "statistic": { "type": "number" },
+              "significance": { "type": "object", "additionalProperties": true }
+            }
+          }
+        }
+      }
+    },
+    "sample_adequate": { "type": "boolean" },
+    "windows_passed": { "type": "integer", "minimum": 0 },
+    "analysis": {
+      "type": "object",
+      "description": "Aggregate roll-up resolving the windows_passed numerator to its denominators. Optional: replay artifacts predate it; live analyses SHOULD emit it.",
+      "required": ["windows_total", "metric_windows_total", "metric_windows_passed", "success_threshold_applied"],
+      "additionalProperties": false,
+      "properties": {
+        "windows_total": { "type": "integer", "minimum": 1 },
+        "metric_windows_total": { "type": "integer", "minimum": 1 },
+        "metric_windows_passed": { "type": "integer", "minimum": 0 },
+        "success_threshold_applied": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"canary-analysis:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id in events.jsonl."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Fail-closed: an inadequate sample can never support promotion.",
+      "if": { "properties": { "sample_adequate": { "const": false } }, "required": ["sample_adequate"] },
+      "then": { "properties": { "verdict": { "enum": ["hold", "rollback"] } } }
+    },
+    {
+      "description": "A rollback verdict must be backed by at least one failing metric.",
+      "if": { "properties": { "verdict": { "const": "rollback" } }, "required": ["verdict"] },
+      "then": { "properties": { "per_metric": { "contains": { "properties": { "judgement": { "const": "fail" } }, "required": ["judgement"] } } } }
+    },
+    {
+      "description": "A failing metric can never coexist with promotion.",
+      "if": { "properties": { "per_metric": { "contains": { "properties": { "judgement": { "const": "fail" } }, "required": ["judgement"] } } }, "required": ["per_metric"] },
+      "then": { "properties": { "verdict": { "enum": ["hold", "rollback"] } } }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "verdict": "PASS",
+  "wcag_violations": [],
+  "needs_review": [],
+  "manual_checks": [
+    "keyboard order on checkout",
+    "focus trap on payment modal"
+  ],
+  "execution": {
+    "mode": "replay",
+    "target_source": "reference-corpus"
+  },
+  "scan_scope": {
+    "targets_scanned": 37
+  },
+  "standard": {
+    "name": "WCAG",
+    "version": "2.1",
+    "level": "AA"
+  },
+  "audit_id": "8756cfe2-045d-56c2-9005-67e8a2fea97a"
+}

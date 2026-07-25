@@ -1,0 +1,191 @@
+// Template: consumer_<action>_test.go
+// Replace <DOMAIN>, <Action>, <Dep>, <GetMethod>, <UpdateMethod>, and payload fields.
+// File path: app/<DOMAIN>/consumer_<action>_test.go
+//
+// Coverage rule: success + invalid JSON + each `binding:"required"` validation case +
+// uuid parse failure + each `if err != nil` from access calls. 100% statement coverage.
+
+package <DOMAIN>_test
+
+import (
+	"context"
+	"encoding/json"
+	"testing"
+
+	"gitlab.com/<MODULE-PATH>/common/kafka"
+
+	"gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>"
+	"gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access"
+	access_mocks "gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access/mocks"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func TestOn<Action>(t *testing.T) {
+	r := require.New(t)
+
+	validID := uuid.New()
+
+	type mockArgs struct {
+		<dep>Storage *access_mocks.<Dep>StorageMock
+	}
+
+	type args struct {
+		ctx     context.Context
+		payload <DOMAIN>.<Action>Message
+		raw     []byte // override raw payload for invalid-JSON cases
+	}
+
+	type want struct {
+		err bool
+	}
+
+	tests := []struct {
+		name    string
+		prepare func(m mockArgs, args args)
+		args    args
+		want    want
+	}{
+		{
+			name: "success, case valid event",
+			prepare: func(m mockArgs, args args) {
+				m.<dep>Storage.
+					EXPECT().
+					<GetMethod>(args.ctx, validID).
+					Return(access.<Model>{<ModelIDField>: validID.String()}, nil)
+
+				m.<dep>Storage.
+					EXPECT().
+					<UpdateMethod>(args.ctx, mock.MatchedBy(func(e access.<Model>) bool {
+						return e.<StatusField> == access.<Model>Status<NewState>
+					})).
+					Return(access.<Model>{<ModelIDField>: validID.String()}, nil)
+			},
+			args: args{
+				payload: <DOMAIN>.<Action>Message{
+					<Field1>: "valid-value",
+					<Field2>: validID.String(),
+				},
+			},
+			want: want{err: false},
+		},
+		{
+			name:    "fail, case invalid JSON payload",
+			prepare: func(m mockArgs, args args) {},
+			args: args{
+				raw: []byte("{ invalid json"),
+			},
+			want: want{err: true},
+		},
+		{
+			name:    "fail, case validation - missing <field1>",
+			prepare: func(m mockArgs, args args) {},
+			args: args{
+				payload: <DOMAIN>.<Action>Message{
+					<Field2>: validID.String(),
+				},
+			},
+			want: want{err: true},
+		},
+		{
+			name:    "fail, case validation - missing <field2>",
+			prepare: func(m mockArgs, args args) {},
+			args: args{
+				payload: <DOMAIN>.<Action>Message{
+					<Field1>: "valid-value",
+				},
+			},
+			want: want{err: true},
+		},
+		{
+			name:    "fail, case <field2> is not a UUID",
+			prepare: func(m mockArgs, args args) {},
+			args: args{
+				payload: <DOMAIN>.<Action>Message{
+					<Field1>: "valid-value",
+					<Field2>: "not-a-uuid",
+				},
+			},
+			want: want{err: true},
+		},
+		{
+			name: "fail, case <GetMethod> storage error",
+			prepare: func(m mockArgs, args args) {
+				m.<dep>Storage.
+					EXPECT().
+					<GetMethod>(args.ctx, validID).
+					Return(access.<Model>{}, assert.AnError)
+			},
+			args: args{
+				payload: <DOMAIN>.<Action>Message{
+					<Field1>: "valid-value",
+					<Field2>: validID.String(),
+				},
+			},
+			want: want{err: true},
+		},
+		{
+			name: "fail, case <UpdateMethod> storage error",
+			prepare: func(m mockArgs, args args) {
+				m.<dep>Storage.
+					EXPECT().
+					<GetMethod>(args.ctx, validID).
+					Return(access.<Model>{<ModelIDField>: validID.String()}, nil)
+
+				m.<dep>Storage.
+					EXPECT().
+					<UpdateMethod>(args.ctx, mock.Anything).
+					Return(access.<Model>{}, assert.AnError)
+			},
+			args: args{
+				payload: <DOMAIN>.<Action>Message{
+					<Field1>: "valid-value",
+					<Field2>: validID.String(),
+				},
+			},
+			want: want{err: true},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			tt.args.ctx = ctx
+
+			var raw []byte
+			if tt.args.raw != nil {
+				raw = tt.args.raw
+			} else {
+				raw, _ = json.Marshal(tt.args.payload)
+			}
+
+			msg := kafka.Message[json.RawMessage]{
+				EventID: "test-event-id",
+				Payload: raw,
+			}
+
+			m := mockArgs{
+				<dep>Storage: access_mocks.New<Dep>StorageMock(t),
+			}
+
+			if tt.prepare != nil {
+				tt.prepare(m, tt.args)
+			}
+
+			h := <DOMAIN>.NewHandler(<DOMAIN>.HandlerConfig{
+				<Dep>Storage: m.<dep>Storage,
+			})
+
+			err := h.On<Action>(ctx, msg)
+
+			if tt.want.err {
+				r.Error(err)
+			} else {
+				r.NoError(err)
+			}
+		})
+	}
+}

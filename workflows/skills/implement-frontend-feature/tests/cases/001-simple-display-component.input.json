@@ -1,0 +1,26 @@
+{
+  "api_contracts": {
+    "template_version": "1.0",
+    "contracts": []
+  },
+  "component_map": {
+    "template_version": "1.0",
+    "components": []
+  },
+  "maturity_level": 2,
+  "status": "ready-for-audit",
+  "p1_findings": [],
+  "tokens_path": "ux-design-3f1a2b4c/tokens.json",
+  "route_map_path": "ux-design-3f1a2b4c/route-map.md",
+  "component_inventory_path": "ux-design-3f1a2b4c/component-inventory.md",
+  "microcopy_path": "ux-design-3f1a2b4c/microcopy.json",
+  "screen_states_path": "ux-design-3f1a2b4c/screen-states.md",
+  "form_validation_path": "ux-design-3f1a2b4c/form-validation.md",
+  "responsive_spec_path": "ux-design-3f1a2b4c/responsive-spec.md",
+  "accessibility_spec_path": "ux-design-3f1a2b4c/accessibility-spec.md",
+  "idempotency_key": "3f1a2b4c-5d6e-4a7b-8c9d-0e1f2a3b4c5d",
+  "upstream_artifacts": {
+    "tl-design": "../S2-tl-design/output.json",
+    "ux-intake": "../S1.5-ux-intake/output.json"
+  }
+}

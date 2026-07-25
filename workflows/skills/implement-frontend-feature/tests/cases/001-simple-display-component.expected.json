@@ -1,0 +1,110 @@
+{
+  "files_generated": [
+    {
+      "path": "src/features/profile/components/UserProfileCard.tsx",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "lines_added": 65,
+      "component_pillar": "Primitive",
+      "size_bytes": 1024
+    },
+    {
+      "path": "src/features/profile/components/UserProfileCard.types.ts",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "lines_added": 18,
+      "component_pillar": "Type",
+      "size_bytes": 1024
+    }
+  ],
+  "tests_generated": [
+    {
+      "path": "src/features/profile/components/UserProfileCard.test.tsx",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "test_type": "component",
+      "coverage_pct": 0.92
+    }
+  ],
+  "a11y_compliance": {
+    "wcag_level": "AA",
+    "keyboard_navigable": true,
+    "screen_reader_tested": true,
+    "color_contrast_verified": true,
+    "focus_management_implemented": true,
+    "axe_clean": true
+  },
+  "security_review": {
+    "xss_surfaces": [],
+    "csrf_protected": true,
+    "csp_compliant": true,
+    "token_storage_strategy": "n/a",
+    "pii_fields_handled": [
+      {
+        "field": "display_name",
+        "treatment": "none"
+      },
+      {
+        "field": "account_number",
+        "treatment": "mask"
+      },
+      {
+        "field": "email",
+        "treatment": "mask"
+      },
+      {
+        "field": "government_id",
+        "treatment": "audit-on-view"
+      }
+    ]
+  },
+  "state_ownership": {
+    "profile_data": "server",
+    "is_government_id_revealed": "local"
+  },
+  "bundle_impact_estimate_kb": 3,
+  "compensating_actions": [],
+  "audit_events_emitted": [
+    "pii.government_id.viewed"
+  ],
+  "uncertainty_flags": [
+    {
+      "kind": "other",
+      "location": "ux-intake",
+      "note": "P2 advisory: implemented from a maturity-2 BA-derived UX pack."
+    }
+  ],
+  "decision_metadata": {
+    "pillar_choices": [
+      {
+        "file": "src/features/profile/components/UserProfileCard.tsx",
+        "pillar": "Primitive",
+        "rationale": "pure presentation + a11y; no fetching, no business logic. Parent Feature owns data fetching."
+      },
+      {
+        "file": "src/features/profile/components/UserProfileCard.types.ts",
+        "pillar": "Type",
+        "rationale": "pure type declarations narrowed from codegen User shape."
+      }
+    ],
+    "state_library_choices": [
+      {
+        "concern": "reveal toggle",
+        "choice": "useState (local)",
+        "rationale": "single component scope, no cross-component or URL routing needed."
+      },
+      {
+        "concern": "profile data source",
+        "choice": "props from parent Feature",
+        "rationale": "Primitive must not fetch; Feature parent uses TanStack Query."
+      }
+    ],
+    "repo_conventions_followed": [
+      "Pillar separation: Primitive never imports from Feature/Page",
+      "Component tests query by role/label via RTL + userEvent",
+      "TypeScript strict; props typed via codegen narrowing in *.types.ts",
+      "PII treatment helpers (MaskedField, RedactedField) reused from existing primitives",
+      "Audit-on-view PII emits pii.<field>.viewed analytics event"
+    ]
+  },
+  "output_type": "implementation",
+  "audit_id": "3f1a2b4c-5d6e-5a7b-8c9d-0e1f2a3b4c5d",
+  "frontend_worktree_root": "app"
+}

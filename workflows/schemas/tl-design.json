@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/tl-design.json",
+  "title": "S2 tl-design boundary (designing-tech-lead-handoff output)",
+  "description": "Boundary contract for the S2 TL-design node (tl-design): a permissive superset over designing-tech-lead-handoff/schemas/output.json. Requires only the component_map / api_contracts the downstream fan-out consumes (data_model and diagrams stay OPTIONAL this turn so the legacy demo output.json still validates). Permissive (additionalProperties:true) so the full handoff — ADRs, L4 specs, event catalog, infra summary, coverage gaps — passes unchanged.",
+  "type": "object",
+  "required": ["component_map", "api_contracts", "audit_id"],
+  "additionalProperties": true,
+  "properties": {
+    "output_type": { "type": "string", "enum": ["design", "partial_design", "blocked_design"] },
+    "component_map": {
+      "type": "object",
+      "required": ["template_version", "components"],
+      "additionalProperties": true,
+      "properties": {
+        "template_version": { "type": "string" },
+        "components": { "type": "array" }
+      }
+    },
+    "api_contracts": {
+      "type": "object",
+      "required": ["template_version", "contracts"],
+      "additionalProperties": true,
+      "properties": {
+        "template_version": { "type": "string" },
+        "contracts": { "type": "array" }
+      }
+    },
+    "data_model": {
+      "type": "object",
+      "description": "OPTIONAL this turn — points at the future split ER pack (design/data-model/INDEX.json). Required-within once present.",
+      "required": ["index"],
+      "additionalProperties": true,
+      "properties": {
+        "index": { "type": "string", "description": "Relative path to design/data-model/INDEX.json." },
+        "consolidated_erd_drawio": { "type": "string" },
+        "service_count": { "type": "integer" }
+      }
+    },
+    "diagrams": {
+      "type": "object",
+      "description": "OPTIONAL this turn. Required-within once present.",
+      "required": ["architecture_drawio", "architecture_spec"],
+      "additionalProperties": true,
+      "properties": {
+        "architecture_drawio": { "type": "string", "pattern": "\\.drawio$" },
+        "architecture_spec": { "type": "string", "pattern": "\\.spec\\.json$" },
+        "erd_consolidated": { "type": "string", "pattern": "\\.drawio$" },
+        "sequence_diagrams": { "type": "array", "items": { "type": "string", "pattern": "\\.drawio$" } },
+        "offline": { "type": "boolean", "const": true }
+      }
+    },
+    "audit_id": { "type": "string", "format": "uuid" },
+    "processing_metadata": { "type": "object" },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": { "type": "string" },
+        "render": { "type": "string", "enum": ["viewer", "native", "fold", "split", "gate-summary"] },
+        "source": { "type": "string" },
+        "renderer": { "type": "string" },
+        "verdict_map": { "type": "object" }
+      }
+    }
+  }
+}

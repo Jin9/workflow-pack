@@ -1,0 +1,281 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "validating-production-slo output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "receipt_id",
+    "grade",
+    "per_slo",
+    "window",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "promote",
+        "hold",
+        "rollback"
+      ]
+    },
+    "grade": {
+      "type": "string",
+      "enum": [
+        "Pass",
+        "Marginal",
+        "Fail"
+      ]
+    },
+    "per_slo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "target",
+          "observed",
+          "burn_rate",
+          "judgement",
+          "unit",
+          "comparison"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "number",
+            "description": "The SLO target, on the row's declared unit/comparison scale."
+          },
+          "observed": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Null ONLY when judgement is insufficient_data."
+          },
+          "burn_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Null ONLY when judgement is insufficient_data."
+          },
+          "judgement": {
+            "type": "string",
+            "enum": [
+              "within_budget",
+              "burning",
+              "breaching",
+              "insufficient_data"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "ms",
+              "count",
+              "ratio",
+              "rps"
+            ],
+            "description": "The scale target/observed share \u2014 without it the numbers are meaningless (99.9, 800 and 0 are not comparable)."
+          },
+          "comparison": {
+            "type": "string",
+            "enum": [
+              "gte",
+              "lte",
+              "eq"
+            ],
+            "description": "Direction of conformance: gte (observed >= target passes), lte (observed <= target passes), eq (exact)."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Required (redacted) explanation when judgement is insufficient_data."
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "judgement": {
+                  "const": "insufficient_data"
+                }
+              },
+              "required": [
+                "judgement"
+              ]
+            },
+            "then": {
+              "required": [
+                "reason"
+              ],
+              "properties": {
+                "observed": {
+                  "type": "null"
+                },
+                "burn_rate": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "window": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Normalized summary of EVERY fast/slow burn-rate window actually evaluated \u2014 the decision basis, not a display note."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"prod-validate:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 independent of optional inputs, distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids are grandfathered.)"
+    },
+    "receipt_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Echoed UNCHANGED from the input (the S6 handoff receipt) \u2014 binds this SLO evidence to the release it validated."
+    },
+    "execution": {
+      "type": "object",
+      "description": "Execution provenance \u2014 replay = byte-verbatim reference corpus (no telemetry was read); runner = a real observation window was evaluated.",
+      "required": [
+        "mode",
+        "target_source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "target_source": {
+          "type": "string",
+          "enum": [
+            "current-run",
+            "reference-corpus"
+          ]
+        },
+        "runner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "runner"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "runner",
+              "evidence_ref",
+              "report_sha256"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "replay"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target_source": {
+                "const": "reference-corpus"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "grade": {
+          "const": "Pass"
+        },
+        "verdict": {
+          "const": "promote"
+        },
+        "per_slo": {
+          "items": {
+            "properties": {
+              "judgement": {
+                "const": "within_budget"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "grade": {
+          "const": "Marginal"
+        },
+        "verdict": {
+          "const": "hold"
+        }
+      }
+    },
+    {
+      "properties": {
+        "grade": {
+          "const": "Fail"
+        },
+        "verdict": {
+          "const": "rollback"
+        },
+        "per_slo": {
+          "contains": {
+            "properties": {
+              "judgement": {
+                "const": "breaching"
+              }
+            },
+            "required": [
+              "judgement"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

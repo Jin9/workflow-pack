@@ -1,0 +1,29 @@
+{
+  "files_generated": [
+    {
+      "path": "src/components/profile/UserProfileCard.tsx",
+      "content_hash": "aa11bb22cc33dd44ee55ff66aa77bb88cc99dd00ee11ff22aa33bb44cc55dd66",
+      "size_bytes": 4180,
+      "lines_added": 126,
+      "component_pillar": "Primitive"
+    }
+  ],
+  "tests_generated": [
+    {
+      "path": "src/components/profile/UserProfileCard.test.tsx",
+      "content_hash": "bb22cc33dd44ee55ff66aa77bb88cc99dd00ee11ff22aa33bb44cc55dd66ee77",
+      "test_type": "component"
+    }
+  ],
+  "api_contracts": {
+    "contracts": []
+  },
+  "pack_dir": "ux-design-0f1e2d3c",
+  "component_inventory_path": "ux-design-0f1e2d3c/specs/component-inventory.md",
+  "screen_states_path": "ux-design-0f1e2d3c/specs/screen-states.md",
+  "form_validation_path": "ux-design-0f1e2d3c/specs/form-validation.md",
+  "responsive_spec_path": "ux-design-0f1e2d3c/specs/responsive.md",
+  "accessibility_spec_path": "ux-design-0f1e2d3c/specs/accessibility.md",
+  "idempotency_key": "11111111-2222-4333-8444-555555555555",
+  "tokens_path": "ux-design-0f1e2d3c/tokens/design-tokens.json"
+}

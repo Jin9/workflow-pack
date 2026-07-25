@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/designing-tech-lead-handoff/schemas/input.json",
+  "title": "designing-tech-lead-handoff input contract",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage tl-design.",
+  "type": "object",
+  "required": [
+    "epics",
+    "story_files",
+    "stories",
+    "governance_gaps",
+    "tokens_path",
+    "route_map_path",
+    "component_inventory_path",
+    "pack_dir",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "epics": {
+      "type": "array",
+      "minItems": 1,
+      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (eliciting-banking-brief schemas/epic-sidecar.json). Epic ids match ^EPIC-[A-Z0-9-]+$.",
+      "items": {
+        "type": "object"
+      }
+    },
+    "story_files": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The manifest's original story file refs, retained alongside the hydrated stories.",
+      "items": {
+        "type": "object"
+      }
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "description": "engine-hydrated: inline story sidecar objects (eliciting-banking-brief schemas/story-sidecar.json). Story ids match ^STORY-[A-Z0-9-]+-\\d+$ and carry banking_grade_concerns force-fill rows.",
+      "items": {
+        "type": "object"
+      }
+    },
+    "governance_gaps": {
+      "type": "array",
+      "description": "BA governance gaps; any entry with blocks_tl_handoff:true stops the design (BLOCK-P1-GOVERNANCE).",
+      "items": {
+        "type": "object"
+      }
+    },
+    "tokens_path": {
+      "type": "string",
+      "description": "ux-intake pack-relative POSIX path (ux-design-{idem8}/tokens.json). Resolve via dirname(upstream_artifacts[\"ux-intake\"]); reject absolute paths and .. traversal."
+    },
+    "route_map_path": {
+      "type": "string",
+      "description": "ux-intake pack-relative POSIX path. Same resolution and traversal rules as tokens_path."
+    },
+    "component_inventory_path": {
+      "type": "string",
+      "description": "ux-intake pack-relative POSIX path (producer-required as of generate-ux-pack 0.2.0)."
+    },
+    "pack_dir": {
+      "type": "string",
+      "pattern": "^ux-design-[0-9a-f]{8}$",
+      "description": "The ux-intake pack directory name; consumers verify every ux path is contained within it."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key (same key + same inputs => same design)."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir. Basis for resolving the ux pack-relative paths and reading the ba-brief INDEX manifest (state must be ready-for-tl).",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): plan-review loop_back findings threaded into the re-run; the revised design must address them."
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/contract-testing-pact/schemas/output.json",
+  "title": "contract-testing-pact output",
+  "type": "object",
+  "required": ["verdict", "provider_verified", "pacts", "can_i_deploy", "execution", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "provider_verified": {
+      "type": ["boolean", "null"],
+      "description": "True when the provider verified against every consumer pact; null ONLY for ERROR (verification did not run)."
+    },
+    "pacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["consumer", "verified"],
+        "additionalProperties": false,
+        "properties": {
+          "consumer": { "type": "string", "minLength": 1 },
+          "verified": { "type": ["boolean", "null"], "description": "null = not run (ERROR), distinct from a real negative result." },
+          "pact_ref": { "type": "string", "description": "Runner mode: reference to the verified pact document." },
+          "result_ref": { "type": "string", "description": "Runner mode: run-relative, offline reference to the verification result." },
+          "content_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "Runner mode: content hash of the verification evidence." }
+        }
+      }
+    },
+    "can_i_deploy": {
+      "type": ["boolean", "null"],
+      "description": "Pact Broker can-i-deploy COMPATIBILITY result — evidence for the release decision, not release authorization. Null ONLY for ERROR."
+    },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Non-empty when verdict is ERROR: why verification or the broker query could not run."
+    },
+    "execution": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "description": "Honest execution provenance: replay = corpus evidence replayed (proves the contract, not a runner-backed verification); runner = live CI/test-runner + broker execution.",
+      "properties": {
+        "mode": { "type": "string", "enum": ["runner", "replay"] },
+        "provider_ref": { "type": "string", "minLength": 1 },
+        "environment": { "type": "string", "minLength": 1 },
+        "broker_evidence": {
+          "type": "object",
+          "required": ["result_ref"],
+          "additionalProperties": false,
+          "properties": {
+            "result_ref": { "type": "string", "minLength": 1 },
+            "content_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+          }
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"contract-tests:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id."
+    }
+  },
+  "allOf": [
+    {
+      "description": "PASS must be backed by full verification: provider verified, broker gate true, every pact verified.",
+      "if": { "properties": { "verdict": { "const": "PASS" } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "provider_verified": { "const": true },
+          "can_i_deploy": { "const": true },
+          "pacts": { "items": { "properties": { "verified": { "const": true } }, "required": ["verified"] } }
+        }
+      }
+    },
+    {
+      "description": "FAIL must contain at least one unverified pact or a false broker gate.",
+      "if": { "properties": { "verdict": { "const": "FAIL" } }, "required": ["verdict"] },
+      "then": {
+        "anyOf": [
+          { "properties": { "pacts": { "contains": { "properties": { "verified": { "const": false } }, "required": ["verified"] } } } },
+          { "properties": { "can_i_deploy": { "const": false } } }
+        ]
+      }
+    },
+    {
+      "description": "Only ERROR may carry null results, and it must say why.",
+      "if": { "properties": { "verdict": { "const": "ERROR" } }, "required": ["verdict"] },
+      "then": { "required": ["errors"], "properties": { "errors": { "minItems": 1 } } }
+    },
+    {
+      "description": "Non-ERROR verdicts carry real boolean results.",
+      "if": { "properties": { "verdict": { "enum": ["PASS", "FAIL"] } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "provider_verified": { "type": "boolean" },
+          "can_i_deploy": { "type": "boolean" }
+        }
+      }
+    },
+    {
+      "description": "Runner mode must carry its provenance.",
+      "if": { "properties": { "execution": { "properties": { "mode": { "const": "runner" } }, "required": ["mode"] } }, "required": ["execution"] },
+      "then": { "properties": { "execution": { "required": ["mode", "provider_ref", "environment", "broker_evidence"] } } }
+    }
+  ]
+}

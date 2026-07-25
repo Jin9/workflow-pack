@@ -1,0 +1,6 @@
+{
+  "_comment": "Holdout regression. Resolve ba_brief_ref against the kit root at run time.",
+  "ba_brief_ref": "../../e-commerce-v5/output-e5f8b9c2/",
+  "idempotency_key": "11111111-1111-4111-8111-111111111111",
+  "audit_mode": "enhanced"
+}

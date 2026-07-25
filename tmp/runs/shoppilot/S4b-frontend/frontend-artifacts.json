@@ -1,0 +1,346 @@
+{
+  "output_type": "implementation",
+  "audit_id": "acde4df5-f023-5b80-8d55-846d194d6745",
+  "frontend_worktree_root": "app",
+  "files_generated": [
+    {
+      "path": "index.html",
+      "content_hash": "sha256:6059a504cc34d467d3e7f1022b59fc5ff7d2b80d27f6a047c9cc1e52595c30e3",
+      "size_bytes": 487,
+      "lines_added": 13
+    },
+    {
+      "path": "package.json",
+      "content_hash": "sha256:0e37f44a467959a85d559eae891c58adc4de918446ce6daf041231e34292808a",
+      "size_bytes": 1194,
+      "lines_added": 46
+    },
+    {
+      "path": "src/App.tsx",
+      "content_hash": "sha256:dc62c048ed1220a35246f975c054250a2d5ff469e7327d498381e21d8452b031",
+      "size_bytes": 3062,
+      "lines_added": 83
+    },
+    {
+      "path": "src/analytics.ts",
+      "content_hash": "sha256:52e4016e1f37ea470e8c63d00a9e5896d5abb139824e9ef75a2fa299e1f2ac35",
+      "size_bytes": 790,
+      "lines_added": 25
+    },
+    {
+      "path": "src/api/client.ts",
+      "content_hash": "sha256:f46aea57b83fde7812780f2e3bc899298b4c297e138fa4fe94b06b7771e9cda5",
+      "size_bytes": 6148,
+      "lines_added": 194
+    },
+    {
+      "path": "src/api/types.gen.ts",
+      "content_hash": "sha256:f9f56295464d1d24d623bfb4c698390fc3e9716b89c2505514311067028b055f",
+      "size_bytes": 5776,
+      "lines_added": 199,
+      "component_pillar": "Type"
+    },
+    {
+      "path": "src/components/Button.module.css",
+      "content_hash": "sha256:63f4bf5edb135b689d0fc0677d2168957783c000f32b7ac94bcb8c26a574e9cb",
+      "size_bytes": 1336,
+      "lines_added": 60
+    },
+    {
+      "path": "src/components/Button.tsx",
+      "content_hash": "sha256:54c559aa11136a1c76be4010a0cae09e044154caf0413a2ba2a4612ec19e0f76",
+      "size_bytes": 1596,
+      "lines_added": 47,
+      "component_pillar": "Primitive"
+    },
+    {
+      "path": "src/components/FormField.module.css",
+      "content_hash": "sha256:eaaadf12c7d10b8dc6ab9daf66468fa90bcc4b4267c3d441db60049643183672",
+      "size_bytes": 849,
+      "lines_added": 40
+    },
+    {
+      "path": "src/components/FormField.tsx",
+      "content_hash": "sha256:07a1503d2931b9d579741840a4fcd4a9835579e83233639c01e3b5f685697781",
+      "size_bytes": 1748,
+      "lines_added": 52,
+      "component_pillar": "Primitive"
+    },
+    {
+      "path": "src/features/checkout/CheckoutSummary.module.css",
+      "content_hash": "sha256:5090760315ae47baf10f8c1fe369d22000afd6248c48a9d61864cfcbdc20d716",
+      "size_bytes": 844,
+      "lines_added": 40
+    },
+    {
+      "path": "src/features/checkout/CheckoutSummary.tsx",
+      "content_hash": "sha256:85ae90e91b5a61a61150e343c8883a0f173e37f8e88feb8b2b0b2ab625b44a89",
+      "size_bytes": 2888,
+      "lines_added": 90,
+      "component_pillar": "Feature"
+    },
+    {
+      "path": "src/features/checkout/PaymentPanel.module.css",
+      "content_hash": "sha256:fe62afa06196ff2666b78bc4015ad6c0dde3723643800f10b8b9bc39ce162cfe",
+      "size_bytes": 828,
+      "lines_added": 44
+    },
+    {
+      "path": "src/features/checkout/PaymentPanel.tsx",
+      "content_hash": "sha256:d6a8466002e2e3994365b9784fe0984e8e992338cb97493c414a53e4f329801a",
+      "size_bytes": 2627,
+      "lines_added": 90,
+      "component_pillar": "Feature"
+    },
+    {
+      "path": "src/features/orders/OrderTimeline.module.css",
+      "content_hash": "sha256:c6c387c4ca2c1336822707aebea5d00c085b40743b38ef029fb1c697770a78bb",
+      "size_bytes": 523,
+      "lines_added": 30
+    },
+    {
+      "path": "src/features/orders/OrderTimeline.tsx",
+      "content_hash": "sha256:5c00bff632d780cc2a0a0b9dd2bc1f3449114e88f60b22840457b922c02131df",
+      "size_bytes": 2045,
+      "lines_added": 66,
+      "component_pillar": "Feature"
+    },
+    {
+      "path": "src/hooks/useIdempotentConfirm.ts",
+      "content_hash": "sha256:1d8e54b0b4fa56aa6b009c2275805ed5fab997f6be130bcd2d35ee648262295f",
+      "size_bytes": 4385,
+      "lines_added": 127,
+      "component_pillar": "Hook"
+    },
+    {
+      "path": "src/hooks/useSession.ts",
+      "content_hash": "sha256:e24372983ee4cdafce1f01beeb10c8f58f76cb74fe5e909148f57d87c9b23392",
+      "size_bytes": 2157,
+      "lines_added": 69,
+      "component_pillar": "Hook"
+    },
+    {
+      "path": "src/i18n/microcopy.json",
+      "content_hash": "sha256:ac003945513c42259f403bbbac1f6249e197ad1d165c789cc9c06677194f4ff4",
+      "size_bytes": 5398,
+      "lines_added": 50
+    },
+    {
+      "path": "src/i18n/microcopy.ts",
+      "content_hash": "sha256:50156c6e9962ffff918f97177c7dac01de0dc81cf8412b4f11397837b22a1be5",
+      "size_bytes": 2221,
+      "lines_added": 76
+    },
+    {
+      "path": "src/lib/money.ts",
+      "content_hash": "sha256:12c06a3b45ed4745ed46e3b91eaf273e6934d3419858ce449538c9e8ee05ce95",
+      "size_bytes": 1070,
+      "lines_added": 33,
+      "component_pillar": "Util"
+    },
+    {
+      "path": "src/lib/pii.ts",
+      "content_hash": "sha256:450831b9b4361aee5dee64598a6c1f695eef5ebd3f2089dba47553c043cc1b3b",
+      "size_bytes": 1801,
+      "lines_added": 54,
+      "component_pillar": "Util"
+    },
+    {
+      "path": "src/main.tsx",
+      "content_hash": "sha256:341a76e00bbb4f1187d819327ae01450ea28a2c1dccccb6c989500fd866b79dd",
+      "size_bytes": 1102,
+      "lines_added": 37
+    },
+    {
+      "path": "src/pages/CheckoutPage.tsx",
+      "content_hash": "sha256:14ed0db79e7c0845cf18d6e7b472278f9bbc977cbcfbba2e188385227bd80280",
+      "size_bytes": 4156,
+      "lines_added": 121,
+      "component_pillar": "Page"
+    },
+    {
+      "path": "src/pages/LoginPage.tsx",
+      "content_hash": "sha256:4885b73f855d20814a2e9dba64f59e921ae5c8eb1509a4a6d76d49c784afceca",
+      "size_bytes": 2726,
+      "lines_added": 88,
+      "component_pillar": "Page"
+    },
+    {
+      "path": "src/pages/OrderDetailPage.module.css",
+      "content_hash": "sha256:d75341f1608b0d127474db9dad11de81edeb6383b15f935e3bff1bc86cd29db4",
+      "size_bytes": 197,
+      "lines_added": 11
+    },
+    {
+      "path": "src/pages/OrderDetailPage.tsx",
+      "content_hash": "sha256:3617751863b94aba98afecb05a51fb1782adf627fa608369938510f9ac5ef278",
+      "size_bytes": 3586,
+      "lines_added": 102,
+      "component_pillar": "Page"
+    },
+    {
+      "path": "src/pages/OrdersPage.module.css",
+      "content_hash": "sha256:89d8e690e8755e2ce75acec4be89ca554fb7b7040684af839ec970b3591a932d",
+      "size_bytes": 598,
+      "lines_added": 28
+    },
+    {
+      "path": "src/pages/OrdersPage.tsx",
+      "content_hash": "sha256:af816384ebfe87a64e9ab7db4138372ceaa16feb2bb9bc0f63da48a212a4d609",
+      "size_bytes": 2628,
+      "lines_added": 74,
+      "component_pillar": "Page"
+    },
+    {
+      "path": "src/store/cart.ts",
+      "content_hash": "sha256:92d704e5e3f40dfe034d6f1e87424d86f308c1c5d8aa7226acccd53a638414d3",
+      "size_bytes": 1488,
+      "lines_added": 48
+    },
+    {
+      "path": "src/styles/global.css",
+      "content_hash": "sha256:578e62f2a541b4367fc5e2899affc1dd85abb838538e3cec5e53569082309a1f",
+      "size_bytes": 2214,
+      "lines_added": 119
+    },
+    {
+      "path": "src/styles/tokens.css",
+      "content_hash": "sha256:7792d43d50ad66f90dea6aa2b86fc8ed2c33f47c5fc01862d590f24c8053c917",
+      "size_bytes": 1854,
+      "lines_added": 68
+    },
+    {
+      "path": "src/test/render.tsx",
+      "content_hash": "sha256:78e93302b6028427f5b9aa144441e3fbf08d8c6b83626a5e17b6593c58235906",
+      "size_bytes": 1437,
+      "lines_added": 46
+    },
+    {
+      "path": "src/test/setup.ts",
+      "content_hash": "sha256:ffc921b9d542a8a9262ab656881e33fb444b45ba31130e933501b8a8c23f710b",
+      "size_bytes": 790,
+      "lines_added": 19
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "content_hash": "sha256:bd67abef5d1ea597110c22abb4e136ae5b4111bcfd271419feedae040d401115",
+      "size_bytes": 150,
+      "lines_added": 6
+    },
+    {
+      "path": "tsconfig.json",
+      "content_hash": "sha256:770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808",
+      "size_bytes": 119,
+      "lines_added": 7
+    },
+    {
+      "path": "vite.config.ts",
+      "content_hash": "sha256:50d08423a95d070bd87744df36707419a7d49bfce46855ed89af52ed0163cbbc",
+      "size_bytes": 313,
+      "lines_added": 14
+    }
+  ],
+  "tests_generated": [
+    {
+      "path": "src/pages/CheckoutPage.test.tsx",
+      "content_hash": "sha256:2c946bff8ef645a265cf542fca133c3d76e713a21c473a4bf8929cb6f73b3a84",
+      "test_type": "component",
+      "coverage_pct": 0.87
+    },
+    {
+      "path": "src/features/checkout/PaymentPanel.a11y.test.tsx",
+      "content_hash": "sha256:d75a26e6c58fabb13bb3fc50a86cc2513c2dc54281a878072408cc9ac8fc437d",
+      "test_type": "a11y",
+      "coverage_pct": 0.87
+    },
+    {
+      "path": "src/hooks/useIdempotentConfirm.test.ts",
+      "content_hash": "sha256:df3feaea43fca36404c60b455c0da658e468bc01c86bcc726029bebd7c63643e",
+      "test_type": "unit",
+      "coverage_pct": 0.87
+    }
+  ],
+  "a11y_compliance": {
+    "wcag_level": "AA",
+    "keyboard_navigable": true,
+    "screen_reader_tested": true,
+    "color_contrast_verified": true,
+    "focus_management_implemented": true,
+    "axe_clean": true
+  },
+  "security_review": {
+    "xss_surfaces": [],
+    "csrf_protected": true,
+    "csp_compliant": true,
+    "token_storage_strategy": "httpOnly-cookie",
+    "pii_fields_handled": [
+      {
+        "field": "customer_email",
+        "treatment": "mask"
+      },
+      {
+        "field": "customer_phone",
+        "treatment": "mask"
+      },
+      {
+        "field": "shipping_address",
+        "treatment": "audit-on-view"
+      }
+    ]
+  },
+  "state_ownership": {
+    "session": "server",
+    "cart": "client",
+    "checkout_form": "form",
+    "order_list": "server",
+    "active_route": "URL",
+    "computed_total": "derived"
+  },
+  "bundle_impact_estimate_kb": 94.75,
+  "compensating_actions": [
+    {
+      "trigger": "confirm network error after submit",
+      "action": "surface retry with the same idempotency_key; never auto-resubmit",
+      "timeout_seconds": 30
+    }
+  ],
+  "audit_events_emitted": [
+    "checkout.confirm.clicked",
+    "payment.submitted",
+    "order.viewed",
+    "login.submitted"
+  ],
+  "uncertainty_flags": [],
+  "decision_metadata": {
+    "pillar_choices": [
+      {
+        "file": "src/pages/CheckoutPage.tsx",
+        "pillar": "Page",
+        "rationale": "route-level composition of the checkout journey"
+      },
+      {
+        "file": "src/hooks/useIdempotentConfirm.ts",
+        "pillar": "Hook",
+        "rationale": "encapsulates idempotency-key lifecycle for the money path"
+      }
+    ],
+    "state_library_choices": [
+      {
+        "concern": "server cache",
+        "choice": "TanStack Query",
+        "rationale": "typed server-state with loading/error per operation"
+      },
+      {
+        "concern": "token storage",
+        "choice": "httpOnly cookie (no localStorage)",
+        "rationale": "XSS-resistant per banking-grade FE rule"
+      }
+    ],
+    "repo_conventions_followed": [
+      "component pillars",
+      "tokens.json for all color/spacing",
+      "Noto Sans Thai for th locale",
+      "no auth token in web storage"
+    ]
+  }
+}

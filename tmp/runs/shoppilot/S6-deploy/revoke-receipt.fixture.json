@@ -1,0 +1,11 @@
+{
+  "revoke_id": "RVK-shoppilot-20260607-0001",
+  "original_receipt_id": "RCPT-shoppilot-20260607-0001",
+  "status": "revoked",
+  "reason": "SAGA compensation fixture: downstream stage failure after release handoff (deterministic corpus material).",
+  "effects": {
+    "credentials": "revoked",
+    "promotion": "withheld"
+  },
+  "audit_id": "4b679039-81ee-5f81-b374-0986d2ebf120"
+}

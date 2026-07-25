@@ -1,0 +1,286 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "executing-qa-test-suite output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "totals",
+    "coverage_measured",
+    "flaky",
+    "defects",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "executed",
+        "passed",
+        "failed",
+        "skipped"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "executed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "executed = passed + failed + skipped; derived from test_results[] when records exist."
+    },
+    "coverage_measured": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Run-system coverage from the runner, not self-claimed."
+    },
+    "flaky": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "severity",
+          "summary",
+          "repro"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "repro": {
+            "type": "string",
+            "minLength": 1
+          },
+          "test_case_id": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Required; [] when no defects; every defect carries P1|P2|P3 severity, summary, and non-empty repro."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"qa-validate:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id."
+    },
+    "test_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "test_case_id",
+          "result"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "test_case_id": {
+            "type": "string",
+            "pattern": "^TC-"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "skipped",
+              "flaky",
+              "error"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "evidence_ref": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "OPTIONAL per-case traceability (SHOULD for live executions; requiring it against the frozen corpus would fabricate per-case attempts/evidence — flip ledgered with the GAP-05 execution-node work)."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Non-empty when verdict is ERROR: why the suite could not run."
+    },
+    "unmet_signoff_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "FAIL evidence: which signoff criteria were not met."
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false,
+      "description": "Honest execution provenance (GAP-05: this node never fabricates evidence): replay = corpus evidence replayed; runner = live QA execution.",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "target_source": {
+          "type": "string",
+          "enum": [
+            "current-run",
+            "reference-corpus"
+          ]
+        },
+        "runner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ref": {
+          "type": "string"
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "$id": "https://squad-delivery/skills/executing-qa-test-suite/schemas/output.json",
+  "allOf": [
+    {
+      "description": "PASS must be backed by executed cases, zero failures, no flakes, no defects, measured coverage.",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "totals": {
+            "properties": {
+              "failed": {
+                "const": 0
+              },
+              "executed": {
+                "minimum": 1
+              }
+            }
+          },
+          "flaky": {
+            "maxItems": 0
+          },
+          "defects": {
+            "maxItems": 0
+          },
+          "coverage_measured": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    {
+      "description": "ERROR must say why.",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "ERROR"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "required": [
+          "errors"
+        ],
+        "properties": {
+          "errors": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "Runner mode must identify its runner.",
+      "if": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "mode": {
+                "const": "runner"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          }
+        },
+        "required": [
+          "execution"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "required": [
+              "mode",
+              "runner"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

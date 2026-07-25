@@ -1,0 +1,198 @@
+// Template: handler_<action>_test.go
+// Replace <DOMAIN>, <Action>, <action>, <Dep>, <Method>, and field references.
+// File path: app/<DOMAIN>/handler_<action>_test.go
+//
+// Coverage rule: one case per `binding:"required"` field, one case per `if err != nil`,
+// plus model-getter parse-failure case. Aim for 100% statement coverage.
+
+package <DOMAIN>_test
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"gitlab.com/<MODULE-PATH>/common/app"
+	"gitlab.com/<MODULE-PATH>/common/wrapper"
+
+	"gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>"
+	"gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access"
+	access_mocks "gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access/mocks"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func Test<Action>(t *testing.T) {
+	r := require.New(t)
+
+	validID := uuid.New()
+
+	type mockArgs struct {
+		<dep>Storage *access_mocks.<Dep>StorageMock
+	}
+
+	type args struct {
+		ctx context.Context
+		req <DOMAIN>.<Action>Request
+	}
+
+	type want struct {
+		err     bool
+		code    app.Code
+		Message app.Message
+		data    wrapper.ResponseOption[<DOMAIN>.<Action>Response]
+	}
+
+	tests := []struct {
+		name    string
+		prepare func(m mockArgs, args args)
+		args    args
+		want    want
+	}{
+		{
+			name: "success, case valid request",
+			prepare: func(m mockArgs, args args) {
+				m.<dep>Storage.
+					EXPECT().
+					<Method>(args.ctx, mock.MatchedBy(func(e access.<Model>) bool {
+						return e.<EntityField1> == args.req.<Field1>
+					})).
+					Return(access.<Model>{<ModelIDField>: validID.String()}, nil)
+			},
+			args: args{
+				req: <DOMAIN>.<Action>Request{
+					<Field1>: "valid-value",
+					<Field2>: validID,
+				},
+			},
+			want: want{
+				err:     false,
+				code:    app.CodeSuccess,
+				Message: app.MessageSuccess,
+			},
+		},
+		{
+			name: "fail, case invalid request body - missing <field1>",
+			prepare: func(m mockArgs, args args) {},
+			args: args{
+				req: <DOMAIN>.<Action>Request{
+					<Field2>: validID,
+				},
+			},
+			want: want{
+				err:     true,
+				code:    app.CodeBadRequest,
+				Message: app.MessageBadRequest,
+			},
+		},
+		{
+			name: "fail, case invalid request body - missing <field2>",
+			prepare: func(m mockArgs, args args) {},
+			args: args{
+				req: <DOMAIN>.<Action>Request{
+					<Field1>: "valid-value",
+				},
+			},
+			want: want{
+				err:     true,
+				code:    app.CodeBadRequest,
+				Message: app.MessageBadRequest,
+			},
+		},
+		{
+			name: "fail, case <Method> storage error",
+			prepare: func(m mockArgs, args args) {
+				m.<dep>Storage.
+					EXPECT().
+					<Method>(args.ctx, mock.Anything).
+					Return(access.<Model>{}, assert.AnError)
+			},
+			args: args{
+				req: <DOMAIN>.<Action>Request{
+					<Field1>: "valid-value",
+					<Field2>: validID,
+				},
+			},
+			want: want{
+				err:     true,
+				code:    app.CodeInternalError,
+				Message: app.MessageInternalError,
+			},
+		},
+		{
+			name: "fail, case GetID parse error - invalid UUID returned",
+			prepare: func(m mockArgs, args args) {
+				m.<dep>Storage.
+					EXPECT().
+					<Method>(args.ctx, mock.Anything).
+					Return(access.<Model>{<ModelIDField>: "not-a-uuid"}, nil)
+			},
+			args: args{
+				req: <DOMAIN>.<Action>Request{
+					<Field1>: "valid-value",
+					<Field2>: validID,
+				},
+			},
+			want: want{
+				err:     true,
+				code:    app.CodeInternalError,
+				Message: app.MessageInternalError,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			ctx, _ := gin.CreateTestContext(w)
+
+			var payload bytes.Buffer
+			_ = json.NewEncoder(&payload).Encode(tt.args.req)
+
+			req := httptest.NewRequest(
+				http.MethodPost,
+				"http://0.0.0.0/api/v1/platform/<DOMAIN>/<action>",
+				&payload,
+			)
+			req.Header.Set("Content-Type", "application/json")
+			ctx.Request = req
+
+			m := mockArgs{
+				<dep>Storage: access_mocks.New<Dep>StorageMock(t),
+			}
+
+			// IMPORTANT: assign ctx BEFORE calling prepare so mock matchers see the real context.
+			if tt.prepare != nil {
+				tt.args.ctx = ctx.Request.Context()
+				tt.prepare(m, tt.args)
+			}
+
+			h := <DOMAIN>.NewHandler(<DOMAIN>.HandlerConfig{
+				<Dep>Storage: m.<dep>Storage,
+			})
+
+			h.<Action>(ctx)
+
+			var resp wrapper.ResponseOption[<DOMAIN>.<Action>Response]
+			_ = json.NewDecoder(w.Body).Decode(&resp)
+
+			if tt.want.err {
+				r.NotEqual(http.StatusOK, w.Code)
+				r.NotEqual(http.StatusCreated, w.Code)
+				r.Equal(tt.want.code, resp.Code)
+				r.Equal(tt.want.Message, resp.Message)
+			} else {
+				r.True(w.Code == http.StatusOK || w.Code == http.StatusCreated)
+				r.Equal(tt.want.code, resp.Code)
+				r.Equal(tt.want.Message, resp.Message)
+			}
+		})
+	}
+}

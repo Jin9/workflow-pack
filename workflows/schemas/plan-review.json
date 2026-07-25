@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/plan-review.json",
+  "title": "S2.5 plan-review boundary (red-teaming-implementation-plan output)",
+  "description": "Boundary contract for the S2.5 adversarial plan-review gate (plan-review). Permissive stage boundary (additionalProperties true): superset envelope over the skill's strict output schema; required mirrors the YAML required_fields. Verdict routing (engine/policies.py): PROCEED releases the fan-out; REVISE and BLOCK both feed the stage loop_back to tl-design (max_loops 1, reviewer findings threaded into the re-run); a non-proceed verdict after the cap aborts the run (HardFail); reroute routes as rework; hard-fail fails. The enum is a superset accepting the uppercase PROCEED/REVISE/BLOCK the live skill emits and the lowercase pass/pass-with-caveats/reroute/hard-fail set; unknown vocabulary fails closed to a human.",
+  "type": "object",
+  "required": [
+    "verdict",
+    "findings",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PROCEED",
+        "REVISE",
+        "BLOCK",
+        "pass",
+        "pass-with-caveats",
+        "reroute",
+        "hard-fail"
+      ],
+      "description": "Advisory red-team verdict; a named human confirms on HardFail. PROCEED/REVISE/BLOCK is the live skill's form."
+    },
+    "steelman": {
+      "type": "string",
+      "description": "The strongest good-faith case for the plan, written before findings to counter dismissal bias."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "category"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "target_artifact": {
+            "type": "string"
+          },
+          "remediation": {
+            "type": "string"
+          },
+          "recommendation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "reroute_to": {
+      "type": "string"
+    },
+    "loop_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bias_checks": {
+      "type": "array",
+      "description": "Self-audit notes (e.g. steelman-first ordering, author==critic heterogeneity caveat, approval-momentum resistance).",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "description": "Reviewer confidence; a number in [0,1] or a low/medium/high label.",
+      "type": [
+        "number",
+        "string"
+      ]
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

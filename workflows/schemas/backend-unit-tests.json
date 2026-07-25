@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test backend-unit-tests boundary — unit test results",
+  "type": "object",
+  "required": [
+    "verdict",
+    "totals",
+    "failures",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "executed",
+        "passed",
+        "failed",
+        "skipped"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "executed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "coverage_measured": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "failures": {
+      "type": "array",
+      "description": "Failed-test evidence; [] on PASS. Items: runner-emitted strings (transitional) or canonical {test, summary, repro?} objects."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "description": "Permissive stage boundary: superset envelope over the skill's strict output schema; required mirrors the YAML required_fields."
+}

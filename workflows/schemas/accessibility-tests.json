@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test accessibility-tests boundary \u2014 WCAG 2.1 AA results",
+  "type": "object",
+  "required": [
+    "verdict",
+    "wcag_violations",
+    "needs_review",
+    "manual_checks",
+    "execution",
+    "scan_scope",
+    "standard",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "wcag_violations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "needs_review": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Incomplete/manual-review items the automated engine could not decide."
+    },
+    "manual_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    },
+    "execution": {},
+    "scan_scope": {},
+    "standard": {}
+  },
+  "description": "Boundary contract for the accessibility-tests gate. Permissive stage boundary; required mirrors the YAML required_fields. Machine-threshold gate: verdict PASS/FAIL/ERROR routes via engine/policies.py; execution records replay vs runner provenance (replay = reference corpus, no scan ran)."
+}

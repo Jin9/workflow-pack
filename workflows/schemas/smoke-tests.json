@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S-test smoke-tests boundary \u2014 post-deploy smoke results",
+  "type": "object",
+  "required": [
+    "verdict",
+    "receipt_id",
+    "probes",
+    "all_green",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "probes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "all_green": {
+      "type": "boolean"
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    },
+    "receipt_id": {},
+    "execution": {}
+  },
+  "description": "Boundary contract for the smoke-tests gate. Permissive stage boundary; required mirrors the YAML required_fields. Receipt-bound: receipt_id echoes the S6 handoff receipt unchanged. Automatic machine gate: FAIL/ERROR retry once (exponential) then the smoke-test-failures named-human queue; execution records replay vs runner provenance."
+}

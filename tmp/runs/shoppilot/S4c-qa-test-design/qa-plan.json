@@ -1,0 +1,556 @@
+{
+  "output_type": "test_plan",
+  "blocks_qa_execution": false,
+  "audit_id": "305b48e1-5b34-5f73-9390-16dda9aaaf15",
+  "frontmatter": {
+    "test_plan_id": "TP-shoppilot-mvp",
+    "brief_id": "EPIC-SHOPPILOT-MVP",
+    "brief_idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
+    "idempotency_key": "305b48e1-5b34-5f73-9390-16dda9aaaf15",
+    "workload_tier": "T2",
+    "created_at": "2026-06-07T00:00:00Z",
+    "created_by": "planning-banking-tests-v1.0.0",
+    "status": "ready-for-execution"
+  },
+  "scope_kind": "multi-epic",
+  "strategy": {
+    "test_pyramid_allocation": {
+      "unit_pct": 55,
+      "integration_pct": 25,
+      "e2e_pct": 12,
+      "contract_pct": 8
+    },
+    "tier_rationale": "T2 customer-facing + money + PII; weight idempotency, audit, authz and the last-item race.",
+    "mock_vs_real_strategy": "Real per-service DB + Kafka in SIT; mock PSP and courier; Pact for cross-service contracts.",
+    "high_risk_areas": [
+      "checkout idempotency + provider replay",
+      "last-item race",
+      "own-data-only authz",
+      "outbox effectively-once"
+    ]
+  },
+  "epics": [
+    {
+      "epic_id": "EPIC-AUTH",
+      "test_tier": "T2",
+      "critical_paths": [
+        "happy path",
+        "idempotency-replay",
+        "audit emission"
+      ],
+      "stakeholder_owners": [
+        "Khun Pim (PM)",
+        "Khun Anan (TL)"
+      ]
+    },
+    {
+      "epic_id": "EPIC-CHECKOUT",
+      "test_tier": "T2",
+      "critical_paths": [
+        "happy path",
+        "idempotency-replay",
+        "audit emission"
+      ],
+      "stakeholder_owners": [
+        "Khun Pim (PM)",
+        "Khun Anan (TL)"
+      ]
+    },
+    {
+      "epic_id": "EPIC-ORDER",
+      "test_tier": "T2",
+      "critical_paths": [
+        "happy path",
+        "idempotency-replay",
+        "audit emission"
+      ],
+      "stakeholder_owners": [
+        "Khun Pim (PM)",
+        "Khun Anan (TL)"
+      ]
+    },
+    {
+      "epic_id": "EPIC-INVENTORY",
+      "test_tier": "T2",
+      "critical_paths": [
+        "happy path",
+        "idempotency-replay",
+        "audit emission"
+      ],
+      "stakeholder_owners": [
+        "Khun Pim (PM)",
+        "Khun Anan (TL)"
+      ]
+    }
+  ],
+  "stories": [
+    {
+      "story_id": "STORY-AUTH-01",
+      "epic_id": "EPIC-AUTH",
+      "test_case_ids": [
+        "TC-AUTH-001"
+      ],
+      "coverage_status": "complete"
+    },
+    {
+      "story_id": "STORY-AUTH-02",
+      "epic_id": "EPIC-AUTH",
+      "test_case_ids": [
+        "TC-AUTH-002"
+      ],
+      "coverage_status": "complete"
+    },
+    {
+      "story_id": "STORY-CHECKOUT-01",
+      "epic_id": "EPIC-CHECKOUT",
+      "test_case_ids": [
+        "TC-CHECKOUT-001"
+      ],
+      "coverage_status": "complete"
+    },
+    {
+      "story_id": "STORY-CHECKOUT-02",
+      "epic_id": "EPIC-CHECKOUT",
+      "test_case_ids": [
+        "TC-CHECKOUT-002"
+      ],
+      "coverage_status": "complete"
+    },
+    {
+      "story_id": "STORY-ORDER-01",
+      "epic_id": "EPIC-ORDER",
+      "test_case_ids": [
+        "TC-ORDER-001"
+      ],
+      "coverage_status": "complete"
+    },
+    {
+      "story_id": "STORY-ORDER-02",
+      "epic_id": "EPIC-ORDER",
+      "test_case_ids": [
+        "TC-ORDER-002"
+      ],
+      "coverage_status": "complete"
+    },
+    {
+      "story_id": "STORY-INVENTORY-01",
+      "epic_id": "EPIC-INVENTORY",
+      "test_case_ids": [
+        "TC-INVENTORY-001"
+      ],
+      "coverage_status": "complete"
+    },
+    {
+      "story_id": "STORY-INVENTORY-02",
+      "epic_id": "EPIC-INVENTORY",
+      "test_case_ids": [
+        "TC-INVENTORY-002"
+      ],
+      "coverage_status": "complete"
+    }
+  ],
+  "test_cases": [
+    {
+      "id": "TC-AUTH-001",
+      "story_id": "STORY-AUTH-01",
+      "scenario_ref": "STORY-AUTH-01/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "auth",
+        "banking-grade"
+      ],
+      "risk_level": "medium",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    },
+    {
+      "id": "TC-AUTH-002",
+      "story_id": "STORY-AUTH-02",
+      "scenario_ref": "STORY-AUTH-02/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "auth",
+        "banking-grade"
+      ],
+      "risk_level": "medium",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    },
+    {
+      "id": "TC-CHECKOUT-001",
+      "story_id": "STORY-CHECKOUT-01",
+      "scenario_ref": "STORY-CHECKOUT-01/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "checkout",
+        "banking-grade"
+      ],
+      "risk_level": "high",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    },
+    {
+      "id": "TC-CHECKOUT-002",
+      "story_id": "STORY-CHECKOUT-02",
+      "scenario_ref": "STORY-CHECKOUT-02/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "checkout",
+        "banking-grade"
+      ],
+      "risk_level": "high",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    },
+    {
+      "id": "TC-ORDER-001",
+      "story_id": "STORY-ORDER-01",
+      "scenario_ref": "STORY-ORDER-01/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "order",
+        "banking-grade"
+      ],
+      "risk_level": "medium",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    },
+    {
+      "id": "TC-ORDER-002",
+      "story_id": "STORY-ORDER-02",
+      "scenario_ref": "STORY-ORDER-02/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "order",
+        "banking-grade"
+      ],
+      "risk_level": "medium",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    },
+    {
+      "id": "TC-INVENTORY-001",
+      "story_id": "STORY-INVENTORY-01",
+      "scenario_ref": "STORY-INVENTORY-01/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "inventory",
+        "banking-grade"
+      ],
+      "risk_level": "high",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    },
+    {
+      "id": "TC-INVENTORY-002",
+      "story_id": "STORY-INVENTORY-02",
+      "scenario_ref": "STORY-INVENTORY-02/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "inventory",
+        "banking-grade"
+      ],
+      "risk_level": "high",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": false
+    }
+  ],
+  "smoke_subset": {
+    "wall_clock_budget_seconds": 300,
+    "test_case_ids": []
+  },
+  "coverage_matrix": {
+    "by_story": {
+      "STORY-AUTH-01": 1,
+      "STORY-AUTH-02": 1,
+      "STORY-CHECKOUT-01": 1,
+      "STORY-CHECKOUT-02": 1,
+      "STORY-ORDER-01": 1,
+      "STORY-ORDER-02": 1,
+      "STORY-INVENTORY-01": 1,
+      "STORY-INVENTORY-02": 1
+    },
+    "by_scenario_type": {
+      "happy": 8
+    },
+    "by_pyramid_level": {
+      "integration": 8
+    },
+    "by_tier": {
+      "T2": 8
+    }
+  },
+  "nfr_tests": [
+    {
+      "id": "NFR-CHECKOUT-perf-001",
+      "epic_id": "EPIC-CHECKOUT",
+      "nfr_type": "performance",
+      "metric": "order-confirm p95",
+      "target": "TBD pending OQ-3",
+      "blocking_oqs": [
+        "OQ-3"
+      ]
+    },
+    {
+      "id": "NFR-AUTH-sec-001",
+      "epic_id": "EPIC-AUTH",
+      "nfr_type": "security",
+      "metric": "account-enumeration leak",
+      "target": "0"
+    },
+    {
+      "id": "NFR-INVENTORY-data-001",
+      "epic_id": "EPIC-INVENTORY",
+      "nfr_type": "data-integrity",
+      "metric": "negative stock occurrences",
+      "target": "0"
+    }
+  ],
+  "compliance_tests": [
+    {
+      "id": "COMP-PDPA-001",
+      "regulator": "PDPA B.E. 2562",
+      "regulator_code": "PDPA",
+      "template_key": "pdpa",
+      "test_type": "privacy",
+      "scope": "PII encryption, residency, retention, redaction in logs"
+    },
+    {
+      "id": "COMP-PCI_DSS-001",
+      "regulator": "PCI-DSS",
+      "regulator_code": "PCI_DSS",
+      "template_key": "pci_dss",
+      "test_type": "security",
+      "scope": "no PAN/CVV stored; mock PSP scope-exclusion confirmed"
+    },
+    {
+      "id": "COMP-CPA-001",
+      "regulator": "Consumer Protection Act",
+      "regulator_code": "CPA",
+      "template_key": "cpa",
+      "test_type": "functional",
+      "scope": "total shown before payment (Consumer Protection Act)"
+    },
+    {
+      "id": "COMP-REVENUE_CODE-001",
+      "regulator": "Revenue Code",
+      "regulator_code": "REVENUE_CODE",
+      "template_key": "revenue_code",
+      "test_type": "audit",
+      "scope": "order/tax record retention meets Revenue Code minimums; deletion blocked inside the retention window"
+    }
+  ],
+  "execution_dag": {
+    "nodes": [
+      {
+        "id": "N-TC-AUTH-001",
+        "test_case_ref": "TC-AUTH-001"
+      },
+      {
+        "id": "N-TC-AUTH-002",
+        "test_case_ref": "TC-AUTH-002"
+      },
+      {
+        "id": "N-TC-CHECKOUT-001",
+        "test_case_ref": "TC-CHECKOUT-001"
+      },
+      {
+        "id": "N-TC-CHECKOUT-002",
+        "test_case_ref": "TC-CHECKOUT-002"
+      },
+      {
+        "id": "N-TC-ORDER-001",
+        "test_case_ref": "TC-ORDER-001"
+      },
+      {
+        "id": "N-TC-ORDER-002",
+        "test_case_ref": "TC-ORDER-002"
+      },
+      {
+        "id": "N-TC-INVENTORY-001",
+        "test_case_ref": "TC-INVENTORY-001"
+      },
+      {
+        "id": "N-TC-INVENTORY-002",
+        "test_case_ref": "TC-INVENTORY-002"
+      }
+    ],
+    "edges": [
+      {
+        "from": "N-TC-AUTH-001",
+        "to": "N-TC-CHECKOUT-001",
+        "kind": "ordering"
+      },
+      {
+        "from": "N-TC-INVENTORY-001",
+        "to": "N-TC-CHECKOUT-001",
+        "kind": "data"
+      }
+    ]
+  },
+  "environments": [
+    {
+      "id": "sit",
+      "purpose": "system integration test",
+      "required_mocks": [
+        "mock-psp",
+        "mock-courier"
+      ],
+      "real_services": [
+        "auth",
+        "checkout",
+        "order",
+        "inventory",
+        "kafka",
+        "mysql"
+      ]
+    }
+  ],
+  "test_data_specs": [
+    {
+      "fixture_set_id": "FX-shoppilot-core",
+      "pii_field_refs": [
+        "customer_email",
+        "customer_phone",
+        "shipping_address"
+      ],
+      "synthesis_rules": "synthetic Thai-format names/phones/addresses; no real PII; deterministic seed"
+    }
+  ],
+  "signoff_criteria": {
+    "tier": "T2",
+    "go_conditions": [
+      "all banking-grade scenarios pass",
+      "0 P1 defects",
+      "coverage >= 0.80"
+    ],
+    "conditional_go_conditions": [
+      "P2 defects with owner + due date",
+      "NFR perf target still TBD (OQ-3) tracked"
+    ],
+    "no_go_conditions": [
+      "any idempotency/audit/authz failure",
+      "negative stock observed",
+      "any P1 defect"
+    ]
+  },
+  "qa_readiness_checklist": {
+    "all_stories_have_test_cases": true,
+    "all_banking_grade_applies_have_tests": true,
+    "all_nfr_targets_resolved": false,
+    "all_compliance_regulators_covered": true,
+    "all_dependencies_have_test_envs": true,
+    "no_blocking_ba_governance_gaps": true
+  },
+  "processing_metadata": {
+    "ba_brief_version": "1.6.0",
+    "ba_brief_idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
+    "tier_decisions": [
+      {
+        "target": "EPIC-AUTH",
+        "tier": "T2",
+        "rationale": "customer-facing T2 per BA brief"
+      },
+      {
+        "target": "EPIC-CHECKOUT",
+        "tier": "T2",
+        "rationale": "customer-facing T2 per BA brief"
+      },
+      {
+        "target": "EPIC-ORDER",
+        "tier": "T2",
+        "rationale": "customer-facing T2 per BA brief"
+      },
+      {
+        "target": "EPIC-INVENTORY",
+        "tier": "T2",
+        "rationale": "customer-facing T2 per BA brief"
+      }
+    ],
+    "scenario_mapping_table_version": "1.0.0",
+    "pyramid_allocation_rules_version": "1.0.0",
+    "tl_design_consumed": true,
+    "environment_inventory_consumed": true,
+    "role_boundaries": []
+  }
+}

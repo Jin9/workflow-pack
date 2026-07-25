@@ -1,0 +1,261 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/scoping-ba-intake/schemas/output.json",
+  "title": "scoping-ba-intake output (S0 run-plan)",
+  "description": "Strict skill contract for the S0 intake artifact. Emitted only on a scopable request; unusably thin input is an INTAKE-01 execution failure (no artifact), never a schema-valid 'needs-clarification' the auto gate would wave through.",
+  "type": "object",
+  "required": [
+    "normalized_request",
+    "run_plan",
+    "scope_sheet",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "normalized_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The request restated as a non-empty, PII-redacted STRING that preserves every stated constraint and invents no answers. Consumed by s1-discovery and ba-research. The structured breakdown lives in scope_sheet \u2014 never here."
+    },
+    "run_plan": {
+      "type": "object",
+      "required": [
+        "tier_floor",
+        "stage_span",
+        "epics_expected"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tier_floor": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ],
+          "description": "The FLOOR downstream tiering may raise but never lower \u2014 derived from the request's stated money/PII/regulatory exposure."
+        },
+        "stage_span": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Which pipeline stages this request will traverse (e.g. \"S0-S7 + T1-T12\")."
+        },
+        "epics_expected": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Expected epic count derived from the distinct capability areas named in the request. 0 = not yet estimable \u2014 never a guess."
+        },
+        "pipeline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "human_gates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The named human gates this span will hit \u2014 copied from the pipeline's gate configuration, not invented."
+        }
+      }
+    },
+    "scope_sheet": {
+      "type": "object",
+      "required": [
+        "envelope",
+        "contract"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "envelope": {
+          "type": "object",
+          "required": [
+            "stage",
+            "intent",
+            "state",
+            "confidence",
+            "provenance",
+            "produced_by",
+            "owner",
+            "schemaVersion"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "stage": {
+              "const": "S0"
+            },
+            "intent": {
+              "type": "string",
+              "minLength": 1
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "ready-for-discovery"
+              ],
+              "description": "The ONLY successful state: the S0 successor is s1-discovery. (There is no scope-confirm stop and no 'ready-for-stories' state.)"
+            },
+            "confidence": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "raw_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "upstream_contract_ref": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "produced_by": {
+              "type": "string",
+              "minLength": 1
+            },
+            "owner": {
+              "type": "string",
+              "minLength": 1
+            },
+            "schemaVersion": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "contract": {
+          "type": "object",
+          "required": [
+            "business_goal",
+            "in_scope",
+            "out_of_scope",
+            "nfrs",
+            "open_questions",
+            "assumptions",
+            "risk_flags"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "business_goal": {
+              "type": "string",
+              "minLength": 1
+            },
+            "in_scope": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "out_of_scope": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "nfrs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "target"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "target": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "open_questions": {
+              "type": "array",
+              "description": "Stable OQ-n ids WITHIN this sheet and its human view. Downstream stages do NOT receive the scope sheet today \u2014 make no cross-stage traceability promise.",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "question",
+                  "for"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^OQ-[1-9][0-9]*$"
+                  },
+                  "question": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "for": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "risk_flags": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Declares the human-review form of this artifact. The scope sheet's native form IS its human view (house rule: HTML only where visualization helps).",
+      "required": [
+        "kind",
+        "render"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "native",
+            "html"
+          ]
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id and the SOLE artifact identity (there is no task_id). LIVE derivation: UUIDv5(HOUSE_NS, \"intake:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids use the grandfathered corpus convention.)"
+    }
+  }
+}

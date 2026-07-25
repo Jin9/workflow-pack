@@ -1,0 +1,16 @@
+{
+  "verdict": "promote",
+  "per_metric": [
+    {
+      "name": "error-rate",
+      "judgement": "pass"
+    },
+    {
+      "name": "p95-latency",
+      "judgement": "pass"
+    }
+  ],
+  "sample_adequate": true,
+  "windows_passed": 3,
+  "audit_id": "dd6bb7ca-df1e-5a06-87d4-6c15383c8136"
+}

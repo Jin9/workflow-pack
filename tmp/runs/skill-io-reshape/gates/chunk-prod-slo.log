@@ -1,0 +1,9 @@
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/validating-production-slo
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/validating-production-slo
+
+0 finding(s) across 1 skills (STRICT mode)
+38 passed, 1 warning in 1.18s
+
+ALL PASS — 0 failure(s)
+
+0 finding(s) across 27 stages (STRICT mode) · baseline: 1 known, 1 fixed, 0 NEW

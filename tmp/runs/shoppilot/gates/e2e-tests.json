@@ -1,0 +1,28 @@
+{
+  "verdict": "PASS",
+  "scenarios": [
+    {
+      "name": "register-login-checkout-pay-track",
+      "result": "pass",
+      "steps_total": 12,
+      "steps_failed": 0
+    },
+    {
+      "name": "last-item-race-one-winner",
+      "result": "pass",
+      "steps_total": 6,
+      "steps_failed": 0
+    },
+    {
+      "name": "payment-timeout-releases-stock",
+      "result": "pass",
+      "steps_total": 7,
+      "steps_failed": 0
+    }
+  ],
+  "flaky_rate": 0.0,
+  "execution": {
+    "mode": "replay"
+  },
+  "audit_id": "84def0d2-df9b-5d04-a02d-ffd9662336b2"
+}

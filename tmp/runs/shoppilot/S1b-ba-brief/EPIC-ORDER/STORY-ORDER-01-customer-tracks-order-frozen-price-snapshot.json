@@ -1,0 +1,116 @@
+{
+  "id": "STORY-ORDER-01",
+  "epic_id": "EPIC-ORDER",
+  "title": "Customer tracks an order with a frozen price snapshot",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "logged-in customer",
+    "i_want": "to view my order's status, timeline and frozen prices",
+    "so_that": "I can track delivery and see what I actually agreed to pay"
+  },
+  "context": "An order shows a price/name/address snapshot taken at creation and is visible only to its owner; later catalog edits must not change it.",
+  "acceptance_criteria": [
+    {
+      "scenario_name": "owner views order with snapshot",
+      "scenario_type": "happy",
+      "given": [
+        "a customer who owns order ORD-20260507-000001 created at price 1290 THB"
+      ],
+      "when": "the catalog price later changes to 999 THB and the owner opens the order",
+      "then": [
+        "the order still shows 1290 THB",
+        "the status timeline and tracking number (if shipped) are shown"
+      ]
+    },
+    {
+      "scenario_name": "non-owner is denied",
+      "scenario_type": "error",
+      "given": [
+        "a customer who does not own the order"
+      ],
+      "when": "they request the order by its number",
+      "then": [
+        "access is denied with no order data disclosed"
+      ]
+    },
+    {
+      "scenario_name": "status transition is audited",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any order status change"
+      ],
+      "when": "it resolves",
+      "then": [
+        "an audit event {event, actor, ts, order_id, before, after, audit_id} is emitted"
+      ]
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "the order carries the customer's snapshotted shipping address",
+      "fields_or_events": [
+        "shipping_address"
+      ],
+      "treatment": "visible to the owner and admin only; redacted elsewhere"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "status changes are tracked"
+    },
+    "idempotency": {
+      "status": "not_applicable",
+      "justification": "viewing an order is a read with no mutation"
+    },
+    "reversibility": {
+      "status": "not_applicable",
+      "justification": "a read has nothing to reverse"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "own-data-only: A must never see B's order"
+    },
+    "regulatory": {
+      "status": "not_applicable",
+      "justification": "covered by PDPA basis already inventoried; no new regulated processing here"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no SAR/AML context"
+    }
+  },
+  "priority": "Must",
+  "sizing": {
+    "story_points": 3,
+    "complexity": "low",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-CHECKOUT-02"
+    ],
+    "blocks": []
+  },
+  "dor_checklist": {
+    "format_clear": true,
+    "happy_path_present": true,
+    "error_path_present": true,
+    "banking_grade_evaluated": true,
+    "priority_set": true,
+    "dependencies_identified": true,
+    "sizing_done": true,
+    "no_blocking_ambiguities": true
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "open_questions": [],
+  "scope_ref": "../INDEX.json",
+  "change_log": [
+    {
+      "date": "2026-06-01",
+      "author": "eliciting-banking-brief-v1.5.0",
+      "change": "Created from requirement shoppilot-mvp"
+    }
+  ]
+}

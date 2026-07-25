@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/qa-evidence.json",
+  "title": "S5 qa-validate boundary — QA evidence (executing-qa-test-suite output)",
+  "description": "Boundary for the S5 qa-validate node: permissive superset over executing-qa-test-suite/schemas/output.json; required mirrors the YAML required_fields [verdict, totals, coverage_measured, flaky, defects, execution, audit_id].",
+  "type": "object",
+  "required": [
+    "verdict",
+    "totals",
+    "coverage_measured",
+    "flaky",
+    "defects",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "executed",
+        "passed",
+        "failed",
+        "skipped"
+      ],
+      "properties": {
+        "executed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "coverage_measured": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "flaky": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "description": "Execution provenance: replay (corpus evidence) vs runner (live QA execution)."
+    }
+  }
+}

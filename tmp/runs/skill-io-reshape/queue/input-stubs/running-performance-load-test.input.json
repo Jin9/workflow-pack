@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/running-performance-load-test/schemas/input.json",
+  "title": "running-performance-load-test input",
+  "description": "ADVISORY \u2014 documents the assembled stage input; the engine validates workflow input and stage OUTPUTS only (engine/validation.py). Shape below is the POST-adapter payload delivered at stage perf-load-test.",
+  "type": "object",
+  "required": [
+    "performance_test_context",
+    "totals",
+    "verdict",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "performance_test_context": {
+      "type": "object",
+      "description": "From workflow input (optional): OPTIONAL runner context for the T9 perf/load gate (live runner mode). Absent in replay. Non-secret.",
+      "required": [
+        "load_profile",
+        "budget",
+        "target_env",
+        "target_kind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "load_profile": {
+          "type": "object",
+          "description": "Arrival shape: rps/vus/duration \u2014 runner-specific but non-secret."
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "p95_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "p99_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "error_rate_max": {
+              "type": "number",
+              "minimum": 0
+            },
+            "throughput_min_rps": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "description": "Upper bounds (p95/p99/error_rate: observed >= threshold breaches) and the throughput lower bound (observed < threshold breaches)."
+        },
+        "target_env": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_kind": {
+          "type": "string",
+          "enum": [
+            "staging",
+            "uat"
+          ]
+        },
+        "runner_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "description": "Shape: executing-qa-test-suite schemas/output.json#/properties/totals. executed = passed + failed + skipped; derived from test_results[] when records exist."
+    },
+    "verdict": {
+      "type": "string",
+      "description": "Shape: executing-qa-test-suite schemas/output.json#/properties/verdict."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

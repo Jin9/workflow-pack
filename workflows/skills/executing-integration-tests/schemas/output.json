@@ -1,0 +1,251 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "executing-integration-tests output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "totals",
+    "teardown_ok",
+    "defects",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "executed",
+        "passed",
+        "failed",
+        "skipped"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "executed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "executed = passed + failed + skipped."
+    },
+    "teardown_ok": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Sandbox teardown verified clean. Null ONLY for ERROR when teardown was not attempted."
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "severity",
+          "summary",
+          "repro"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "repro": {
+            "type": "string",
+            "minLength": 1
+          },
+          "test_case_id": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Required; [] when no defects. Every defect carries severity, summary, and non-empty repro."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"integration-tests:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Non-empty when verdict is ERROR: why the suite could not run."
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false,
+      "description": "Honest execution provenance: replay = corpus evidence replayed; runner = live SIT execution.",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "suite_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "result_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "$id": "https://squad-delivery/skills/executing-integration-tests/schemas/output.json",
+  "allOf": [
+    {
+      "description": "PASS requires zero failures and a clean teardown.",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "totals": {
+            "properties": {
+              "failed": {
+                "const": 0
+              },
+              "executed": {
+                "minimum": 1
+              }
+            }
+          },
+          "teardown_ok": {
+            "const": true
+          },
+          "defects": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "description": "ERROR must say why; only ERROR may carry a null teardown.",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "ERROR"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "required": [
+          "errors"
+        ],
+        "properties": {
+          "errors": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "A null teardown is only valid under ERROR.",
+      "if": {
+        "properties": {
+          "teardown_ok": {
+            "const": null
+          }
+        },
+        "required": [
+          "teardown_ok"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "ERROR"
+          }
+        }
+      }
+    },
+    {
+      "description": "Runner mode must carry its provenance.",
+      "if": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "mode": {
+                "const": "runner"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          }
+        },
+        "required": [
+          "execution"
+        ]
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "required": [
+              "mode",
+              "suite_ref",
+              "environment",
+              "result_ref"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

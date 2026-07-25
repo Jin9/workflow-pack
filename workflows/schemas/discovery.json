@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/discovery.json",
+  "title": "S1 discovery boundary (researching-ba-problem-space output)",
+  "description": "Boundary contract for the S1a discovery gate (s1-discovery). Permissive stage boundary; required mirrors the YAML required_fields (problem_framing, assumptions, regulatory_regimes, recommendation, audit_id; regulatory_regimes may be [] = none identified). AI drafts; a NAMED HUMAN decides \u2014 only proceed releases the brief node. The consumer (ba-research) receives the picked fields nested under `discovery`; handoff_to_intake is advisory-only seeding and its absence is byte-identical for the brief.",
+  "type": "object",
+  "required": [
+    "problem_framing",
+    "assumptions",
+    "regulatory_regimes",
+    "recommendation",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "problem_framing": {
+      "type": "string"
+    },
+    "opportunities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "statement",
+          "risk_type",
+          "confidence"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string"
+          },
+          "risk_type": {
+            "type": "string",
+            "enum": [
+              "value",
+              "usability",
+              "feasibility",
+              "viability"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "de_risk": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "regulatory_regimes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": [
+        "proceed",
+        "needs-work",
+        "do-not-build"
+      ]
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "handoff_to_intake": {
+      "type": "object",
+      "description": "Typed advisory handoff, delivered to the brief node nested as input.discovery.handoff_to_intake (engine NESTED_HANDOFF). Present only when recommendation == proceed (top-level and nested). Absent handoff = the consumer performs NO seeding (byte-identical brief). Handoff audit_id MUST equal the top-level audit_id.",
+      "required": [
+        "audit_id",
+        "recommendation"
+      ],
+      "properties": {
+        "audit_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "recommendation": {
+          "const": "proceed"
+        },
+        "tier_signal": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ],
+          "description": "A tier FLOOR for the consumer \u2014 may raise, never lower."
+        },
+        "stakeholder_hints": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "opportunity_detail": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

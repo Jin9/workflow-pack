@@ -1,0 +1,17 @@
+{
+  "verdict": "PASS",
+  "totals": {
+    "executed": 96,
+    "passed": 96,
+    "failed": 0,
+    "skipped": 0
+  },
+  "coverage_measured": 0.86,
+  "failures": [],
+  "flaky": [],
+  "execution": {
+    "mode": "replay",
+    "target_source": "reference-corpus"
+  },
+  "audit_id": "37c0ae17-1504-5904-b16f-a5ad2220edcf"
+}

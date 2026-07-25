@@ -1,0 +1,15 @@
+{
+  "verdict": "PASS",
+  "metrics": {
+    "p95": 540,
+    "error_rate": 0.001
+  },
+  "within_budget": true,
+  "breaches": [],
+  "sample_adequate": true,
+  "execution": {
+    "mode": "replay",
+    "target_source": "reference-corpus"
+  },
+  "audit_id": "75470a1b-97c3-56c5-832c-f4e00b7a245a"
+}

@@ -1,0 +1,123 @@
+// Template: access/storage_<dep>.go
+// Replace <DOMAIN>, <Dep>, <Model>, <collection>, and field types.
+// File path: app/<DOMAIN>/access/storage_<dep>.go
+//
+// Co-location rule: interface + impl + model + sentinel errors + constants in ONE file.
+// Do NOT split into model.go / errors.go / constants.go.
+
+package access
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
+	gcpfirestore "cloud.google.com/go/firestore"
+	"github.com/google/uuid"
+)
+
+// Err<Model>NotFound is returned when no <Model> matches the query.
+var Err<Model>NotFound = errors.New("<dep> not found")
+
+type <Dep>Storage interface {
+	Get<Model>ByID(ctx context.Context, id uuid.UUID) (<Model>, error)
+	List<Model>s(ctx context.Context, <FilterField> string) ([]<Model>, error)
+	Create<Model>(ctx context.Context, entity <Model>) (<Model>, error)
+	Update<Model>(ctx context.Context, entity <Model>) (<Model>, error)
+}
+
+type <dep>Storage struct {
+	fs *gcpfirestore.Client
+}
+
+var _ <Dep>Storage = (*<dep>Storage)(nil)
+
+const <dep>Collection = "<collection>"
+
+func New<Dep>Storage(fs *gcpfirestore.Client) <Dep>Storage {
+	return &<dep>Storage{fs: fs}
+}
+
+func (s *<dep>Storage) Get<Model>ByID(ctx context.Context, id uuid.UUID) (<Model>, error) {
+	doc, err := s.fs.Collection(<dep>Collection).Doc(id.String()).Get(ctx)
+	if err != nil {
+		return <Model>{}, fmt.Errorf("failed to get <dep> by id: %w", err)
+	}
+
+	var entity <Model>
+	if err := doc.DataTo(&entity); err != nil {
+		return <Model>{}, fmt.Errorf("failed to parse <dep> data: %w", err)
+	}
+
+	return entity, nil
+}
+
+func (s *<dep>Storage) List<Model>s(ctx context.Context, <FilterField> string) ([]<Model>, error) {
+	if len(<FilterField>) == 0 {
+		return nil, fmt.Errorf("<FilterField> is required")
+	}
+
+	docs, err := s.fs.Collection(<dep>Collection).
+		Where("<filter_field>", "==", <FilterField>).
+		Documents(ctx).
+		GetAll()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list <dep>: %w", err)
+	}
+
+	entities := make([]<Model>, 0, len(docs))
+	for _, d := range docs {
+		var entity <Model>
+		if err := d.DataTo(&entity); err != nil {
+			return nil, fmt.Errorf("failed to parse <dep> data: %w", err)
+		}
+		entities = append(entities, entity)
+	}
+
+	return entities, nil
+}
+
+func (s *<dep>Storage) Create<Model>(ctx context.Context, entity <Model>) (<Model>, error) {
+	now := time.Now().UTC()
+	entity.CreatedAt = now
+	entity.UpdatedAt = now
+
+	if _, err := s.fs.Collection(<dep>Collection).Doc(entity.<ModelIDField>).Set(ctx, entity); err != nil {
+		return <Model>{}, fmt.Errorf("failed to create <dep>: %w", err)
+	}
+
+	return entity, nil
+}
+
+func (s *<dep>Storage) Update<Model>(ctx context.Context, entity <Model>) (<Model>, error) {
+	entity.UpdatedAt = time.Now().UTC()
+
+	if _, err := s.fs.Collection(<dep>Collection).Doc(entity.<ModelIDField>).Set(ctx, entity); err != nil {
+		return <Model>{}, fmt.Errorf("failed to update <dep>: %w", err)
+	}
+
+	return entity, nil
+}
+
+type <Model>StatusType string
+
+var (
+	<Model>StatusDefault <Model>StatusType = "<DEFAULT_STATE>"
+	<Model>Status<NewState> <Model>StatusType = "<NEW_STATE>"
+)
+
+type <Model> struct {
+	<ModelIDField> string             `firestore:"<model_id>" json:"<modelId>"`
+	<EntityField1> string             `firestore:"<entity_field_1>" json:"<entityField1>"`
+	<EntityField2> string             `firestore:"<entity_field_2>" json:"<entityField2>"`
+	<StatusField>  <Model>StatusType  `firestore:"<status_field>" json:"<statusField>"`
+	CreatedAt      time.Time          `firestore:"created_at" json:"createdAt"`
+	UpdatedAt      time.Time          `firestore:"updated_at" json:"updatedAt"`
+	DeletedAt      *time.Time         `firestore:"deleted_at,omitempty" json:"deletedAt,omitempty"`
+}
+
+// GetID parses <ModelIDField> as a UUID; its parse-failure branch must be tested.
+func (e *<Model>) GetID() (uuid.UUID, error) {
+	return uuid.Parse(e.<ModelIDField>)
+}

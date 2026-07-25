@@ -1,0 +1,8 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000009-0000-4000-8000-000000000009",
+  "headline": "p95 180ms < 250ms target.",
+  "p95_ms": 180,
+  "target_ms": 250,
+  "verdict": "PASS"
+}

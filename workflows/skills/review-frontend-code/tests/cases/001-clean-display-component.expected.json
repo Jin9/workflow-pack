@@ -1,0 +1,53 @@
+{
+  "verdict": "approve",
+  "loop_back_target_stage": null,
+  "findings": [],
+  "claim_checks": [
+    {
+      "claim_ref": "a11y_verdict",
+      "claim_type": "a11y",
+      "status": "verified",
+      "evidence": "aria-pressed reveal button, live region announcement, focus retained after toggle, axe-clean component test"
+    },
+    {
+      "claim_ref": "security_verdict.pii_helpers_verified",
+      "claim_type": "pii",
+      "status": "verified",
+      "evidence": "account_number/email via MaskedField, government_id via RedactedField with audit-on-view reveal"
+    },
+    {
+      "claim_ref": "audit_events_emitted",
+      "claim_type": "audit",
+      "status": "verified",
+      "evidence": "pii.government_id.viewed emitted on reveal via the analytics helper"
+    },
+    {
+      "claim_ref": "security_verdict.token_storage_verified",
+      "claim_type": "security",
+      "status": "verified",
+      "evidence": "display-only component; no token reads or storage writes present"
+    }
+  ],
+  "a11y_verdict": {
+    "wcag_level_verified": "AA",
+    "axe_run_evidence_present": true,
+    "role_label_queries_present": true,
+    "focus_management_evident": true
+  },
+  "security_verdict": {
+    "xss_mitigations_verified": true,
+    "token_storage_verified": true,
+    "pii_helpers_verified": true,
+    "csrf_protections_verified": null,
+    "dependency_additions_detected": []
+  },
+  "audit_metadata": {
+    "rules_evaluated": 26,
+    "production_files_scanned": 1,
+    "test_files_scanned": 1,
+    "lines_scanned": 126,
+    "claims_checked": 4
+  },
+  "uncertainty_flags": [],
+  "audit_id": "0d0b3a54-93a4-5d38-8f6b-52c86e1f3d9a"
+}

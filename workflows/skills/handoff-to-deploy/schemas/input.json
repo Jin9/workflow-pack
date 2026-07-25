@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/handoff-to-deploy/schemas/input.json",
+  "title": "handoff-to-deploy input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage release-handoff.",
+  "type": "object",
+  "required": [
+    "verdict",
+    "totals",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "const": "PASS",
+      "description": "qa-validate's suite verdict. Release is permitted ONLY for PASS \u2014 FAIL/ERROR is an explicit stop; there is no lowercase 'conditional' (a human exception is a gate decision, not an input value)."
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "executed",
+        "passed",
+        "failed",
+        "skipped"
+      ],
+      "description": "Shape: executing-qa-test-suite schemas/output.json#/properties/totals. Full evidence via upstream_artifacts[\"qa-validate\"]."
+    },
+    "release_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional workflow input: immutable release reference. Live mode stops needs-input without it."
+    },
+    "target_env": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional workflow input: target environment. Live mode stops needs-input without it."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "engine-injected: the workflow's single idempotency key. Handoff idempotency identity is (idempotency_key, release_ref, target_env)."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "engine-injected: producer stage id -> artifact path; the full QA evidence pointer."
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run."
+    }
+  }
+}

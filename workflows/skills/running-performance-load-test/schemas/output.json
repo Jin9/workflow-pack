@@ -1,0 +1,332 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-performance-load-test output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "metrics",
+    "within_budget",
+    "breaches",
+    "sample_adequate",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "description": "p95 (ms) and error_rate are required numeric for PASS/FAIL; p99/throughput are optional runner-supplied extras \u2014 never fabricated.",
+      "required": [
+        "p95",
+        "error_rate"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "p95": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Observed p95 latency in ms."
+        },
+        "p99": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Observed p99 latency in ms."
+        },
+        "error_rate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Observed error ratio."
+        },
+        "throughput": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Observed requests/sec."
+        }
+      }
+    },
+    "within_budget": {
+      "type": "boolean"
+    },
+    "breaches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "budget",
+          "metric",
+          "observed"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "p95",
+              "p99",
+              "error_rate",
+              "throughput"
+            ]
+          },
+          "observed": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Observed value. p95/p99/error_rate breach when observed >= threshold (upper bounds); throughput breaches when observed < threshold (lower bound)."
+          },
+          "budget": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The threshold from performance_test_context.budget."
+          }
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"perf-load-test:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids use the grandfathered corpus convention.)"
+    },
+    "execution": {
+      "type": "object",
+      "description": "Execution provenance \u2014 how this gate evidence was produced. replay = byte-verbatim reference corpus (no scan ran); runner = a real scan ran in this run.",
+      "required": [
+        "mode",
+        "target_source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "target_source": {
+          "type": "string",
+          "enum": [
+            "current-run",
+            "reference-corpus"
+          ]
+        },
+        "runner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "engine": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Run-relative path to the raw runner report."
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "runner"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "runner",
+              "evidence_ref",
+              "report_sha256"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "replay"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target_source": {
+                "const": "reference-corpus"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "sample_adequate": {
+      "type": "boolean",
+      "description": "Whether the sample size/duration was adequate to judge the budget. PASS requires true."
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Required non-empty when sample_adequate is false."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "within_budget": {
+            "const": true
+          },
+          "breaches": {
+            "maxItems": 0
+          },
+          "sample_adequate": {
+            "const": true
+          },
+          "metrics": {
+            "required": [
+              "p95",
+              "error_rate"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "FAIL"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "within_budget": {
+            "const": false
+          },
+          "metrics": {
+            "required": [
+              "p95",
+              "error_rate"
+            ]
+          }
+        },
+        "anyOf": [
+          {
+            "properties": {
+              "breaches": {
+                "minItems": 1
+              }
+            }
+          },
+          {
+            "properties": {
+              "sample_adequate": {
+                "const": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "ERROR"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "required": [
+          "errors"
+        ],
+        "properties": {
+          "within_budget": {
+            "const": false
+          },
+          "errors": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "sample_adequate": {
+            "const": false
+          }
+        },
+        "required": [
+          "sample_adequate"
+        ]
+      },
+      "then": {
+        "required": [
+          "limitations"
+        ],
+        "properties": {
+          "limitations": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

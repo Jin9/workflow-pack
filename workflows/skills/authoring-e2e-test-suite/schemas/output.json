@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/authoring-e2e-test-suite/schemas/output.json",
+  "title": "authoring-e2e-test-suite output",
+  "type": "object",
+  "required": ["verdict", "scenarios", "flaky_rate", "execution", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": { "type": "string", "enum": ["PASS", "FAIL", "ERROR"] },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "result", "steps_total", "steps_failed"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "result": { "type": "string", "enum": ["pass", "fail", "flaky", "error"] },
+          "steps_total": { "type": "integer", "minimum": 1 },
+          "steps_failed": { "type": "integer", "minimum": 0, "description": "Procedural invariant: steps_failed <= steps_total." },
+          "source_story_ids": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^STORY-[A-Z0-9-]+-\\d+$" },
+            "description": "Story traceability. Optional: replay artifacts predate it; live runs SHOULD emit it."
+          },
+          "evidence_ref": { "type": "string", "description": "Run-relative, offline reference to the executed scenario's evidence (runner mode)." }
+        }
+      }
+    },
+    "flaky_rate": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "count(result=flaky) / count(executed scenarios). Null ONLY for ERROR (suite did not run); a flaky pass is not a pass."
+    },
+    "execution": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "description": "Honest execution provenance: replay = corpus evidence replayed (proves the contract, not a runner-backed execution); runner = live CI/test-runner execution.",
+      "properties": {
+        "mode": { "type": "string", "enum": ["runner", "replay"] },
+        "runner": { "type": "string", "minLength": 1, "description": "Runner identity (required in runner mode)." },
+        "evidence_ref": { "type": "string", "description": "Run-relative, offline reference to the suite-level runner evidence." }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"e2e-tests:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id and never copied from qa-validate."
+    }
+  },
+  "allOf": [
+    {
+      "description": "PASS must be backed by an all-pass scenario set and zero flakiness.",
+      "if": { "properties": { "verdict": { "const": "PASS" } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "scenarios": { "items": { "properties": { "result": { "const": "pass" } }, "required": ["result"] } },
+          "flaky_rate": { "const": 0 }
+        }
+      }
+    },
+    {
+      "description": "FAIL must contain at least one failing or flaky scenario.",
+      "if": { "properties": { "verdict": { "const": "FAIL" } }, "required": ["verdict"] },
+      "then": { "properties": { "scenarios": { "contains": { "properties": { "result": { "enum": ["fail", "flaky", "error"] } }, "required": ["result"] } } } }
+    },
+    {
+      "description": "Only ERROR (suite did not run) may carry a null flaky_rate.",
+      "if": { "properties": { "flaky_rate": { "const": null } }, "required": ["flaky_rate"] },
+      "then": { "properties": { "verdict": { "const": "ERROR" } } }
+    },
+    {
+      "description": "Runner mode must identify its runner.",
+      "if": { "properties": { "execution": { "properties": { "mode": { "const": "runner" } }, "required": ["mode"] } }, "required": ["execution"] },
+      "then": { "properties": { "execution": { "required": ["mode", "runner"] } } }
+    }
+  ]
+}

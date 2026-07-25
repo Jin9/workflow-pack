@@ -1,0 +1,1126 @@
+{
+  "summary": {
+    "specs": 104,
+    "block": 50,
+    "warn": 61,
+    "info": 0,
+    "by_axis": {
+      "portability": 24,
+      "command-safety": 87,
+      "schema-evolution": 0
+    }
+  },
+  "exit_code": 1,
+  "findings": [
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": ".claude/skills/rendering-contract-debug-viewer/SKILL.md",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "portability",
+      "id": "P5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": ".claude/skills/rendering-contract-debug-viewer/SKILL.md",
+      "locator": "capability gate",
+      "message": "implies privileged capability but declares no requires_capabilities for routing",
+      "rule_ref": "portability-rules.md#P5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": ".claude/skills/roundtripping-dashboard-data-contract/SKILL.md",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C3",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/delivery-pipeline.yaml",
+      "locator": "untrusted field",
+      "message": "untrusted-origin field referenced near a command/query/path; declare sanitization",
+      "rule_ref": "command-safety-rules.md#C3"
+    },
+    {
+      "axis": "portability",
+      "id": "P5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/delivery-pipeline.yaml",
+      "locator": "capability gate",
+      "message": "implies privileged capability but declares no requires_capabilities for routing",
+      "rule_ref": "portability-rules.md#P5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/appsec-scan.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/schemas/ba-brief.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/ba-brief.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/ba-brief.json",
+      "locator": "$",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/ba-brief.json",
+      "locator": "$.properties.epics.items",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/ba-brief.json",
+      "locator": "$.properties.story_files.items",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/schemas/contract-tests.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/delivery-pipeline-input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/schemas/delivery-pipeline-output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/discovery.json",
+      "locator": "$.properties.assumptions.items",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/schemas/handoff-receipt.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/schemas/revoke-receipt.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/schemas/sast-gate.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/schemas/smoke-tests.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/analyzing-canary-rollout/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/authoring-e2e-test-suite/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/befe-contract-design/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/contract-testing-pact/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/contract-testing-pact/schemas/input.json",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/designing-tech-lead-handoff/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/designing-tech-lead-handoff/schemas/input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/designing-tech-lead-handoff/schemas/input.json",
+      "locator": "$.definitions.Story.allOf[0].then.properties.acceptance_criteria.contains",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/designing-tech-lead-handoff/schemas/input.json",
+      "locator": "capability gate",
+      "message": "implies privileged capability but declares no requires_capabilities for routing",
+      "rule_ref": "portability-rules.md#P5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/designing-tech-lead-handoff/schemas/output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/designing-tech-lead-handoff/schemas/output.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/input.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/output.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/output.json",
+      "locator": "$.properties.failure_state.properties.detected_markers.items",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/output.json",
+      "locator": "$.properties.failure_state.properties.detected_pii.items",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/output.json",
+      "locator": "$.properties.failure_state.properties.validation_errors.items",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/output.json",
+      "locator": "$.definitions.Story.allOf[0].then.properties.acceptance_criteria.contains",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/eliciting-banking-brief/schemas/output.json",
+      "locator": "capability gate",
+      "message": "implies privileged capability but declares no requires_capabilities for routing",
+      "rule_ref": "portability-rules.md#P5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/executing-backend-unit-tests/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/executing-frontend-unit-tests/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/executing-qa-test-suite/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C3",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/generate-ux-pack/SKILL.md",
+      "locator": "untrusted field",
+      "message": "untrusted-origin field referenced near a command/query/path; declare sanitization",
+      "rule_ref": "command-safety-rules.md#C3"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/generate-ux-pack/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C3",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/generate-ux-pack/schemas/input.json",
+      "locator": "untrusted field",
+      "message": "untrusted-origin field referenced near a command/query/path; declare sanitization",
+      "rule_ref": "command-safety-rules.md#C3"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/generate-ux-pack/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "$.$defs.ux_pack",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "$.$defs.partial_ux_pack",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "$.$defs.blocked_ux_pack",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "$.$defs.blocked_ux_pack.properties.blockers.items",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "$.$defs.failure_shape",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "$.$defs.finding",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/generate-ux-pack/schemas/output.json",
+      "locator": "$.$defs.processing_metadata",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/handoff-revoke/schemas/output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/handoff-to-deploy/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/handoff-to-deploy/schemas/input.json",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/handoff-to-deploy/schemas/output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/implement-backend-feature/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/implement-backend-feature/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-backend-feature/schemas/input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-backend-feature/schemas/input.json",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-backend-feature/schemas/input.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-backend-feature/schemas/input.json",
+      "locator": "$.properties.convention_overrides",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/implement-backend-feature/schemas/output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-backend-feature/schemas/output.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/implement-frontend-feature/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/implement-frontend-feature/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-frontend-feature/schemas/input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-frontend-feature/schemas/input.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "portability",
+      "id": "P2",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-frontend-feature/schemas/input.json",
+      "locator": "$.properties.convention_overrides",
+      "message": "object input without additionalProperties:false (vendor strict-mode drift)",
+      "rule_ref": "portability-rules.md#P2"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/implement-frontend-feature/schemas/output.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C3",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/planning-banking-tests/SKILL.md",
+      "locator": "untrusted field",
+      "message": "untrusted-origin field referenced near a command/query/path; declare sanitization",
+      "rule_ref": "command-safety-rules.md#C3"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/planning-banking-tests/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/planning-banking-tests/schemas/input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C3",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/planning-banking-tests/schemas/output.json",
+      "locator": "untrusted field",
+      "message": "untrusted-origin field referenced near a command/query/path; declare sanitization",
+      "rule_ref": "command-safety-rules.md#C3"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/planning-banking-tests/schemas/output.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/red-teaming-implementation-plan/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/red-teaming-implementation-plan/schemas/output.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/researching-ba-problem-space/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/review-backend-code/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "portability",
+      "id": "P5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/review-backend-code/SKILL.md",
+      "locator": "capability gate",
+      "message": "implies privileged capability but declares no requires_capabilities for routing",
+      "rule_ref": "portability-rules.md#P5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/review-backend-code/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/review-backend-code/schemas/input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/review-backend-code/schemas/output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C3",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/review-frontend-code/SKILL.md",
+      "locator": "untrusted field",
+      "message": "untrusted-origin field referenced near a command/query/path; declare sanitization",
+      "rule_ref": "command-safety-rules.md#C3"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/review-frontend-code/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "portability",
+      "id": "P5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/review-frontend-code/SKILL.md",
+      "locator": "capability gate",
+      "message": "implies privileged capability but declares no requires_capabilities for routing",
+      "rule_ref": "portability-rules.md#P5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/review-frontend-code/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C5",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/review-frontend-code/schemas/input.json",
+      "locator": "version ref",
+      "message": "floating/unpinned version reference; require exact pins",
+      "rule_ref": "command-safety-rules.md#C5"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/review-frontend-code/schemas/output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/running-accessibility-tests/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/running-performance-load-test/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/running-performance-load-test/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/running-performance-load-test/schemas/input.json",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/running-sast-security-gate/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/running-sast-security-gate/SKILL.md",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/running-sast-security-gate/schemas/output.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/running-smoke-tests/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/running-smoke-tests/schemas/input.json",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/scanning-appsec-pipeline-gate/SKILL.md",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/scanning-appsec-pipeline-gate/schemas/output.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/scoping-ba-intake/SKILL.md",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/validating-banking-implementation/SKILL.md",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/validating-banking-implementation/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/validating-banking-implementation/schemas/input.json",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C7",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/validating-banking-implementation/schemas/output.json",
+      "locator": "credentials",
+      "message": "long-lived credential assumption; prefer short-lived OIDC",
+      "rule_ref": "command-safety-rules.md#C7"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/validating-production-slo/SKILL.md",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/validating-production-slo/schemas/input.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C6",
+      "severity": "medium",
+      "gate": "warn",
+      "spec": "workflows/skills/validating-production-slo/schemas/input.json",
+      "locator": "auditability",
+      "message": "autonomous surface without distinct identity / audit log",
+      "rule_ref": "command-safety-rules.md#C6"
+    },
+    {
+      "axis": "command-safety",
+      "id": "C4",
+      "severity": "high",
+      "gate": "block",
+      "spec": "workflows/skills/validating-production-slo/schemas/output.json",
+      "locator": "irreversible action",
+      "message": "irreversible/high-blast action with no HITL/approval annotation",
+      "rule_ref": "command-safety-rules.md#C4"
+    }
+  ]
+}

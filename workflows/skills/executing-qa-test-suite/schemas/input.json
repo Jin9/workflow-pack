@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/executing-qa-test-suite/schemas/input.json",
+  "title": "executing-qa-test-suite input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage qa-validate.",
+  "type": "object",
+  "required": [
+    "output_type",
+    "blocks_qa_execution",
+    "test_cases",
+    "signoff_criteria",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "test_cases": {
+      "type": "array",
+      "description": "Shape: planning-banking-tests schemas/output.json#/properties/test_cases. NOTE: not guaranteed by qa-plan's required_fields (omit+warn at runtime).",
+      "minItems": 1
+    },
+    "signoff_criteria": {
+      "type": "object",
+      "description": "Shape: planning-banking-tests schemas/output.json#/properties/signoff_criteria. NOTE: not guaranteed by qa-plan's required_fields (omit+warn at runtime)."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    },
+    "output_type": {
+      "const": "test_plan",
+      "description": "qa-plan discriminator: only an executable test_plan reaches execution; blocked/partial/failure plans stop upstream."
+    },
+    "blocks_qa_execution": {
+      "const": false,
+      "description": "qa-plan gate: execution proceeds only when the plan does not block it."
+    }
+  }
+}

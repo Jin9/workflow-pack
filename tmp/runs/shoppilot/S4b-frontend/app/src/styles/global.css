@@ -1,0 +1,119 @@
+/* Global, design-token-only base styles. No raw color literals (tokens.css only). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-family-default);
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  background: var(--color-background-page);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-semantic-info);
+}
+
+/* Visible focus ring for all interactive elements (WCAG 2.4.7). */
+:focus-visible {
+  outline: 3px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--spacing-page-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-section-gap);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.app-title {
+  font-size: var(--font-size-500);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.app-nav {
+  display: flex;
+  gap: var(--spacing-md);
+  border-top: 1px solid var(--color-background-divider);
+  padding-top: var(--spacing-md);
+}
+
+.card {
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-background-divider);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-card-gap);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.skeleton {
+  background: var(--color-background-divider);
+  border-radius: var(--radius-card);
+  height: var(--spacing-lg);
+  width: 100%;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

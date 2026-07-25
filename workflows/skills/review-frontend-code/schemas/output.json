@@ -1,0 +1,541 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "treasury/review-frontend-code/schemas/output.json",
+  "title": "review-frontend-code output",
+  "description": "Output contract for the review-frontend-code Review stage. Workflow engine routes on `verdict`. Validation failure triggers one retry, then human-queue.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "loop_back_target_stage",
+    "findings",
+    "a11y_verdict",
+    "security_verdict",
+    "audit_metadata",
+    "uncertainty_flags",
+    "claim_checks",
+    "audit_id"
+  ],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "loop_back",
+        "human-queue"
+      ],
+      "description": "Workflow-engine-routable verdict. Function of findings + claims_unverified per references/severity-guide.md verdict matrix."
+    },
+    "loop_back_target_stage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "frontend-implement",
+        null
+      ],
+      "description": "Consistency record only \u2014 the YAML failure_policy is authoritative. 'frontend-implement' when verdict is loop_back (the ONLY executable loop edge; design ambiguity routes to human-queue with null target because this stage cannot loop to tl-design); null otherwise."
+    },
+    "findings": {
+      "type": "array",
+      "description": "One entry per gap. Empty = clean.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "category",
+          "rule_violated",
+          "file",
+          "line",
+          "evidence",
+          "fix_shape",
+          "confidence"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "High",
+              "Medium",
+              "Low"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "a11y",
+              "xss",
+              "csrf",
+              "token_storage",
+              "pii_leak",
+              "missing_compensation",
+              "pillar_violation",
+              "type_safety",
+              "state_ownership",
+              "tokens",
+              "analytics",
+              "tests",
+              "scope",
+              "claims_vs_reality",
+              "false_claim",
+              "input_incomplete",
+              "input_malformed"
+            ]
+          },
+          "rule_violated": {
+            "type": "string",
+            "description": "Identifier from references/review-rubric.md (F1..F12, A1..A9, C1..C5) or 'workflow' for input/contract issues."
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Verbatim code snippet OR a [needs verification] tag when confidence is Low."
+          },
+          "fix_shape": {
+            "type": "string",
+            "minLength": 8,
+            "description": "What the fix should look like \u2014 component signature, prop type, helper name. Suggestion only; this skill does NOT emit code."
+          },
+          "standards_ref": {
+            "type": "string",
+            "description": "Optional published-standard identifier (CWE-###, WCAG #.#.#, OWASP A0#:2021, etc.). Omit rather than guess."
+          }
+        },
+        "allOf": [
+          {
+            "description": "Low confidence must be visibly marked in the evidence; emitted severity is post-confidence-adjustment.",
+            "if": {
+              "properties": {
+                "confidence": {
+                  "const": "Low"
+                }
+              },
+              "required": [
+                "confidence"
+              ]
+            },
+            "then": {
+              "properties": {
+                "evidence": {
+                  "pattern": "\\[needs verification\\]"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "a11y_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wcag_level_verified",
+        "axe_run_evidence_present",
+        "role_label_queries_present",
+        "focus_management_evident"
+      ],
+      "description": "A11y is a banking-grade blocker \u2014 surfaced separately so the workflow can route on it without parsing findings.",
+      "properties": {
+        "wcag_level_verified": {
+          "type": "string",
+          "enum": [
+            "AA",
+            "AAA",
+            "below_AA",
+            "unknown"
+          ]
+        },
+        "axe_run_evidence_present": {
+          "type": "boolean"
+        },
+        "role_label_queries_present": {
+          "type": "boolean"
+        },
+        "focus_management_evident": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "True only when display/interactive component requires it AND code shows focus moves; null-equivalent (true) for display-only without focus needs. null = not applicable (e.g. display-only / mutation-free code) \u2014 never report true for an unperformed check."
+        }
+      }
+    },
+    "security_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "xss_mitigations_verified",
+        "token_storage_verified",
+        "pii_helpers_verified",
+        "csrf_protections_verified",
+        "dependency_additions_detected"
+      ],
+      "properties": {
+        "xss_mitigations_verified": {
+          "type": "boolean",
+          "description": "True when every dangerouslySetInnerHTML has DOMPurify + // SAFE: comment, or none present."
+        },
+        "token_storage_verified": {
+          "type": "boolean",
+          "description": "True when no localStorage/sessionStorage write of auth-shaped key found."
+        },
+        "pii_helpers_verified": {
+          "type": "boolean",
+          "description": "True when every PII field in input is rendered through its declared helper."
+        },
+        "csrf_protections_verified": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "True when every mutation has CSRF protection or is a no-mutation feature. null = not applicable (e.g. display-only / mutation-free code) \u2014 never report true for an unperformed check."
+        },
+        "dependency_additions_detected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of npm imports not in package.json that the reviewer found. Empty when clean."
+        }
+      }
+    },
+    "audit_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rules_evaluated",
+        "lines_scanned",
+        "claims_checked",
+        "production_files_scanned",
+        "test_files_scanned"
+      ],
+      "properties": {
+        "rules_evaluated": {
+          "const": 26,
+          "description": "Exactly the 26 rubric rules \u2014 fewer means the review was not fully performed."
+        },
+        "lines_scanned": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "claims_checked": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "MUST equal len(claim_checks) \u2014 derived, never independently maintained."
+        },
+        "production_files_scanned": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "test_files_scanned": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "location",
+          "note"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "design_ambiguity",
+              "convention_conflict",
+              "bundle_overrun",
+              "token_gap",
+              "out_of_scope_observation",
+              "needs_human_judgment",
+              "other"
+            ]
+          },
+          "location": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 8
+          }
+        }
+      }
+    },
+    "claim_checks": {
+      "type": "array",
+      "description": "Typed verification of every producer claim (audit events, compensation, patterns, idempotency, a11y/security). One entry per claim checked; an unverified check MUST reference the claims_vs_reality finding that makes it actionable in loop-back feedback. claims are checked against the RESOLVED producer artifact (upstream_artifacts), never taken on faith.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_ref",
+          "status",
+          "evidence"
+        ],
+        "properties": {
+          "claim_ref": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable reference to where the claim was made: a producer artifact pointer (e.g. backend-artifacts.json#/audit_events_emitted), an ADR id, or the verbatim claim sentence."
+          },
+          "claim_type": {
+            "type": "string",
+            "enum": [
+              "audit",
+              "compensation",
+              "pattern",
+              "idempotency",
+              "a11y",
+              "security",
+              "pii",
+              "assertion"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "unverified",
+              "not-applicable"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "type": "string",
+            "description": "Source file/line the verification looked at, when applicable."
+          },
+          "finding_ref": {
+            "type": "string",
+            "description": "Required when status is unverified: the id/rule of the claims_vs_reality finding."
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "unverified"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "finding_ref"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"frontend-review:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids use the grandfathered corpus convention.)"
+    }
+  },
+  "allOf": [
+    {
+      "description": "P1 anywhere forces human-queue (never approve or loop_back a P1).",
+      "if": {
+        "properties": {
+          "findings": {
+            "contains": {
+              "properties": {
+                "severity": {
+                  "const": "P1"
+                }
+              },
+              "required": [
+                "severity"
+              ]
+            }
+          }
+        },
+        "required": [
+          "findings"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "human-queue"
+          }
+        }
+      }
+    },
+    {
+      "description": "approve = clean: no P1/P2, no loop target, every claim check verified or not-applicable.",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "approve"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "loop_back_target_stage": {
+            "const": null
+          },
+          "findings": {
+            "not": {
+              "contains": {
+                "properties": {
+                  "severity": {
+                    "enum": [
+                      "P1",
+                      "P2"
+                    ]
+                  }
+                },
+                "required": [
+                  "severity"
+                ]
+              }
+            }
+          },
+          "claim_checks": {
+            "items": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "verified",
+                    "not-applicable"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "loop_back = actionable rework: the executable target, no P1, and at least one P2 finding or unverified claim.",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "loop_back"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "allOf": [
+          {
+            "properties": {
+              "loop_back_target_stage": {
+                "const": "frontend-implement"
+              },
+              "findings": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "severity": {
+                        "const": "P1"
+                      }
+                    },
+                    "required": [
+                      "severity"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "anyOf": [
+              {
+                "properties": {
+                  "findings": {
+                    "contains": {
+                      "properties": {
+                        "severity": {
+                          "const": "P2"
+                        }
+                      },
+                      "required": [
+                        "severity"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "claim_checks": {
+                    "contains": {
+                      "properties": {
+                        "status": {
+                          "const": "unverified"
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "human-queue parks with no executable target (design ambiguity, P1, or irreducible uncertainty).",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "human-queue"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "loop_back_target_stage": {
+            "const": null
+          }
+        }
+      }
+    }
+  ]
+}

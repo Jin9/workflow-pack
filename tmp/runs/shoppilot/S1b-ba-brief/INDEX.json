@@ -1,0 +1,171 @@
+{
+  "task_id": "REQ-shoppilot-mvp",
+  "audit_id": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
+  "stage": "S1",
+  "state": "ready-for-tl",
+  "confidence": "high",
+  "produced_by": "researching-ba-problem-space 1.0.0 (discovery) + eliciting-banking-brief 1.5.0 (brief) + deterministic render",
+  "owner": "BA lead",
+  "schemaVersion": "1.1",
+  "discovery_file": "../S1a-ba-discovery/discovery.json",
+  "brief_file": "brief.json",
+  "viewer_file": "ba-research-viewer.html",
+  "layers": {
+    "discovery": {
+      "file": "../S1a-ba-discovery/discovery.json",
+      "input_file": "../S1a-ba-discovery/discovery-input.json",
+      "skill": "researching-ba-problem-space 1.0.0",
+      "stage_type": "analyze",
+      "recommendation": "proceed",
+      "audit_id": "9d4e1f8a-2c07-4b63-a5e9-6f1b0c3d8e24"
+    },
+    "brief": {
+      "file": "brief.json",
+      "skill": "eliciting-banking-brief 1.5.0",
+      "status": "ready-for-tl",
+      "audit_id": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22"
+    },
+    "epics": { "count": 4, "ref": "epics[]" },
+    "stories": { "count": 8, "ref": "story_files[]" }
+  },
+  "epics": [
+    {
+      "id": "EPIC-AUTH",
+      "slug": "customer-authentication-session-management",
+      "file": "EPIC-AUTH/EPIC-AUTH.json",
+      "title": "Customer authentication and session management",
+      "story_ids": [
+        "STORY-AUTH-01",
+        "STORY-AUTH-02"
+      ]
+    },
+    {
+      "id": "EPIC-CHECKOUT",
+      "slug": "server-side-checkout-mock-payment",
+      "file": "EPIC-CHECKOUT/EPIC-CHECKOUT.json",
+      "title": "Server-side checkout and mock payment",
+      "story_ids": [
+        "STORY-CHECKOUT-01",
+        "STORY-CHECKOUT-02"
+      ]
+    },
+    {
+      "id": "EPIC-ORDER",
+      "slug": "orders-fulfillment-price-snapshot",
+      "file": "EPIC-ORDER/EPIC-ORDER.json",
+      "title": "Orders, fulfillment and price snapshot",
+      "story_ids": [
+        "STORY-ORDER-01",
+        "STORY-ORDER-02"
+      ]
+    },
+    {
+      "id": "EPIC-INVENTORY",
+      "slug": "stock-reservation-audit",
+      "file": "EPIC-INVENTORY/EPIC-INVENTORY.json",
+      "title": "Stock reservation and audit",
+      "story_ids": [
+        "STORY-INVENTORY-01",
+        "STORY-INVENTORY-02"
+      ]
+    }
+  ],
+  "story_files": [
+    {
+      "id": "STORY-AUTH-01",
+      "epic_id": "EPIC-AUTH",
+      "slug": "customer-logs-email-password",
+      "file": "EPIC-AUTH/STORY-AUTH-01-customer-logs-email-password.json",
+      "title": "Customer logs in with email and password",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-AUTH-02",
+      "epic_id": "EPIC-AUTH",
+      "slug": "customer-refreshes-expired-session-securely",
+      "file": "EPIC-AUTH/STORY-AUTH-02-customer-refreshes-expired-session-securely.json",
+      "title": "Customer refreshes an expired session securely",
+      "priority": "Should"
+    },
+    {
+      "id": "STORY-CHECKOUT-01",
+      "epic_id": "EPIC-CHECKOUT",
+      "slug": "customer-checks-out-server-computed-total",
+      "file": "EPIC-CHECKOUT/STORY-CHECKOUT-01-customer-checks-out-server-computed-total.json",
+      "title": "Customer checks out at a server-computed total",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-CHECKOUT-02",
+      "epic_id": "EPIC-CHECKOUT",
+      "slug": "mock-payment-capture-provider-replay-safety",
+      "file": "EPIC-CHECKOUT/STORY-CHECKOUT-02-mock-payment-capture-provider-replay-safety.json",
+      "title": "Mock payment capture with provider-replay safety",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-ORDER-01",
+      "epic_id": "EPIC-ORDER",
+      "slug": "customer-tracks-order-frozen-price-snapshot",
+      "file": "EPIC-ORDER/STORY-ORDER-01-customer-tracks-order-frozen-price-snapshot.json",
+      "title": "Customer tracks an order with a frozen price snapshot",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-ORDER-02",
+      "epic_id": "EPIC-ORDER",
+      "slug": "admin-advances-fulfillment-state-machine",
+      "file": "EPIC-ORDER/STORY-ORDER-02-admin-advances-fulfillment-state-machine.json",
+      "title": "Admin advances the fulfillment state machine",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-INVENTORY-01",
+      "epic_id": "EPIC-INVENTORY",
+      "slug": "stock-reservation-lifecycle-last-item-race",
+      "file": "EPIC-INVENTORY/STORY-INVENTORY-01-stock-reservation-lifecycle-last-item-race.json",
+      "title": "Stock reservation lifecycle and last-item race",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-INVENTORY-02",
+      "epic_id": "EPIC-INVENTORY",
+      "slug": "admin-adjusts-stock-audit-trail",
+      "file": "EPIC-INVENTORY/STORY-INVENTORY-02-admin-adjusts-stock-audit-trail.json",
+      "title": "Admin adjusts stock with an audit trail",
+      "priority": "Should"
+    }
+  ],
+  "governance_gaps": [],
+  "open_questions": [
+    {
+      "id": "OQ-1",
+      "severity": "P3",
+      "question": "Should a customer be able to confirm delivery, or does the admin mark delivered (current design)?",
+      "why_matters": "Adding customer-confirmed delivery introduces a new flow and a notification; it is deferred but affects ORDER scope if pulled forward.",
+      "suggested_resolver": "Product Manager (Khun Pim)",
+      "related_story_ids": [
+        "STORY-ORDER-02"
+      ]
+    },
+    {
+      "id": "OQ-2",
+      "severity": "P3",
+      "question": "What is the abandoned-cart handling beyond the 30-day purge (notify vs silent purge)?",
+      "why_matters": "Affects the cart-abandonment KPI and a possible future reminder notification; not blocking for MVP.",
+      "suggested_resolver": "Marketing Lead (Khun Fah)",
+      "related_story_ids": [
+        "STORY-CHECKOUT-01"
+      ]
+    }
+  ],
+  "count_check": {
+    "epics": 4,
+    "stories": 8,
+    "story_files": 8,
+    "index_rows": 8,
+    "discovery_present": true,
+    "brief_present": true,
+    "holds": true
+  }
+}

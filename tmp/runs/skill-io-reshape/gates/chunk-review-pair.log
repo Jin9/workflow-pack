@@ -1,0 +1,18 @@
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/review-backend-code
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/review-frontend-code
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/review-backend-code
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/review-frontend-code
+
+0 finding(s) across 3 skills (STRICT mode)
+38 passed, 1 warning in 1.01s
+
+ALL PASS — 0 failure(s)
+
+14 finding(s) across 27 stages (STRICT mode) · baseline: 19 known, 6 fixed, 1 NEW
+
+0 finding(s) across 2 skills (STRICT mode)
+38 passed, 1 warning in 1.03s
+
+ALL PASS — 0 failure(s)
+
+13 finding(s) across 27 stages (STRICT mode) · baseline: 19 known, 6 fixed, 0 NEW

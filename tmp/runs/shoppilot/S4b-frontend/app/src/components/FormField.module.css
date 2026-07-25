@@ -1,0 +1,40 @@
+/* FormField styles — design-token-only. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.label {
+  font-size: var(--font-size-200);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.input {
+  min-height: 44px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-background-divider);
+  border-radius: var(--radius-button);
+  font-family: var(--font-family-default);
+  font-size: var(--font-size-300);
+  color: var(--color-text-primary);
+  background: var(--color-background-page);
+}
+
+.inputError {
+  border-color: var(--color-semantic-error);
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  margin: 0;
+  font-size: var(--font-size-200);
+  color: var(--color-semantic-error);
+}
+
+.errorIcon {
+  line-height: 1.4;
+}

@@ -1,0 +1,99 @@
+{
+  "audit_id": "82ca53e0-2bfd-56ef-bed1-dffa9ff88ba2",
+  "normalized_request": "Build ShopPilot — a single-merchant, Thai-market B2C storefront plus an admin back office covering the full business flow (browse -> cart -> checkout -> pay -> fulfil -> track), with banking-grade governance (PDPA B.E. 2562, Revenue Code retention, Consumer Protection Act, PCI-DSS scope-excluded via a tokenizing mock PSP).",
+  "run_plan": {
+    "tier_floor": "T2",
+    "stage_span": "S0-S7 + T1-T12",
+    "epics_expected": 4,
+    "pipeline": "delivery-pipeline 3.0.0",
+    "human_gates": [
+      "S1a discovery recommendation (async-peer, BA lead)",
+      "S2 tl-design (sync NAMED, Tech Lead + governance)",
+      "S2.5 plan-review (HITL on HardFail)",
+      "S4c qa-plan (sync conditional-go, QA lead)",
+      "S5 qa-validate (sync, QA lead)",
+      "T10 adversarial-pentest (human, security)",
+      "S6 release-handoff (sync NAMED, Release Manager — irreversible)",
+      "S7 prod-validate (sync, On-call / Release Mgr — rollback decision)"
+    ]
+  },
+  "scope_sheet": {
+    "envelope": {
+      "stage": "S0",
+      "intent": "scope the raw requirement",
+      "state": "ready-for-discovery",
+      "confidence": "high",
+      "provenance": {
+        "raw_ref": "ecommerce_mvp_business_only.gap-closed.md",
+        "upstream_contract_ref": "none"
+      },
+      "produced_by": "intake-agent",
+      "owner": "BA lead",
+      "schemaVersion": "1.0"
+    },
+    "contract": {
+      "business_goal": "Let customers buy end-to-end on the web and let admins run catalog, stock and orders from one back office.",
+      "in_scope": [
+        "customer auth (register/login/refresh/logout) with PDPA-lawful credential handling",
+        "server-computed checkout totals, one coupon, shipping rule, idempotent confirm",
+        "mock payment capture with provider-replay safety",
+        "orders with frozen price snapshot + own-data-only tracking",
+        "admin fulfillment state machine (paid->packing->shipped->delivered)",
+        "stock reservation lifecycle + audited admin adjustments"
+      ],
+      "out_of_scope": [
+        "real payment provider / stored card data",
+        "returns and automated refunds",
+        "loyalty / multi-currency / multi-warehouse",
+        "social / federated login, MFA"
+      ],
+      "nfrs": [
+        {
+          "kind": "volume",
+          "target": "<= 5k orders/day at MVP; design headroom 4x"
+        },
+        {
+          "kind": "security",
+          "target": "0 account-enumeration leaks; 0 PAN stored (PCI scope-excluded)"
+        },
+        {
+          "kind": "privacy",
+          "target": "PDPA: PII encrypted at rest; ap-southeast residency; 5y Revenue-Code retention"
+        },
+        {
+          "kind": "latency",
+          "target": "TBD-confirm-with-PM (see OQ-1) — order-confirm p95 numeric threshold not stated"
+        }
+      ],
+      "open_questions": [
+        {
+          "id": "OQ-1",
+          "question": "Numeric SLO thresholds for order-confirm p95 and order-listing latency?",
+          "for": "PM"
+        },
+        {
+          "id": "OQ-2",
+          "question": "Customer-confirmed delivery, or admin-only mark-delivered?",
+          "for": "PM"
+        },
+        {
+          "id": "OQ-3",
+          "question": "Abandoned-cart handling beyond the 30-day purge (notify vs silent)?",
+          "for": "PM"
+        }
+      ],
+      "assumptions": [
+        "Mock PSP and mock courier stand in for real providers for the MVP.",
+        "Single market (Thai) and single language pairing (th/en) for the MVP."
+      ],
+      "risk_flags": [
+        "unclear",
+        "likely-to-change"
+      ]
+    }
+  },
+  "human_view": {
+    "kind": "scope_sheet",
+    "render": "native"
+  }
+}

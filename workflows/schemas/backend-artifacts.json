@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/backend-artifacts.json",
+  "title": "S4a backend-implement boundary — backend artifacts (implement-backend-feature output)",
+  "description": "Boundary for the S4a backend-implement node: permissive superset over implement-backend-feature/schemas/output.json; required mirrors the YAML required_fields [files_generated, tests_generated, implementation_units, idempotency_strategy, audit_id].",
+  "type": "object",
+  "required": [
+    "files_generated",
+    "tests_generated",
+    "implementation_units",
+    "idempotency_strategy",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "path",
+          "content_hash",
+          "lines_added"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "lines_added": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "tests_generated": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "idempotency_strategy": {
+      "type": "string",
+      "minLength": 8
+    },
+    "compensating_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "audit_events_emitted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    },
+    "implementation_units": {
+      "type": "array",
+      "description": "Component/contract traceability over the flat manifests."
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/delivery-pipeline-output.json",
+  "title": "delivery-pipeline workflow output",
+  "description": "Top-level workflow output contract for delivery-pipeline.yaml: the ten artifacts spec.output.required_fields promises, mirrored here (lint-enforced). Terminal assembly/validation at runtime is a ledgered engine follow-up. audit_id threads the banking-grade audit trail end to end.",
+  "type": "object",
+  "required": [
+    "ba_brief",
+    "ux_pack",
+    "tl_design",
+    "backend_artifacts",
+    "frontend_artifacts",
+    "qa_plan",
+    "qa_evidence",
+    "handoff_receipt",
+    "prod_validation",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "ba_brief": {
+      "type": "object"
+    },
+    "ux_pack": {
+      "type": "object"
+    },
+    "tl_design": {
+      "type": "object"
+    },
+    "backend_artifacts": {
+      "type": "object"
+    },
+    "frontend_artifacts": {
+      "type": "object"
+    },
+    "qa_plan": {
+      "type": "object"
+    },
+    "qa_evidence": {
+      "type": "object"
+    },
+    "handoff_receipt": {
+      "type": "object"
+    },
+    "prod_validation": {
+      "type": "object"
+    },
+    "audit_id": {
+      "type": "string"
+    }
+  }
+}

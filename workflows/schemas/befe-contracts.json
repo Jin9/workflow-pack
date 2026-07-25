@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/befe-contracts.json",
+  "title": "S3 contract-design boundary — BE/FE contracts (befe-contract-design output)",
+  "description": "Boundary for the S3 contract-design node: permissive superset over befe-contract-design/schemas/output.json; required mirrors the YAML required_fields [contract_spec, fe_state_binding, audit_id]. contract_spec and fe_state_binding are structured objects as of skill 0.2.0 (summary + documents[] / states).",
+  "type": "object",
+  "required": [
+    "contract_spec",
+    "fe_state_binding",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "contract_spec": {
+      "type": "object",
+      "description": "Structured single source of truth: {summary, documents[]{kind, context, path}}."
+    },
+    "client_types": {
+      "type": "string"
+    },
+    "mock_plan": {
+      "type": "string"
+    },
+    "list_conventions": {
+      "type": "string"
+    },
+    "bff": {
+      "type": "string",
+      "description": "Present only when client classes differ; never null."
+    },
+    "fe_state_binding": {
+      "type": "object",
+      "description": "Structured FE state binding: {summary, states{loading,empty,error}, optimistic?, documents[]?}."
+    },
+    "contract_files": {
+      "type": "array",
+      "description": "Per-context emitted contract artifact refs (be/ OpenAPI summaries, fe/ state bindings).",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

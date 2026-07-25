@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/befe-contract-design/schemas/output.json",
+  "title": "befe-contract-design output",
+  "type": "object",
+  "required": ["contract_spec", "fe_state_binding", "client_types", "mock_plan", "list_conventions", "audit_id"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_spec": {
+      "type": "object",
+      "required": ["summary", "documents"],
+      "additionalProperties": false,
+      "description": "Machine-readable single source of truth for the BE/FE contract set.",
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "documents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["kind", "context", "path"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "type": "string", "enum": ["openapi", "asyncapi", "contract-md"], "description": "contract-md = narrative markdown contract that projects to an OpenAPI/AsyncAPI document." },
+              "context": { "type": "string", "minLength": 1, "description": "Bounded context the document covers (e.g. auth, checkout)." },
+              "path": { "type": "string", "minLength": 1, "description": "Producer-directory-relative POSIX path; no absolute paths or .. traversal." }
+            }
+          }
+        }
+      }
+    },
+    "client_types": { "type": "string", "minLength": 1, "description": "Generated client type bindings / how they are generated." },
+    "mock_plan": { "type": "string", "minLength": 1, "description": "Consumer mock/stub enabling parallel FE dev before BE exists." },
+    "list_conventions": { "type": "string", "minLength": 1, "description": "Pagination + list shape (cursor/keyset, has_more/next_cursor)." },
+    "bff": { "type": "string", "minLength": 1, "description": "BFF-per-client shaping. Present ONLY when client classes differ; never null — omit otherwise." },
+    "fe_state_binding": {
+      "type": "object",
+      "required": ["summary", "states"],
+      "additionalProperties": false,
+      "description": "Per-operation FE state binding contract.",
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "states": {
+          "type": "object",
+          "required": ["loading", "empty", "error"],
+          "additionalProperties": false,
+          "properties": {
+            "loading": { "type": "string", "minLength": 1 },
+            "empty": { "type": "string", "minLength": 1 },
+            "error": { "type": "string", "minLength": 1 }
+          }
+        },
+        "optimistic": { "type": "string", "description": "Optimistic-update policy; omit when no optimistic behavior is allowed." },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["context", "path"],
+            "additionalProperties": false,
+            "properties": {
+              "context": { "type": "string", "minLength": 1 },
+              "path": { "type": "string", "minLength": 1 }
+            }
+          },
+          "description": "Producer-directory-relative per-context state-binding documents."
+        }
+      }
+    },
+    "contract_files": {
+      "type": "array",
+      "description": "Optional per-context contract file manifest (mirrors the boundary's manifest shape).",
+      "items": {
+        "type": "object",
+        "required": ["context", "be_contract", "fe_binding"],
+        "additionalProperties": false,
+        "properties": {
+          "context": { "type": "string", "minLength": 1 },
+          "operations": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "be_contract": { "type": "string", "minLength": 1 },
+          "fe_binding": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "description": "Populated for BC-02/BC-03 failure outputs; empty or absent on success.",
+      "items": {
+        "type": "object",
+        "required": ["code", "severity", "blocking", "detail"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "severity": { "type": "string", "enum": ["P1", "P2", "P3"] },
+          "blocking": { "type": "boolean" },
+          "detail": { "type": "string", "minLength": 1 },
+          "source_contracts": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"contract-design:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id."
+    }
+  }
+}

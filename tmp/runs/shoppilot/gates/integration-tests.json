@@ -1,0 +1,15 @@
+{
+  "verdict": "PASS",
+  "totals": {
+    "executed": 38,
+    "passed": 38,
+    "failed": 0,
+    "skipped": 0
+  },
+  "teardown_ok": true,
+  "defects": [],
+  "execution": {
+    "mode": "replay"
+  },
+  "audit_id": "ee8add4d-7b8e-5fae-a994-f3e059a1f1d0"
+}

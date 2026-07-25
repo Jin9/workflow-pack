@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/smoke-slo.json",
+  "title": "S7 prod-validate boundary \u2014 production SLO validation (validating-production-slo output)",
+  "description": "Boundary contract for the S7 prod-validate gate (smoke-slo). Permissive stage boundary; required mirrors the YAML required_fields. Receipt-bound: receipt_id echoes the S6 handoff receipt unchanged. grade/verdict pair exactly (Pass-promote / Marginal-hold / Fail-rollback); rollback routes to the SAGA compensation. execution records replay vs runner provenance (replay = reference corpus, no telemetry read).",
+  "type": "object",
+  "required": [
+    "verdict",
+    "receipt_id",
+    "grade",
+    "per_slo",
+    "window",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "promote",
+        "hold",
+        "rollback"
+      ]
+    },
+    "grade": {
+      "type": "string",
+      "enum": [
+        "Pass",
+        "Marginal",
+        "Fail"
+      ]
+    },
+    "per_slo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "name",
+          "judgement"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "target": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "observed": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "burn_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "judgement": {
+            "type": "string",
+            "enum": [
+              "within_budget",
+              "burning",
+              "breaching",
+              "insufficient_data"
+            ]
+          }
+        }
+      }
+    },
+    "window": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    },
+    "receipt_id": {},
+    "execution": {}
+  }
+}

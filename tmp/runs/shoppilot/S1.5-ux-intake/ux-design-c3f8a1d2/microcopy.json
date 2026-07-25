@@ -1,0 +1,604 @@
+{
+  "$schema": "design-tokens/microcopy",
+  "version": "1.0.0",
+  "locales": [
+    "th",
+    "en"
+  ],
+  "_note": "[SIM maturity-2] th values now concrete (resolving UX-P1-TH-MICROCOPY-TBD); en derived from BA acceptance criteria. Every string passed the tipping-off scan (e-commerce domain, no AML/SAR vocabulary).",
+  "strings": {
+    "common.action.add_to_cart": {
+      "th": "เพิ่มลงตะกร้า",
+      "en": "Add to cart",
+      "context": "Product detail primary action",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screens/product-detail"
+      ]
+    },
+    "common.action.checkout": {
+      "th": "ดำเนินการสั่งซื้อ",
+      "en": "Checkout",
+      "context": "Cart → checkout",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "screen.cart"
+      ]
+    },
+    "common.action.confirm": {
+      "th": "ยืนยันคำสั่งซื้อ",
+      "en": "Confirm order",
+      "context": "Checkout confirm",
+      "tipping_off_clean": true,
+      "max_length": 20,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "common.action.pay": {
+      "th": "ชำระเงิน",
+      "en": "Pay now",
+      "context": "Payment screen",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "screen.payment"
+      ]
+    },
+    "common.action.login": {
+      "th": "เข้าสู่ระบบ",
+      "en": "Log in",
+      "context": "Login submit",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "screen.login"
+      ]
+    },
+    "common.action.register": {
+      "th": "สร้างบัญชี",
+      "en": "Create account",
+      "context": "Register submit",
+      "tipping_off_clean": true,
+      "max_length": 20,
+      "uses": [
+        "screen.register"
+      ]
+    },
+    "common.action.logout": {
+      "th": "ออกจากระบบ",
+      "en": "Log out",
+      "context": "Profile",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "nav.tab.profile"
+      ]
+    },
+    "common.action.retry": {
+      "th": "ลองอีกครั้ง",
+      "en": "Try again",
+      "context": "Error recovery",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "screen.payment"
+      ]
+    },
+    "common.action.cancel": {
+      "th": "ยกเลิก",
+      "en": "Cancel",
+      "context": "Generic cancel",
+      "tipping_off_clean": true,
+      "max_length": 12,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "common.action.back": {
+      "th": "ย้อนกลับ",
+      "en": "Back",
+      "context": "Navigation",
+      "tipping_off_clean": true,
+      "max_length": 12,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "common.action.track_order": {
+      "th": "ติดตามคำสั่งซื้อ",
+      "en": "Track order",
+      "context": "Orders list row",
+      "tipping_off_clean": true,
+      "max_length": 20,
+      "uses": [
+        "screen.orders"
+      ]
+    },
+    "common.status.loading": {
+      "th": "กำลังโหลด…",
+      "en": "Loading…",
+      "context": "Generic loading",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "all"
+      ]
+    },
+    "common.status.empty": {
+      "th": "ยังไม่มีรายการ",
+      "en": "Nothing here yet",
+      "context": "Generic empty",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.cart",
+        "screen.orders"
+      ]
+    },
+    "common.status.success": {
+      "th": "สำเร็จ",
+      "en": "Done",
+      "context": "Generic success",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "screen.payment"
+      ]
+    },
+    "common.status.no_results": {
+      "th": "ไม่พบรายการ",
+      "en": "No results",
+      "context": "Search/catalog empty",
+      "tipping_off_clean": true,
+      "max_length": 16,
+      "uses": [
+        "screen.products"
+      ]
+    },
+    "nav.tab.home": {
+      "th": "หน้าแรก",
+      "en": "Home",
+      "context": "Bottom nav",
+      "tipping_off_clean": true,
+      "max_length": 12,
+      "uses": [
+        "nav"
+      ]
+    },
+    "nav.tab.cart": {
+      "th": "ตะกร้า",
+      "en": "Cart",
+      "context": "Bottom nav",
+      "tipping_off_clean": true,
+      "max_length": 12,
+      "uses": [
+        "nav"
+      ]
+    },
+    "nav.tab.orders": {
+      "th": "คำสั่งซื้อ",
+      "en": "Orders",
+      "context": "Bottom nav",
+      "tipping_off_clean": true,
+      "max_length": 12,
+      "uses": [
+        "nav"
+      ]
+    },
+    "nav.tab.profile": {
+      "th": "โปรไฟล์",
+      "en": "Profile",
+      "context": "Bottom nav",
+      "tipping_off_clean": true,
+      "max_length": 12,
+      "uses": [
+        "nav"
+      ]
+    },
+    "screen.login.title": {
+      "th": "เข้าสู่ระบบ",
+      "en": "Log in",
+      "context": "Login title",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.login"
+      ]
+    },
+    "screen.login.error-state": {
+      "th": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+      "en": "Email or password is incorrect",
+      "context": "STORY-AUTH-01 generic error (no account enumeration)",
+      "tipping_off_clean": true,
+      "max_length": 48,
+      "uses": [
+        "screen.login"
+      ]
+    },
+    "screen.register.title": {
+      "th": "สร้างบัญชีของคุณ",
+      "en": "Create your account",
+      "context": "Register title",
+      "tipping_off_clean": true,
+      "max_length": 28,
+      "uses": [
+        "screen.register"
+      ]
+    },
+    "screen.products.title": {
+      "th": "ร้านค้า",
+      "en": "Shop",
+      "context": "Catalog title",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.products"
+      ]
+    },
+    "screen.cart.title": {
+      "th": "ตะกร้าของคุณ",
+      "en": "Your cart",
+      "context": "Cart title",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.cart"
+      ]
+    },
+    "screen.cart.empty-state": {
+      "th": "ตะกร้าของคุณว่างเปล่า",
+      "en": "Your cart is empty",
+      "context": "Empty cart",
+      "tipping_off_clean": true,
+      "max_length": 32,
+      "uses": [
+        "screen.cart"
+      ]
+    },
+    "screen.checkout.title": {
+      "th": "ชำระเงิน",
+      "en": "Checkout",
+      "context": "Checkout title",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "screen.payment.title": {
+      "th": "การชำระเงิน",
+      "en": "Payment",
+      "context": "Payment title",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.payment"
+      ]
+    },
+    "screen.payment.processing-state": {
+      "th": "กำลังดำเนินการชำระเงิน…",
+      "en": "Processing your payment…",
+      "context": "Mock provider in-flight",
+      "tipping_off_clean": true,
+      "max_length": 40,
+      "uses": [
+        "screen.payment"
+      ]
+    },
+    "screen.orders.title": {
+      "th": "คำสั่งซื้อของคุณ",
+      "en": "Your orders",
+      "context": "Orders list title",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.orders"
+      ]
+    },
+    "screen.orders.empty-state": {
+      "th": "ยังไม่มีคำสั่งซื้อ",
+      "en": "No orders yet",
+      "context": "Empty orders",
+      "tipping_off_clean": true,
+      "max_length": 28,
+      "uses": [
+        "screen.orders"
+      ]
+    },
+    "screen.order-detail.title": {
+      "th": "คำสั่งซื้อ",
+      "en": "Order",
+      "context": "Order detail title",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "field.email.label": {
+      "th": "อีเมล",
+      "en": "Email",
+      "context": "Email field",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.login",
+        "screen.register"
+      ]
+    },
+    "field.email.placeholder": {
+      "th": "customer+test@shoppilot.test",
+      "en": "customer+test@shoppilot.test",
+      "context": "Example email (fake)",
+      "tipping_off_clean": true,
+      "max_length": 40,
+      "uses": [
+        "screen.login"
+      ]
+    },
+    "field.email.error-required": {
+      "th": "กรุณากรอกอีเมล",
+      "en": "Enter your email",
+      "context": "Required",
+      "tipping_off_clean": true,
+      "max_length": 32,
+      "uses": [
+        "screen.login"
+      ]
+    },
+    "field.email.error-format": {
+      "th": "กรุณากรอกอีเมลให้ถูกต้อง",
+      "en": "Enter a valid email address",
+      "context": "Format",
+      "tipping_off_clean": true,
+      "max_length": 36,
+      "uses": [
+        "screen.register"
+      ]
+    },
+    "field.password.label": {
+      "th": "รหัสผ่าน",
+      "en": "Password",
+      "context": "Password field",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.login"
+      ]
+    },
+    "field.password.error-required": {
+      "th": "กรุณากรอกรหัสผ่าน",
+      "en": "Enter your password",
+      "context": "Required",
+      "tipping_off_clean": true,
+      "max_length": 32,
+      "uses": [
+        "screen.login"
+      ]
+    },
+    "field.name.label": {
+      "th": "ชื่อ-นามสกุล",
+      "en": "Full name",
+      "context": "Name field",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.register"
+      ]
+    },
+    "field.phone.label": {
+      "th": "เบอร์โทรศัพท์",
+      "en": "Mobile number",
+      "context": "Phone field",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.register"
+      ]
+    },
+    "field.phone.placeholder": {
+      "th": "081-234-5678",
+      "en": "081-234-5678",
+      "context": "Example Thai mobile (fake)",
+      "tipping_off_clean": true,
+      "max_length": 20,
+      "uses": [
+        "screen.register"
+      ]
+    },
+    "field.phone.error-format": {
+      "th": "กรุณากรอกเบอร์มือถือให้ถูกต้อง",
+      "en": "Enter a valid Thai mobile number",
+      "context": "^0[0-9]{9}$",
+      "tipping_off_clean": true,
+      "max_length": 40,
+      "uses": [
+        "screen.register"
+      ]
+    },
+    "field.address.label": {
+      "th": "ที่อยู่จัดส่ง",
+      "en": "Shipping address",
+      "context": "Address field",
+      "tipping_off_clean": true,
+      "max_length": 28,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "field.coupon.label": {
+      "th": "รหัสคูปอง",
+      "en": "Coupon code",
+      "context": "Coupon field",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "field.coupon.error-expired": {
+      "th": "คูปองนี้ใช้ไม่ได้แล้ว",
+      "en": "This coupon is no longer valid",
+      "context": "STORY-CHECKOUT-01 neutral coupon error",
+      "tipping_off_clean": true,
+      "max_length": 40,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "order.status.AWAITING_PAYMENT": {
+      "th": "รอการชำระเงิน",
+      "en": "Awaiting payment",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.orders",
+        "screen.order-detail"
+      ]
+    },
+    "order.status.PAID": {
+      "th": "ชำระเงินแล้ว",
+      "en": "Paid",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "order.status.PAYMENT_FAILED": {
+      "th": "ชำระเงินไม่สำเร็จ",
+      "en": "Payment failed",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "order.status.PAYMENT_TIMEOUT": {
+      "th": "หมดเวลาชำระเงิน",
+      "en": "Payment timed out",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "order.status.PACKING": {
+      "th": "กำลังแพ็ก",
+      "en": "Packing",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "order.status.SHIPPED": {
+      "th": "จัดส่งแล้ว",
+      "en": "Shipped",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "order.status.DELIVERED": {
+      "th": "จัดส่งสำเร็จ",
+      "en": "Delivered",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "order.status.CANCELLED": {
+      "th": "ยกเลิกแล้ว",
+      "en": "Cancelled",
+      "context": "Order status",
+      "tipping_off_clean": true,
+      "max_length": 24,
+      "uses": [
+        "screen.order-detail"
+      ]
+    },
+    "error.network": {
+      "th": "การเชื่อมต่อมีปัญหา กรุณาตรวจสอบเครือข่ายแล้วลองใหม่",
+      "en": "Connection problem. Check your network and try again.",
+      "context": "Network error",
+      "tipping_off_clean": true,
+      "max_length": 64,
+      "uses": [
+        "all"
+      ]
+    },
+    "error.server": {
+      "th": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+      "en": "Something went wrong. Please try again.",
+      "context": "Server error",
+      "tipping_off_clean": true,
+      "max_length": 56,
+      "uses": [
+        "all"
+      ]
+    },
+    "error.validation": {
+      "th": "กรุณาแก้ไขข้อมูลที่ไฮไลต์ไว้",
+      "en": "Please fix the highlighted fields",
+      "context": "Form validation",
+      "tipping_off_clean": true,
+      "max_length": 48,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "error.payment-declined": {
+      "th": "ไม่สามารถดำเนินการชำระเงินได้",
+      "en": "Payment could not be completed",
+      "context": "Mock failure",
+      "tipping_off_clean": true,
+      "max_length": 48,
+      "uses": [
+        "screen.payment"
+      ]
+    },
+    "error.payment-timeout": {
+      "th": "หมดเวลาก่อนที่การชำระเงินจะเสร็จสิ้น",
+      "en": "Payment timed out before it completed",
+      "context": "Mock timeout",
+      "tipping_off_clean": true,
+      "max_length": 56,
+      "uses": [
+        "screen.payment"
+      ]
+    },
+    "error.out-of-stock": {
+      "th": "ขออภัย สินค้านี้เพิ่งหมด",
+      "en": "Sorry, this item just sold out",
+      "context": "Last-item race at confirm (STORY-INVENTORY-01)",
+      "tipping_off_clean": true,
+      "max_length": 48,
+      "uses": [
+        "screen.checkout"
+      ]
+    },
+    "error.session-expired": {
+      "th": "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
+      "en": "Your session expired. Please log in again.",
+      "context": "STORY-AUTH-02 refresh failure",
+      "tipping_off_clean": true,
+      "max_length": 56,
+      "uses": [
+        "screen.login"
+      ]
+    }
+  }
+}

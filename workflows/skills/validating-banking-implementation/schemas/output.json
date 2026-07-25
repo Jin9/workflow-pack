@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "validating-banking-implementation output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "persona_findings",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "conditional",
+        "fail"
+      ],
+      "description": "Advisory persona-judgment verdict; a named human confirms it at the gate."
+    },
+    "persona_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "persona",
+          "severity",
+          "scenario",
+          "evidence"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "persona": {
+            "type": "string",
+            "description": "Adversarial persona that surfaced the finding.",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "scenario": {
+            "type": "string",
+            "description": "OWASP or chaos scenario exercised.",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Reproduction / evidence; real PII or secrets redacted as PII:REDACTED.",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"adversarial-pentest:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 independent of optional pentest context, distinct from the engine per-attempt id. The later human L3 gate verdict is recorded engine-side (events.jsonl / HITL), NOT under this artifact id."
+    },
+    "execution": {
+      "type": "object",
+      "description": "Execution provenance \u2014 replay = byte-verbatim reference corpus (no pentest ran); runner = a real adversarial run.",
+      "required": [
+        "mode",
+        "target_source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "target_source": {
+          "type": "string",
+          "enum": [
+            "current-run",
+            "reference-corpus"
+          ]
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "runner"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "evidence_ref",
+              "report_sha256"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "replay"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target_source": {
+                "const": "reference-corpus"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "enum": [
+              "conditional",
+              "fail"
+            ]
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "persona_findings": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "verdict": "PASS",
+  "findings": [],
+  "secrets": 0,
+  "new_vs_baseline": {
+    "new": 0,
+    "existing": 0,
+    "fixed": 2
+  },
+  "policy": {
+    "severity_floor": "medium",
+    "baseline_mode": "baseline-aware",
+    "baseline_ref": null
+  },
+  "blocking_reasons": [],
+  "execution": {
+    "mode": "replay",
+    "target_source": "reference-corpus"
+  },
+  "scan_scope": {
+    "targets_scanned": 45
+  },
+  "audit_id": "dc6f4fbd-e9a4-526a-b332-7fa4aeac34ee"
+}

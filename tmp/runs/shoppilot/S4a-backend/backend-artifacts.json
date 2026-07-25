@@ -1,0 +1,522 @@
+{
+  "audit_id": "405bc4ad-7ea9-55d8-b72a-463b285e1a60",
+  "files_generated": [
+    {
+      "path": "services/auth/app/auth/access/storage_audit.go",
+      "content_hash": "sha256:0f315d928ce35ec6bfa3ae72f03a9eb67feee4f75c68104878ced9b80770ebaa",
+      "lines_added": 50
+    },
+    {
+      "path": "services/auth/app/auth/access/storage_credential.go",
+      "content_hash": "sha256:f980a6c73d77bc609b5a8d42a42e232321d94beeaeef49d359323f509094cfbd",
+      "lines_added": 59
+    },
+    {
+      "path": "services/auth/app/auth/access/storage_token_family.go",
+      "content_hash": "sha256:045010af4b19449160784230d5b428cd0f20b1e849267096fc44e0e8e5ef7038",
+      "lines_added": 135
+    },
+    {
+      "path": "services/auth/app/auth/handler.go",
+      "content_hash": "sha256:4a37d3edf178f84df9e6aa896a43ce08a5782961360dfab608d427d6c90b8c60",
+      "lines_added": 52
+    },
+    {
+      "path": "services/auth/app/auth/handler_login.go",
+      "content_hash": "sha256:7084d9241cc7db0f2f906f3eb06d14f2c3f7161024ba8e5b8b71d38c402fb56a",
+      "lines_added": 68
+    },
+    {
+      "path": "services/auth/app/auth/handler_refresh.go",
+      "content_hash": "sha256:1e2c4252a99f93f9aa76374df9598b009d177cbc4729948526ed23caef12bb61",
+      "lines_added": 68
+    },
+    {
+      "path": "services/auth/app/auth/service_login.go",
+      "content_hash": "sha256:72dad8f1cf6d1616cdc50f8695d1661f5d886fc72ac5940d6b4fe9a3a4946feb",
+      "lines_added": 118
+    },
+    {
+      "path": "services/auth/app/auth/service_refresh.go",
+      "content_hash": "sha256:d8139ddb71344d75cb0f031d14f6c7da62d24168d739f937526c3884461dd922",
+      "lines_added": 84
+    },
+    {
+      "path": "services/checkout/app/checkout/access/client_inventory.go",
+      "content_hash": "sha256:33d181abbe532ef18957447326107d6346aa7f602514bc5fb2b096bd53c46697",
+      "lines_added": 71
+    },
+    {
+      "path": "services/checkout/app/checkout/access/client_order.go",
+      "content_hash": "sha256:967e829a346789a9268f84601e02943f70080914b0e16feb485501c11724553a",
+      "lines_added": 70
+    },
+    {
+      "path": "services/checkout/app/checkout/access/client_psp.go",
+      "content_hash": "sha256:cab5ee4a396d3b316917aef991f00c22b25265d36cb957bb6701be7a992a0254",
+      "lines_added": 67
+    },
+    {
+      "path": "services/checkout/app/checkout/access/storage_audit.go",
+      "content_hash": "sha256:0f315d928ce35ec6bfa3ae72f03a9eb67feee4f75c68104878ced9b80770ebaa",
+      "lines_added": 50
+    },
+    {
+      "path": "services/checkout/app/checkout/access/storage_capture.go",
+      "content_hash": "sha256:b81bd4675a5ae4c67e7db4159e916a7b6fbf778696c5ba3aec4f16c9f781939e",
+      "lines_added": 101
+    },
+    {
+      "path": "services/checkout/app/checkout/access/storage_cart.go",
+      "content_hash": "sha256:24f4446f40dfb60632b43c13b4c1f4880ca20d959b7d0007e87ea7ada56b54b0",
+      "lines_added": 60
+    },
+    {
+      "path": "services/checkout/app/checkout/access/storage_coupon.go",
+      "content_hash": "sha256:e1edc98f1282bb7603858b9e22ee8d8ebbf89efb750909e171ba38c1355374ab",
+      "lines_added": 59
+    },
+    {
+      "path": "services/checkout/app/checkout/access/storage_idempotency.go",
+      "content_hash": "sha256:a28fb5ac9fa5d64e8e865005ea260ee9273a61f3dda459ec757f4e54dd8dd976",
+      "lines_added": 73
+    },
+    {
+      "path": "services/checkout/app/checkout/access/storage_outbox.go",
+      "content_hash": "sha256:6e19257a1aa4fdaa9f061c2bd34535c74c79fb0bad640051d3d03a03e5aab5c3",
+      "lines_added": 50
+    },
+    {
+      "path": "services/checkout/app/checkout/handler.go",
+      "content_hash": "sha256:5e89490957e2c9b3bdf12aa2b92ea69618c1c411bf9cca98d097d5ce476b5d4d",
+      "lines_added": 69
+    },
+    {
+      "path": "services/checkout/app/checkout/handler_capture.go",
+      "content_hash": "sha256:fedab7a6f0d0a9c07ecfc66f1b8912cb31fde13a00fb00ad19b084db3ba9e1fa",
+      "lines_added": 78
+    },
+    {
+      "path": "services/checkout/app/checkout/handler_confirm.go",
+      "content_hash": "sha256:aec14623f1f9f3e92e1f2e0e86f0e2599015a19983cca10a64326a7cbcbbd40a",
+      "lines_added": 69
+    },
+    {
+      "path": "services/checkout/app/checkout/service_capture.go",
+      "content_hash": "sha256:8020319e7095cef28792541f2ec89487c6729d8c6320bdfeae130d0cbe608ba3",
+      "lines_added": 107
+    },
+    {
+      "path": "services/checkout/app/checkout/service_compute_total.go",
+      "content_hash": "sha256:7c0d3d449fcd85f2f41463b415a18cafa2aa9be070e4aa363fcee9e36499bd1e",
+      "lines_added": 26
+    },
+    {
+      "path": "services/checkout/app/checkout/service_confirm.go",
+      "content_hash": "sha256:7fcbaddbc6cd78108d247081c5e29174f66c2e2fbf3c255f2085252adbc3a793",
+      "lines_added": 152
+    },
+    {
+      "path": "services/inventory/app/inventory/access/storage_audit.go",
+      "content_hash": "sha256:0f315d928ce35ec6bfa3ae72f03a9eb67feee4f75c68104878ced9b80770ebaa",
+      "lines_added": 50
+    },
+    {
+      "path": "services/inventory/app/inventory/access/storage_reservation.go",
+      "content_hash": "sha256:d269d09632caf77702f5d319f058289a453fe0c6673fd81ff1b1bc6caadd84df",
+      "lines_added": 133
+    },
+    {
+      "path": "services/inventory/app/inventory/access/storage_stock.go",
+      "content_hash": "sha256:07aa28255ae05cf167f20dcb3b8bfcd5deb317054d8b90823ff77e8f4871a417",
+      "lines_added": 115
+    },
+    {
+      "path": "services/inventory/app/inventory/consumer_status.go",
+      "content_hash": "sha256:b77c9742a85dfe2fb375ad5fd92a9eac7108c2718e6b4bae967d4fd6663aa0c5",
+      "lines_added": 62
+    },
+    {
+      "path": "services/inventory/app/inventory/handler.go",
+      "content_hash": "sha256:33d7b4bd4fbe8eeeb7b598cc665814c5a6c922cf613142622c97510777afea63",
+      "lines_added": 58
+    },
+    {
+      "path": "services/inventory/app/inventory/handler_adjust.go",
+      "content_hash": "sha256:2c326a2250e3d17aa4f57e99ac1665c66f4b2018f309b14ad12e016b77e1c990",
+      "lines_added": 78
+    },
+    {
+      "path": "services/inventory/app/inventory/handler_release.go",
+      "content_hash": "sha256:4846fb71fd2873c21e6d56af7a58faebd5a2538eb331bed2d58e06d05567e90e",
+      "lines_added": 67
+    },
+    {
+      "path": "services/inventory/app/inventory/handler_reserve.go",
+      "content_hash": "sha256:96939a295b77822c1f05068c442aaf732ea7a30a766fb1a302a9310de3872d05",
+      "lines_added": 84
+    },
+    {
+      "path": "services/inventory/app/inventory/service_adjust.go",
+      "content_hash": "sha256:aa6457e87a3cb3a8a4691ac4850b42d0b80cdafe5bb41b6a92ea55beae3671f0",
+      "lines_added": 42
+    },
+    {
+      "path": "services/inventory/app/inventory/service_release.go",
+      "content_hash": "sha256:74225523dcd44b95e156f03f51d88ffa4c870fa5f672d9b04847a4e6f7d239b4",
+      "lines_added": 56
+    },
+    {
+      "path": "services/inventory/app/inventory/service_reserve.go",
+      "content_hash": "sha256:ed5331c2de73e3d5bffd902c2213563f128444d0fa4fa9d0af890c174f25cce9",
+      "lines_added": 63
+    },
+    {
+      "path": "services/order/app/order/access/storage_audit.go",
+      "content_hash": "sha256:0f315d928ce35ec6bfa3ae72f03a9eb67feee4f75c68104878ced9b80770ebaa",
+      "lines_added": 50
+    },
+    {
+      "path": "services/order/app/order/access/storage_order.go",
+      "content_hash": "sha256:962e53d993c30d5a51b6a8a8cc7ecc9c218b7705164d2883624b8cd05612a4c3",
+      "lines_added": 149
+    },
+    {
+      "path": "services/order/app/order/access/storage_outbox.go",
+      "content_hash": "sha256:af8fce644becccb1582d63f73f0358dc73588c70740c55d0f00e57de69d6d5c8",
+      "lines_added": 50
+    },
+    {
+      "path": "services/order/app/order/consumer_payment_captured.go",
+      "content_hash": "sha256:4c5ed68025012138100babad8e728501e737f256ac9f0d6f155fa5131d0b26d3",
+      "lines_added": 96
+    },
+    {
+      "path": "services/order/app/order/handler.go",
+      "content_hash": "sha256:a7b64548ca347edc5ccd5c9c15599e31c6b686e4a95137e4581835028852cf71",
+      "lines_added": 60
+    },
+    {
+      "path": "services/order/app/order/handler_create.go",
+      "content_hash": "sha256:2b19cf7ec4c9b8c9d47fd7b679cd0f74892aa2011c1afcc9ee565024ed7ae434",
+      "lines_added": 88
+    },
+    {
+      "path": "services/order/app/order/handler_get.go",
+      "content_hash": "sha256:f6a8df2408bb9990fe43836ae937cd7160a71eb5aa3ae1261c7b68ca0d99f970",
+      "lines_added": 69
+    },
+    {
+      "path": "services/order/app/order/handler_transition.go",
+      "content_hash": "sha256:bf8d25a256a5fa782f1580a50c17b02eb9539f4aec750a847dcacbaf70699a94",
+      "lines_added": 87
+    },
+    {
+      "path": "services/order/app/order/service_create.go",
+      "content_hash": "sha256:21fe644213bad8428da7cbe8566af70297161e7e00f6cb3f162819e270c42517",
+      "lines_added": 88
+    },
+    {
+      "path": "services/order/app/order/service_get.go",
+      "content_hash": "sha256:93fd323a00152c11cd2a9a4657f5b4476559483ab57c211bb3a0baa81d8475c4",
+      "lines_added": 39
+    },
+    {
+      "path": "services/order/app/order/service_transition.go",
+      "content_hash": "sha256:17d7a6d957c814a50946c91a242f72a99a8055b190d4f1d33aa98e6e757f2988",
+      "lines_added": 143
+    }
+  ],
+  "tests_generated": [
+    {
+      "path": "services/auth/app/auth/handler_login_test.go",
+      "content_hash": "sha256:f72438f115b5f1314133a96f0230cbb8314a95041f50b233c858433bb1a57d94",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/auth/app/auth/handler_refresh_test.go",
+      "content_hash": "sha256:50590c7e9f1249fadda8698150017de6b0ec79f27368de6ce9d14c68a7fd173f",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/auth/app/auth/service_login_test.go",
+      "content_hash": "sha256:6fc6fe40f2dec4cb1b8a6d2114f6d7bfa6a5beb7aa00df4a429d63eadceba0f7",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/auth/app/auth/service_refresh_test.go",
+      "content_hash": "sha256:e850c539435ed743058cc4701c27eed6e626df72fcd1103c4bf10db6e939a3f4",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/checkout/app/checkout/handler_capture_test.go",
+      "content_hash": "sha256:f08614f122c7c96612866a090ca28aada599aaddc370e365c960e756e5818e80",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/checkout/app/checkout/handler_confirm_test.go",
+      "content_hash": "sha256:b9d195b2ded6992251921572634fbd8288e9651835c7957fc08b7339307db897",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/checkout/app/checkout/service_capture_test.go",
+      "content_hash": "sha256:a4ce32ba9c603a02a05a4269e86558a2b9def8708e5fe02e14bf44f131c9c1bd",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/checkout/app/checkout/service_compute_total_test.go",
+      "content_hash": "sha256:de7743f4a8afd5f2278cdeb2835ebdbe1bbea6854bff5f846503d1d85d44f70b",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/checkout/app/checkout/service_confirm_test.go",
+      "content_hash": "sha256:e67d29474ab9ff73505d5846826cf6218dff1ca29c4a647f61ce0d2cf2815fbb",
+      "coverage_pct": 0.966
+    },
+    {
+      "path": "services/inventory/app/inventory/consumer_status_test.go",
+      "content_hash": "sha256:1f202633f2abd55148798c7afd7731c45d3a57019599933a92d15de8e21e3b7d",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/inventory/app/inventory/handler_adjust_test.go",
+      "content_hash": "sha256:9cb28b112bf7d6def70e254762d7b69ed29d1cd715bc7ce90bf3d43c69a4ccbc",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/inventory/app/inventory/handler_release_test.go",
+      "content_hash": "sha256:f045ca6a26022fc9166d87c882ae2f008525ebc6b76cc204cfa0d5aa2ba1fc7d",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/inventory/app/inventory/handler_reserve_test.go",
+      "content_hash": "sha256:0434e302cf70baeffe67cf6b1ba53b2427856827283bd3b72b74e57e5d676b30",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/inventory/app/inventory/service_adjust_test.go",
+      "content_hash": "sha256:e420cbd949aae26471bbf6b50849187acf8eac5007e7e690780322acba22c6f9",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/inventory/app/inventory/service_release_test.go",
+      "content_hash": "sha256:8934298bf888e2c40d2040036584130c65c591b5b4f8fe2282d4b898ab5f323d",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/inventory/app/inventory/service_reserve_test.go",
+      "content_hash": "sha256:a9816654368ec7e0d380119d7cd601db08a8c3623141b97048498828033ee246",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/consumer_payment_captured_test.go",
+      "content_hash": "sha256:80b0e86a43462d9a17cd5a7ac22af2d28b6bb230e13b758c9b6f0258db613e4f",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/handler_create_test.go",
+      "content_hash": "sha256:52802791785e602465577c2263d737a385c300830a1e56bf9554fb73a858ed03",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/handler_get_test.go",
+      "content_hash": "sha256:35bf5006e61ce66fd77a7665bf45cc94452ca01b49b87f25c4e55027f112c9c5",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/handler_test.go",
+      "content_hash": "sha256:a7eb073c729a4492d75fd1cc8f4af0037c967f477a4b0cc6b8dc144f0b9f82c8",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/handler_transition_test.go",
+      "content_hash": "sha256:ead9be8a9cfa9834765b023b12d5995a2045ad469ba4c8c44ab4770883a7b74d",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/service_create_test.go",
+      "content_hash": "sha256:24e38ca642b5847840d9bcaeb541906b8c35ce4ce828b0136722eaabfb9b89e6",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/service_get_test.go",
+      "content_hash": "sha256:ecf677bb10e77f3c236fc121d79aaf8dba0ebb1dbeee71d678ea05a7564454e1",
+      "coverage_pct": 1.0
+    },
+    {
+      "path": "services/order/app/order/service_transition_test.go",
+      "content_hash": "sha256:b3927f28f151226e8acad461e8658ce6a9c4479008e46d1c40d4fbd88f2df4da",
+      "coverage_pct": 1.0
+    }
+  ],
+  "implementation_units": [
+    {
+      "component_name": "auth",
+      "contract_names": [
+        "auth.login",
+        "auth.refresh"
+      ],
+      "files": [
+        "services/auth/app/auth/access/storage_audit.go",
+        "services/auth/app/auth/access/storage_credential.go",
+        "services/auth/app/auth/access/storage_token_family.go",
+        "services/auth/app/auth/handler.go",
+        "services/auth/app/auth/handler_login.go",
+        "services/auth/app/auth/handler_refresh.go",
+        "services/auth/app/auth/service_login.go",
+        "services/auth/app/auth/service_refresh.go"
+      ],
+      "tests": [
+        "services/auth/app/auth/handler_login_test.go",
+        "services/auth/app/auth/handler_refresh_test.go",
+        "services/auth/app/auth/service_login_test.go",
+        "services/auth/app/auth/service_refresh_test.go"
+      ]
+    },
+    {
+      "component_name": "checkout",
+      "contract_names": [
+        "checkout.capture",
+        "checkout.confirm"
+      ],
+      "files": [
+        "services/checkout/app/checkout/access/client_inventory.go",
+        "services/checkout/app/checkout/access/client_order.go",
+        "services/checkout/app/checkout/access/client_psp.go",
+        "services/checkout/app/checkout/access/storage_audit.go",
+        "services/checkout/app/checkout/access/storage_capture.go",
+        "services/checkout/app/checkout/access/storage_cart.go",
+        "services/checkout/app/checkout/access/storage_coupon.go",
+        "services/checkout/app/checkout/access/storage_idempotency.go",
+        "services/checkout/app/checkout/access/storage_outbox.go",
+        "services/checkout/app/checkout/handler.go",
+        "services/checkout/app/checkout/handler_capture.go",
+        "services/checkout/app/checkout/handler_confirm.go",
+        "services/checkout/app/checkout/service_capture.go",
+        "services/checkout/app/checkout/service_compute_total.go",
+        "services/checkout/app/checkout/service_confirm.go"
+      ],
+      "tests": [
+        "services/checkout/app/checkout/handler_capture_test.go",
+        "services/checkout/app/checkout/handler_confirm_test.go",
+        "services/checkout/app/checkout/service_capture_test.go",
+        "services/checkout/app/checkout/service_compute_total_test.go",
+        "services/checkout/app/checkout/service_confirm_test.go"
+      ]
+    },
+    {
+      "component_name": "inventory",
+      "contract_names": [
+        "inventory.adjust",
+        "inventory.release",
+        "inventory.reserve"
+      ],
+      "files": [
+        "services/inventory/app/inventory/access/storage_audit.go",
+        "services/inventory/app/inventory/access/storage_reservation.go",
+        "services/inventory/app/inventory/access/storage_stock.go",
+        "services/inventory/app/inventory/consumer_status.go",
+        "services/inventory/app/inventory/handler.go",
+        "services/inventory/app/inventory/handler_adjust.go",
+        "services/inventory/app/inventory/handler_release.go",
+        "services/inventory/app/inventory/handler_reserve.go",
+        "services/inventory/app/inventory/service_adjust.go",
+        "services/inventory/app/inventory/service_release.go",
+        "services/inventory/app/inventory/service_reserve.go"
+      ],
+      "tests": [
+        "services/inventory/app/inventory/consumer_status_test.go",
+        "services/inventory/app/inventory/handler_adjust_test.go",
+        "services/inventory/app/inventory/handler_release_test.go",
+        "services/inventory/app/inventory/handler_reserve_test.go",
+        "services/inventory/app/inventory/service_adjust_test.go",
+        "services/inventory/app/inventory/service_release_test.go",
+        "services/inventory/app/inventory/service_reserve_test.go"
+      ]
+    },
+    {
+      "component_name": "order",
+      "contract_names": [
+        "order.create",
+        "order.get",
+        "order.payment.captured",
+        "order.status.changed",
+        "order.transition"
+      ],
+      "files": [
+        "services/order/app/order/access/storage_audit.go",
+        "services/order/app/order/access/storage_order.go",
+        "services/order/app/order/access/storage_outbox.go",
+        "services/order/app/order/consumer_payment_captured.go",
+        "services/order/app/order/handler.go",
+        "services/order/app/order/handler_create.go",
+        "services/order/app/order/handler_get.go",
+        "services/order/app/order/handler_transition.go",
+        "services/order/app/order/service_create.go",
+        "services/order/app/order/service_get.go",
+        "services/order/app/order/service_transition.go"
+      ],
+      "tests": [
+        "services/order/app/order/consumer_payment_captured_test.go",
+        "services/order/app/order/handler_create_test.go",
+        "services/order/app/order/handler_get_test.go",
+        "services/order/app/order/handler_test.go",
+        "services/order/app/order/handler_transition_test.go",
+        "services/order/app/order/service_create_test.go",
+        "services/order/app/order/service_get_test.go",
+        "services/order/app/order/service_transition_test.go"
+      ]
+    }
+  ],
+  "idempotency_strategy": "checkout.confirm dedupes on the client idempotency_key; checkout.capture and the payment consumer dedupe on provider_event_id; inventory.reserve keys on confirm_id with an atomic conditional decrement; order.create is idempotent on confirm_id; GET paths are naturally idempotent.",
+  "compensating_actions": [
+    {
+      "trigger": "payment failure/timeout or confirm partial-failure",
+      "action_kind": "skill",
+      "action_ref": "handoff-revoke",
+      "timeout_seconds": 600
+    },
+    {
+      "trigger": "unpaid reservation TTL (30m) elapses",
+      "action_kind": "code",
+      "action_ref": "services/inventory/app/inventory/service_release.go",
+      "timeout_seconds": 1800
+    }
+  ],
+  "audit_events_emitted": [
+    "auth.login.succeeded",
+    "auth.login.failed",
+    "auth.token.refreshed",
+    "auth.token.family_revoked",
+    "order.confirmed",
+    "order.payment.captured",
+    "order.status.changed",
+    "stock.reserved",
+    "stock.released",
+    "stock.adjusted"
+  ],
+  "uncertainty_flags": [],
+  "decision_metadata": {
+    "complexity": "high",
+    "pattern_choices": [
+      {
+        "decision": "transactional outbox per producing service",
+        "rationale": "ADR-008 closes the dual-write gap; effectively-once event publish."
+      },
+      {
+        "decision": "atomic conditional decrement for reserve",
+        "rationale": "ADR-002 serializes the last-item race to one winner."
+      },
+      {
+        "decision": "checkout-service orchestrates reserve+create synchronously",
+        "rationale": "ADR-007 — no standalone orchestrator for the single MVP journey."
+      }
+    ],
+    "repo_conventions_followed": [
+      "polyrepo per context (ADR-001)",
+      "no shared DB",
+      "slog JSON, no PII/token/PAN in logs",
+      "append-only audit keyed by audit_id (ADR-006)"
+    ]
+  }
+}

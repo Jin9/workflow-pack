@@ -1,0 +1,8 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000004-0000-4000-8000-000000000004",
+  "axe_score": 100,
+  "headline": "0 WCAG AA violations.",
+  "verdict": "PASS",
+  "wcag_violations": 0
+}

@@ -1,0 +1,750 @@
+# delivery-pipeline — full Raw-Requirement → Production-Application delivery pipeline (BA → Dev → QA → Deploy).
+#
+# CANONICAL LIVE RECREATION — the single workflow file. The original integration tree (engine, core
+# meta-schema, the 9-stage delivery-pipeline.yaml, ba-brief.json, render_ba_pack.py) was archived; this
+# file recreates the canonical pipeline live under workflows/, grounded in the
+# squad-delivery-dashboard.standalone.html stages[] data, with the S1 stage rebuilt as a discovery→brief COMPOSITE.
+# (The former squad-delivery.yaml mirror — byte-identical stages — was consolidated into this file on 2026-06-02.)
+#
+# ── Agentic-workflow-design header (supervision summary; this file declares & records, the engine operates) ──
+# Source          : squad-delivery-dashboard.standalone.html v2.3 — the canonical, data-driven plan. COMPLETE 14-stage flow.
+# Schema / engine : apiVersion cognitive-os/v1. schema_ref/skill_ref resolve relative to this file's dir.
+#                   LIVE & validatable today: spec.input/output (workflows/schemas/delivery-pipeline-{input,output}.json),
+#                   S0 input mapping, and the S1 composite — s1-discovery (workflows/schemas/discovery.json) and
+#                   ba-research (workflows/schemas/ba-brief.json). The remaining stage schemas
+#                   (run-plan, ux-intake, tl-design, …) were archived and are NOT recreated here (pending).
+# Autonomy        : L3 assisted-autonomous — HOTL inside a phase, HITL at every irreversible boundary.
+#                   Model suite-method: gate on data class (T1/T2/T3) first, capability last.
+#
+# ── HITL gate table (the gate column has no v1-schema slot, so it lives here + as per-stage comments) ──
+#   S0  intake          Delivery Ops      light / auto plan sign-off
+#   S1a s1-discovery     BA lead           ⏸ async peer (L2) — recommendation gate (proceed releases the brief node)
+#   S1b ba-research      BA lead           (intake; runs only after the S1a discovery gate clears `proceed`)
+#   S1.5 ux-intake       Tech Lead         ⏸ async peer (L2)
+#   S2  tl-design        Tech Lead + gov   🔒 sync NAMED (L3)
+#   S2.5 plan-review     Tech Lead         ◆ HITL on HardFail
+#   S4a-r backend-review dev-squad         ⏸ async peer (L2)
+#   S4b-r frontend-review dev-squad        ⏸ async peer (L2)
+#   S4c  qa-plan         qa-squad lead     🔒 sync conditional-go (L3)
+#   S5   qa-validate     qa-squad lead     🔒 sync (L3)
+#   S6   release-handoff Release Manager   🔒 sync NAMED (L3) — MANDATORY, irreversible
+#   S7   prod-validate   On-call / Rel Mgr 🔒 sync (L3) — named rollback decision
+#   Fully autonomous (no human review): contract-design (S3) · backend-implement (S4a) · frontend-implement (S4b).
+#
+# ── Terminal states (engine-derived; not config fields) ──
+#   Done · ShipWithCaveats · Failed · HardFail · WaitingHuman.
+#
+# ── Command-safety tiers (enforced outside the model, at the tool-calling layer) ──
+#   ⚙ ALLOW  : reversible & sandboxed — run tests in sandbox, read-only repo, schema validation, squad-engine run.
+#   ⏸ CONFIRM: irreversible / control-plane — push to main, DEPLOY, DB / schema migration, frontend publish.
+#   🔒 DENY   : non-allowlisted tool/MCP, network egress outside sandbox, long-lived secrets, agent editing its own profile.
+#
+# ── Deferred / GAP roster (present for completeness; NOT yet wired to a runnable skill+schema) ──
+#   S0 intake (OI-003 unowned) · S3 contract-design (OI-003) · S5 qa-validate (GAP-05 execution node) ·
+#   S7 prod-validate (OI-003).
+#   OI-002 CLOSED 2026-06-04: S6 release-handoff (handoff-to-deploy) + the handoff-revoke compensation are
+#   now BUILT, exact-pinned, and carry requires_approval: true (C4 re-escalates to block for them).
+#   GAP-05 (S1 render→pack wiring) is now CLOSED: S1 is the live discovery→brief composite below.
+#   2026-06-04: a 12-stage post-development test/verification group (T1–T12) was wired off its natural SDLC
+#   anchors — unit (BE/FE) · SAST · a11y · contract(Pact) · integration · AppSec(DAST/SCA) · e2e · perf ·
+#   adversarial-pentest(human) · smoke · canary. Each is a LEAF gate, so the depends_on DAG stays acyclic.
+
+apiVersion: cognitive-os/v1
+kind: Workflow
+
+metadata:
+  name: delivery-pipeline
+  version: 3.0.0
+  owner: delivery
+  description: >
+    Complete banking-grade delivery pipeline from a raw requirement to a validated production release,
+    following squad-delivery-dashboard.standalone.html v2.3. Fourteen stages: intake, a BA-research composite
+    (problem-space discovery → human recommendation gate → epic/story brief), UX intake, TL design,
+    adversarial plan-review gate, BE/FE contract design, parallel backend and frontend implementation with
+    paired reviews and loop-backs, QA test design and validation, a notify handoff to deploy with a SAGA
+    revoke compensation, and production SLO validation.
+  tags:
+    [
+      delivery,
+      banking-grade,
+      ba,
+      dev,
+      qa,
+      deploy,
+      multi-squad,
+      l3-assisted-autonomous,
+    ]
+
+spec:
+  input:
+    schema_ref: schemas/delivery-pipeline-input.json
+    required_fields: [raw_request, requester, idempotency_key]
+
+  output:
+    schema_ref: schemas/delivery-pipeline-output.json
+    required_fields:
+      [
+        ba_brief,
+        ux_pack,
+        tl_design,
+        backend_artifacts,
+        frontend_artifacts,
+        qa_plan,
+        qa_evidence,
+        handoff_receipt,
+        prod_validation,
+        audit_id,
+      ]
+
+  sla:
+    p95_latency_seconds: 1800
+    max_retries_per_stage: 3
+    overall_timeout_seconds: 7200
+
+  default_failure_policy:
+    on_failure: retry
+    max_retries: 2
+    backoff: exponential
+    after_max_retries: human-queue
+    human_queue_name: delivery-failures
+
+  compensation:
+    enabled: true
+    timeout_seconds: 600
+
+  stages:
+    # ── S0 · Intake ─────────────────────────────────────────────────────────────
+    # gate: light / auto plan sign-off (Delivery Ops). DEFERRED — unowned stage (OI-003); skill is draft.
+    - id: intake
+      type: analyze
+      skill_ref: skills/scoping-ba-intake
+      skill_version: "2.0.0"
+      input:
+        from_workflow_input: [raw_request, requester, idempotency_key]
+      output:
+        schema_ref: schemas/run-plan.json
+        required_fields: [normalized_request, run_plan, scope_sheet, audit_id]
+      timeout_seconds: 120
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: delivery-intake-pending
+
+    # ── S1 · BA Research (COMPOSITE: discovery → human gate → brief + epics + stories) ──────
+    # gate: async peer (L2) — BA lead. Two-skill chain. `researching-ba-problem-space` AI-drafts a
+    # discovery artifact; a NAMED human decides on its recommendation BEFORE intake. On `proceed`,
+    # `eliciting-banking-brief` produces the brief + 3-level epic/story ref-chain pack. The brief node
+    # keeps id `ba-research` so S1.5 / S2 / S2.5 / S4c consume it unchanged. Governance P1 → human.
+
+    # S1a · discovery — upstream problem-space research, BEFORE intake
+    - id: s1-discovery
+      type: analyze
+      skill_ref: skills/researching-ba-problem-space
+      skill_version: "2.0.0"
+      depends_on: [intake]
+      input:
+        from_workflow_input: [raw_request, requester]
+        from_stage:
+          intake: [normalized_request]
+      output:
+        schema_ref: schemas/discovery.json
+        required_fields:
+          [problem_framing, assumptions, regulatory_regimes, recommendation, audit_id]
+      timeout_seconds: 240
+      # discovery: a regulatory hard-blocker is never auto-resolved → straight to a human queue.
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: ba-discovery-review
+      # HUMAN GATE (AI drafts, named human decides) on the discovery→brief boundary.
+      # recommendation ∈ {proceed | needs-work | do-not-build}; only `proceed` releases ba-research.
+      # The gate has no v1-schema slot — encoded as policy + this block, per the S0/S2/S5 convention.
+      human_review:
+        gate: async-peer # L2 — BA lead
+        on_field: recommendation
+        proceed_when: proceed
+        on_block: ba-discovery-review
+
+    # S1b · brief + 3-level epic/story ref-chain pack (intake; id retained = ba-research)
+    - id: ba-research
+      type: analyze
+      skill_ref: skills/eliciting-banking-brief
+      skill_version: "2.0.1"
+      depends_on: [intake, s1-discovery]
+      input:
+        from_workflow_input: [raw_request, requester]
+        from_stage:
+          intake: [normalized_request]
+          # typed discovery → brief handoff (advisory; orchestrator merges into input.discovery):
+          s1-discovery:
+            [
+              problem_framing,
+              regulatory_regimes,
+              recommendation,
+              audit_id,
+              handoff_to_intake,
+            ]
+      output:
+        # ba-brief.json manifest exposes epics[] / story_files[]; all downstream from_stage mappings
+        # read the same plural names (singular epic/stories carry-over drift fixed 2026-07-04).
+        schema_ref: schemas/ba-brief.json
+        required_fields: [epics, story_files, governance_gaps, state, audit_id]
+      timeout_seconds: 180
+      failure_policy:
+        on_failure: retry
+        max_retries: 2
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: delivery-failures
+
+    # ── S1.5 · UX Intake ────────────────────────────────────────────────────────
+    # gate: async peer (L2) — Tech Lead.
+    - id: ux-intake
+      type: analyze
+      skill_ref: skills/generate-ux-pack
+      skill_version: "0.2.0"
+      depends_on: [ba-research]
+      input:
+        from_workflow_input: [requester]
+        from_stage:
+          ba-research: [epics, story_files]
+      output:
+        schema_ref: schemas/ux-intake.json
+        required_fields:
+          [pack_dir, tokens_path, route_map_path, component_inventory_path,
+           microcopy_path, screen_states_path, form_validation_path,
+           responsive_spec_path, accessibility_spec_path, maturity_level,
+           status, p1_findings, audit_id]
+      timeout_seconds: 240
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: ux-intake-pending
+
+    # ── S2 · TL Design ──────────────────────────────────────────────────────────
+    # gate: SYNC NAMED (L3) — Tech Lead + governance. No auto-retry: a design ripples to N components.
+    - id: tl-design
+      type: design
+      skill_ref: skills/designing-tech-lead-handoff
+      skill_version: "0.3.0"
+      depends_on: [ba-research, ux-intake]
+      input:
+        from_stage:
+          ba-research: [epics, story_files, governance_gaps]
+          ux-intake: [pack_dir, tokens_path, route_map_path, component_inventory_path]
+      output:
+        schema_ref: schemas/tl-design.json
+        required_fields: [component_map, api_contracts, audit_id]
+      timeout_seconds: 300
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: tl-design-pending
+
+    # ── S2.5 · Plan-Review gate (adversarial red-team) ──────────────────────────
+    # gate: HITL on HardFail (Tech Lead). Reroute high findings back to TL; cap exceeded → HardFail (abort, no fan-out).
+    - id: plan-review
+      type: review
+      skill_ref: skills/red-teaming-implementation-plan
+      skill_version: "0.2.0"
+      depends_on: [ba-research, tl-design]
+      input:
+        from_stage:
+          ba-research: [epics, story_files, governance_gaps]
+          tl-design: [component_map, api_contracts]
+      output:
+        schema_ref: schemas/plan-review.json
+        required_fields: [verdict, findings, audit_id]
+      timeout_seconds: 240
+      failure_policy:
+        on_failure: loop_back
+        loop_to_stage: tl-design
+        max_loops: 1
+        after_max_loops: abort # cap exceeded → HardFail (no fan-out on a bad plan)
+
+    # ── S3a/3b · Contracts (BE/FE) ──────────────────────────────────────────────
+    # gate: auto. DEFERRED — unowned stage (OI-003); draft skill. Parallel published artifact
+    # (overview EVENTS emits contracts.published with no downstream consumer). Explicit failure_policy
+    # (mirrors the spec default; made explicit 2026-07-04 so no stage silently inherits).
+    - id: contract-design
+      type: generate
+      skill_ref: skills/befe-contract-design
+      skill_version: "0.2.0"
+      depends_on: [tl-design, plan-review]
+      input:
+        from_stage:
+          tl-design: [api_contracts, component_map]
+      output:
+        schema_ref: schemas/befe-contracts.json
+        required_fields: [contract_spec, fe_state_binding, audit_id]
+      timeout_seconds: 300
+      failure_policy:
+        on_failure: retry
+        max_retries: 2
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: contract-design-pending
+
+    # ── S4a · Backend Impl ──────────────────────────────────────────────────────
+    # gate: auto (runs in sandbox; ALLOW tests-in-sandbox). Gated behind plan-review.
+    - id: backend-implement
+      type: generate
+      skill_ref: skills/implement-backend-feature
+      skill_version: "2.0.0"
+      depends_on: [tl-design, plan-review]
+      input:
+        from_stage:
+          tl-design: [api_contracts, component_map]
+      output:
+        schema_ref: schemas/backend-artifacts.json
+        required_fields:
+          [files_generated, tests_generated, implementation_units, idempotency_strategy, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 2
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: backend-implement-failures
+
+    # ── S4a-r · Backend Review ──────────────────────────────────────────────────
+    # gate: async peer (L2) — dev-squad. high/medium route back to Dev (cap 2); low → ADVISORY.
+    - id: backend-review
+      type: review
+      skill_ref: skills/review-backend-code
+      skill_version: "2.0.0"
+      depends_on: [backend-implement]
+      input:
+        from_stage:
+          backend-implement: [files_generated, tests_generated]
+          tl-design: [api_contracts]
+      output:
+        schema_ref: schemas/backend-review.json
+        required_fields: [verdict, findings, audit_id]
+      timeout_seconds: 240
+      failure_policy:
+        on_failure: loop_back
+        loop_to_stage: backend-implement
+        max_loops: 2
+        after_max_loops: human-queue
+        human_queue_name: backend-review-loop-exhausted
+
+    # ── S4b · Frontend Impl ─────────────────────────────────────────────────────
+    # gate: auto (sandboxed). Runs in parallel with the backend leg; also consumes the UX pack.
+    - id: frontend-implement
+      type: generate
+      skill_ref: skills/implement-frontend-feature
+      skill_version: "2.0.0"
+      depends_on: [tl-design, ux-intake, plan-review]
+      input:
+        from_stage:
+          tl-design: [api_contracts, component_map]
+          ux-intake:
+            [
+              maturity_level,
+              status,
+              p1_findings,
+              tokens_path,
+              route_map_path,
+              component_inventory_path,
+              microcopy_path,
+              screen_states_path,
+              form_validation_path,
+              responsive_spec_path,
+              accessibility_spec_path,
+            ]
+      output:
+        schema_ref: schemas/frontend-artifacts.json
+        required_fields:
+          [files_generated, tests_generated, a11y_compliance, security_review, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 2
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: frontend-implement-failures
+
+    # ── S4b-r · Frontend Review ─────────────────────────────────────────────────
+    # gate: async peer (L2) — dev-squad. high/medium route back to Dev (cap 2); low → ADVISORY.
+    - id: frontend-review
+      type: review
+      skill_ref: skills/review-frontend-code
+      skill_version: "2.0.0"
+      depends_on: [frontend-implement]
+      input:
+        from_stage:
+          frontend-implement: [files_generated, tests_generated]
+          tl-design: [api_contracts]
+          # UX evidence the review checks the implementation against (all guaranteed
+          # by ux-intake required_fields); ux-intake is a transitive ancestor.
+          ux-intake: [pack_dir, tokens_path, component_inventory_path,
+                      screen_states_path, form_validation_path, responsive_spec_path,
+                      accessibility_spec_path]
+      output:
+        schema_ref: schemas/frontend-review.json
+        required_fields: [verdict, findings, audit_id]
+      timeout_seconds: 240
+      failure_policy:
+        on_failure: loop_back
+        loop_to_stage: frontend-implement
+        max_loops: 2
+        after_max_loops: human-queue
+        human_queue_name: frontend-review-loop-exhausted
+
+    # ── S4c · QA Test Design ────────────────────────────────────────────────────
+    # gate: SYNC conditional-go (L3) — qa-squad lead. Converges both review verdicts.
+    - id: qa-plan
+      type: analyze
+      skill_ref: skills/planning-banking-tests
+      skill_version: "2.0.0"
+      depends_on: [ba-research, backend-review, frontend-review]
+      input:
+        from_stage:
+          ba-research: [epics, story_files, governance_gaps]
+          backend-review: [verdict]
+          frontend-review: [verdict]
+      output:
+        schema_ref: schemas/qa-plan.json
+        required_fields:
+          [output_type, blocks_qa_execution, frontmatter, test_cases,
+           signoff_criteria, audit_id]
+      timeout_seconds: 240
+      failure_policy:
+        on_failure: retry
+        max_retries: 2
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: qa-plan-pending
+
+    # ── S5 · QA Validation ──────────────────────────────────────────────────────
+    # gate: SYNC (L3) — qa-squad lead. DEFERRED — execution node missing (GAP-05); draft skill.
+    - id: qa-validate
+      type: validate
+      skill_ref: skills/executing-qa-test-suite
+      skill_version: "0.2.0"
+      depends_on: [qa-plan]
+      input:
+        from_stage:
+          qa-plan: [output_type, blocks_qa_execution, test_cases, signoff_criteria]
+      output:
+        schema_ref: schemas/qa-evidence.json
+        required_fields:
+          [verdict, totals, coverage_measured, flaky, defects, execution, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: qa-validation-pending
+
+    # ── S6 · Deploy (handoff → release) ─────────────────────────────────────────
+    # gate: SYNC NAMED (L3) — Release Manager — MANDATORY. IRREVERSIBLE: no retry, SAGA-compensated by
+    # handoff-revoke (600s). BUILT 2026-06-04 (OI-002 CLOSED) — handoff-to-deploy + handoff-revoke authored,
+    # exact-pinned, requires_approval: true; output schema workflows/schemas/handoff-receipt.json now present.
+    - id: release-handoff
+      type: notify
+      skill_ref: skills/handoff-to-deploy
+      skill_version: "0.2.0"
+      depends_on: [qa-validate]
+      input:
+        from_workflow_input: [release_ref, target_env]
+        from_stage:
+          qa-validate: [totals, verdict]
+      output:
+        schema_ref: schemas/handoff-receipt.json
+        required_fields: [receipt_id, status, release_ref, target_env, approver, audit_id]
+      timeout_seconds: 60
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: delivery-handoff-failures
+      compensating_action:
+        type: revoke-handoff
+        skill_ref: skills/handoff-revoke
+        skill_version: "0.2.0"
+        schema_ref: schemas/revoke-receipt.json # the revoke receipt's boundary contract
+        timeout_seconds: 600
+
+    # ── S7 · Prod Validation ────────────────────────────────────────────────────
+    # gate: SYNC (L3) — On-call / Release Mgr; a named rollback decision is required.
+    # DEFERRED — unowned stage (OI-003); draft skill.
+    - id: prod-validate
+      type: validate
+      skill_ref: skills/validating-production-slo
+      skill_version: "0.2.0"
+      depends_on: [release-handoff]
+      input:
+        from_stage:
+          release-handoff: [receipt_id]
+      output:
+        schema_ref: schemas/smoke-slo.json
+        required_fields: [verdict, receipt_id, grade, per_slo, window, execution,
+                          audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: prod-validation-pending
+
+    # ════════════════════════════════════════════════════════════════════════════
+    # T · Post-development test & verification gates (added 2026-06-04)
+    # 12 runnable gate stages wired off their natural SDLC anchors, grounded in the
+    # squad-delivery-dashboard tests[] roster. Each is a LEAF (no downstream
+    # consumer) so the depends_on DAG stays acyclic; each emits a schema-validated
+    # verdict. Gate semantics: auto = retry→human-queue · auto+exc = same + exception
+    # escalation · human = sync named verification (no machine threshold).
+    # ════════════════════════════════════════════════════════════════════════════
+
+    # T1 · Backend unit tests — be.artifacts · pre-merge CI (auto). coverage floor 0.80.
+    - id: backend-unit-tests
+      type: validate
+      skill_ref: skills/executing-backend-unit-tests
+      skill_version: "0.2.0"
+      depends_on: [backend-implement]
+      input:
+        from_stage:
+          backend-implement: [files_generated, tests_generated]
+      output:
+        schema_ref: schemas/backend-unit-tests.json
+        required_fields: [verdict, totals, failures, audit_id]
+      timeout_seconds: 480
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: backend-unit-test-failures
+
+    # T2 · SAST security gate (BOLA·IDOR·secrets) — pre-merge CI (auto). 0 secrets · 0 new at/above severity.
+    - id: sast-gate
+      type: validate
+      skill_ref: skills/running-sast-security-gate
+      skill_version: "0.2.0"
+      depends_on: [backend-implement]
+      input:
+        from_stage:
+          backend-implement: [files_generated]
+      output:
+        schema_ref: schemas/sast-gate.json
+        required_fields: [verdict, findings, secrets, new_vs_baseline, execution,
+                          scan_scope, audit_id]
+      timeout_seconds: 300
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: sast-gate-failures
+
+    # T3 · Frontend unit tests — fe.artifacts · pre-merge CI (auto).
+    - id: frontend-unit-tests
+      type: validate
+      skill_ref: skills/executing-frontend-unit-tests
+      skill_version: "0.2.0"
+      depends_on: [frontend-implement]
+      input:
+        from_stage:
+          frontend-implement: [files_generated, tests_generated]
+      output:
+        schema_ref: schemas/frontend-unit-tests.json
+        required_fields: [verdict, totals, failures, audit_id]
+      timeout_seconds: 360
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: frontend-unit-test-failures
+
+    # T4 · Accessibility tests (WCAG 2.1 AA) — FE review · SIT (auto+exc). 0 AA violations.
+    - id: accessibility-tests
+      type: validate
+      skill_ref: skills/running-accessibility-tests
+      skill_version: "0.2.0"
+      depends_on: [frontend-implement]
+      input:
+        from_stage:
+          frontend-implement: [files_generated]
+      output:
+        schema_ref: schemas/accessibility-tests.json
+        required_fields: [verdict, wcag_violations, needs_review, manual_checks,
+                          execution, scan_scope, standard, audit_id]
+      timeout_seconds: 300
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: accessibility-exceptions
+
+    # T5 · Contract tests (Pact / CDCT) — pre-merge · can-i-deploy · CI (auto). all pacts verify · can_i_deploy.
+    - id: contract-tests
+      type: validate
+      skill_ref: skills/contract-testing-pact
+      skill_version: "0.2.0"
+      depends_on: [contract-design, backend-implement, frontend-implement]
+      input:
+        from_workflow_input: [contract_test_context]
+        from_stage:
+          contract-design: [contract_spec, fe_state_binding]
+          backend-implement: [files_generated]
+          frontend-implement: [files_generated]
+      output:
+        schema_ref: schemas/contract-tests.json
+        required_fields: [verdict, can_i_deploy, execution, audit_id]
+      timeout_seconds: 360
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: contract-test-failures
+
+    # T6 · Integration tests — post-impl · SIT (auto+exc). 0 fail · teardown_ok=true.
+    - id: integration-tests
+      type: validate
+      skill_ref: skills/executing-integration-tests
+      skill_version: "0.2.0"
+      depends_on: [backend-implement, frontend-implement]
+      input:
+        from_workflow_input: [integration_test_context]
+        from_stage:
+          backend-implement: [files_generated]
+          frontend-implement: [files_generated]
+      output:
+        schema_ref: schemas/integration-tests.json
+        required_fields: [verdict, totals, teardown_ok, defects, execution, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: integration-test-exceptions
+
+    # T7 · AppSec scan (DAST / SCA / secrets) — CI · SIT (auto). 0 secrets · 0 known-exploited CVE.
+    - id: appsec-scan
+      type: validate
+      skill_ref: skills/scanning-appsec-pipeline-gate
+      skill_version: "0.2.1"
+      depends_on: [backend-implement, frontend-implement]
+      input:
+        from_workflow_input: [appsec_scan_context]
+        from_stage:
+          backend-implement: [files_generated]
+          frontend-implement: [files_generated]
+      output:
+        schema_ref: schemas/appsec-scan.json
+        required_fields: [verdict, dast_findings, sca_cves, secrets, new_vs_baseline,
+                          execution, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: appsec-scan-failures
+
+    # T8 · End-to-end suite — post-deploy · SIT/UAT (auto+exc). 0 journey/assertion fail.
+    - id: e2e-tests
+      type: validate
+      skill_ref: skills/authoring-e2e-test-suite
+      skill_version: "0.2.0"
+      depends_on: [ba-research, qa-validate]
+      input:
+        from_stage:
+          ba-research: [epics, story_files]
+          qa-validate: [verdict]
+      output:
+        schema_ref: schemas/e2e-tests.json
+        required_fields: [verdict, scenarios, execution, audit_id]
+      timeout_seconds: 900
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: e2e-test-exceptions
+
+    # T9 · Performance / load test — pre-prod · staging/UAT (auto). all within budget.
+    - id: perf-load-test
+      type: validate
+      skill_ref: skills/running-performance-load-test
+      skill_version: "0.2.1"
+      depends_on: [qa-validate]
+      input:
+        from_workflow_input: [performance_test_context]
+        from_stage:
+          qa-validate: [totals, verdict]
+      output:
+        schema_ref: schemas/perf-load-test.json
+        required_fields: [verdict, metrics, within_budget, breaches, sample_adequate,
+                          execution, audit_id]
+      timeout_seconds: 900
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: perf-load-failures
+
+    # T10 · Adversarial pentest (OWASP · chaos) — pre-deploy · UAT (HUMAN gate; persona judgment, no threshold).
+    - id: adversarial-pentest
+      type: validate
+      skill_ref: skills/validating-banking-implementation
+      skill_version: "0.2.1"
+      depends_on: [qa-validate]
+      input:
+        from_workflow_input: [adversarial_pentest_context]
+        from_stage:
+          qa-validate: [totals, verdict]
+      output:
+        schema_ref: schemas/adversarial-pentest.json
+        required_fields: [verdict, persona_findings, execution, audit_id]
+      timeout_seconds: 2100
+      failure_policy:
+        on_failure: human-queue
+        max_retries: 0
+        human_queue_name: adversarial-pentest-review
+
+    # T11 · Smoke / sanity — post-deploy · PRD (auto). all probes green.
+    - id: smoke-tests
+      type: validate
+      skill_ref: skills/running-smoke-tests
+      skill_version: "0.2.0"
+      depends_on: [release-handoff]
+      input:
+        from_stage:
+          release-handoff: [receipt_id]
+      output:
+        schema_ref: schemas/smoke-tests.json
+        required_fields: [verdict, receipt_id, probes, all_green, execution, audit_id]
+      timeout_seconds: 180
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: smoke-test-failures
+
+    # T12 · Canary analysis — post-deploy · PRD (auto+exc). success at/above 95% over 3 windows · sample adequate.
+    - id: canary-analysis
+      type: validate
+      skill_ref: skills/analyzing-canary-rollout
+      skill_version: "0.2.0"
+      depends_on: [release-handoff]
+      input:
+        from_stage:
+          release-handoff: [receipt_id]
+      output:
+        schema_ref: schemas/canary-analysis.json
+        required_fields: [verdict, per_metric, sample_adequate, windows_passed, audit_id]
+      timeout_seconds: 600
+      failure_policy:
+        on_failure: retry
+        max_retries: 1
+        backoff: exponential
+        after_max_retries: human-queue
+        human_queue_name: canary-analysis-exceptions

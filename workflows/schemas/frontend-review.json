@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/frontend-review.json",
+  "title": "S4b-r frontend-review boundary \u2014 frontend review (review-frontend-code output)",
+  "description": "Boundary contract for the S4 frontend-review gate. Permissive stage boundary; required mirrors the YAML required_fields (verdict, findings, audit_id). Verdict routing (engine/policies.py): approve releases; loop_back re-runs frontend-implement with the findings threaded (max 2 loops, then human-queue); human-queue parks for a named human. P1 findings always route to a human; the loop target field in the artifact is a consistency record \u2014 the YAML failure_policy is authoritative.",
+  "type": "object",
+  "required": [
+    "verdict",
+    "findings",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "loop_back",
+        "human-queue"
+      ]
+    },
+    "loop_back_target_stage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "design",
+        "implement",
+        null
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "claims_verified": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "claims_unverified": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "a11y_verdict": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "security_verdict": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "audit_metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

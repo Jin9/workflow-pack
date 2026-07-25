@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HELL FACTORY</title>
+<!-- Pixel fonts are vendored via @fontsource imports in src/main.jsx (offline rule: no CDN). -->
+</head>
+<body>
+  <div id="viewport">
+    <div id="stage"><div id="root"></div></div>
+  </div>
+
+  <script>
+    // Scale the fixed 1800×1013 stage to fit any viewport, letterboxed on black.
+    (function () {
+      const stage = document.getElementById('stage');
+      function fit() {
+        const s = Math.min(window.innerWidth / 1800, window.innerHeight / 1013);
+        stage.style.transform = 'scale(' + s + ')';
+      }
+      window.addEventListener('resize', fit);
+      fit();
+    })();
+  </script>
+
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

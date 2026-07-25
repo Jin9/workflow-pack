@@ -1,0 +1,542 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "scanning-appsec-pipeline-gate output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "dast_findings",
+    "sca_cves",
+    "secrets",
+    "new_vs_baseline",
+    "execution",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "dast_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "fingerprint",
+          "gate_status",
+          "rule_id",
+          "severity",
+          "summary"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "description": "Runtime finding summary; secrets redacted as PII:REDACTED."
+          },
+          "fingerprint": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Non-secret target (route/endpoint), never credentials."
+          },
+          "baseline_status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "accepted"
+            ]
+          },
+          "gate_status": {
+            "type": "string",
+            "enum": [
+              "blocking",
+              "advisory"
+            ]
+          },
+          "evidence_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "sca_cves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gate_status",
+          "id",
+          "known_exploited",
+          "package",
+          "severity"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "CVE identifier for a known vulnerability in an imported dependency."
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "known_exploited": {
+            "type": "boolean",
+            "description": "True if actively exploited in the wild; always a hard fail."
+          },
+          "package": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fixed_in": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "baseline_status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "accepted"
+            ]
+          },
+          "gate_status": {
+            "type": "string",
+            "enum": [
+              "blocking",
+              "advisory"
+            ]
+          }
+        }
+      }
+    },
+    "secrets": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of detected secrets; any non-zero is a hard fail."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"appsec-scan:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids use the grandfathered corpus convention.)"
+    },
+    "execution": {
+      "type": "object",
+      "description": "Execution provenance \u2014 replay = byte-verbatim reference corpus (no scanner ran); runner = a real scan ran in this run.",
+      "required": [
+        "mode",
+        "target_source",
+        "scanners"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "target_source": {
+          "type": "string",
+          "enum": [
+            "current-run",
+            "reference-corpus"
+          ]
+        },
+        "scanner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scanner_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "scanners": {
+          "type": "object",
+          "required": [
+            "dast",
+            "sca",
+            "secrets"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "dast": {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "completed",
+                    "error",
+                    "skipped"
+                  ]
+                },
+                "tool": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tool_version": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "sca": {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "completed",
+                    "error",
+                    "skipped"
+                  ]
+                },
+                "tool": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tool_version": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "secrets": {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "completed",
+                    "error",
+                    "skipped"
+                  ]
+                },
+                "tool": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tool_version": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "runner"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "evidence_ref",
+              "report_sha256"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "replay"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target_source": {
+                "const": "reference-corpus"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "new_vs_baseline": {
+      "type": "object",
+      "required": [
+        "dast",
+        "sca"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "dast": {
+          "type": "object",
+          "required": [
+            "new",
+            "accepted",
+            "fixed"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "new": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "accepted": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "fixed": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "sca": {
+          "type": "object",
+          "required": [
+            "new",
+            "accepted",
+            "fixed"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "new": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "accepted": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "fixed": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "secret_findings": {
+      "type": "array",
+      "description": "Secrets evidence: fingerprint + detector + location ONLY \u2014 the matched value is NEVER emitted.",
+      "items": {
+        "type": "object",
+        "required": [
+          "fingerprint",
+          "detector",
+          "location"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "fingerprint": {
+            "type": "string",
+            "minLength": 1
+          },
+          "detector": {
+            "type": "string",
+            "minLength": 1
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "secrets": {
+            "const": 0
+          },
+          "execution": {
+            "properties": {
+              "scanners": {
+                "properties": {
+                  "dast": {
+                    "properties": {
+                      "status": {
+                        "const": "completed"
+                      }
+                    }
+                  },
+                  "sca": {
+                    "properties": {
+                      "status": {
+                        "const": "completed"
+                      }
+                    }
+                  },
+                  "secrets": {
+                    "properties": {
+                      "status": {
+                        "const": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "dast_findings": {
+            "not": {
+              "contains": {
+                "properties": {
+                  "gate_status": {
+                    "const": "blocking"
+                  }
+                },
+                "required": [
+                  "gate_status"
+                ]
+              }
+            }
+          },
+          "sca_cves": {
+            "not": {
+              "contains": {
+                "properties": {
+                  "gate_status": {
+                    "const": "blocking"
+                  }
+                },
+                "required": [
+                  "gate_status"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "secrets": {
+            "minimum": 1
+          }
+        },
+        "required": [
+          "secrets"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "FAIL"
+          }
+        },
+        "required": [
+          "secret_findings"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "ERROR"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "required": [
+          "errors"
+        ],
+        "properties": {
+          "errors": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

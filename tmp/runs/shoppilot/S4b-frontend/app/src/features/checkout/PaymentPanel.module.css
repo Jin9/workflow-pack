@@ -1,0 +1,44 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  background: var(--color-background-surface);
+  border: 1px solid var(--color-background-divider);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-md);
+}
+
+.amount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.amountValue {
+  font-size: var(--font-size-600);
+  color: var(--color-text-primary);
+}
+
+.processing {
+  margin: 0;
+  color: var(--color-semantic-info);
+  font-size: var(--font-size-200);
+}
+
+.success {
+  margin: 0;
+  color: var(--color-semantic-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+.declined {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  color: var(--color-semantic-error);
+  font-size: var(--font-size-200);
+}
+
+.declinedIcon {
+  line-height: 1.4;
+}

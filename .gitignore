@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Local env / editor
+.env
+.venv/
+*.local.json
+
+# Session scratch (not committed)
+tmp/.backups/
+*.viewer.html
+
+# Large binary animation experiment (GIF/mp4/frames) — not tracked
+tmp/runs/fb-pipeline-reel/
+
+# S4a/S4b real-code build products (source IS committed; build outputs are not)
+tmp/runs/shoppilot/S4a-backend/services/**/coverage.out
+tmp/runs/shoppilot/S4b-frontend/app/node_modules/
+tmp/runs/shoppilot/S4b-frontend/app/coverage/
+tmp/runs/shoppilot/S4b-frontend/app/dist/
+# stray Go build binaries the go-template scaffold can emit (named after the module tail)
+tmp/runs/shoppilot/S4a-backend/services/*/auth
+tmp/runs/shoppilot/S4a-backend/services/*/checkout
+tmp/runs/shoppilot/S4a-backend/services/*/order
+tmp/runs/shoppilot/S4a-backend/services/*/inventory
+reference/repo-generator/generated/
+
+# Live engine run outputs + local env (engine source IS committed)
+runs/
+engine/venv/

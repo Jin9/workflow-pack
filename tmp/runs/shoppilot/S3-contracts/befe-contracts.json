@@ -1,0 +1,100 @@
+{
+  "audit_id": "cb921576-8648-5708-81f9-828c19ea708b",
+  "contract_spec": {
+    "summary": "OpenAPI 3.1 per bounded context under be/ (auth, checkout, order, inventory) — 12 operations mirroring S2 api_contracts; AsyncAPI for order.payment.captured / order.status.changed published via the per-service transactional outbox (ADR-008). Source of truth: be/*.contract.md -> *.openapi.yaml.",
+    "documents": [
+      {
+        "kind": "contract-md",
+        "context": "auth",
+        "path": "auth.contract.md"
+      },
+      {
+        "kind": "contract-md",
+        "context": "checkout",
+        "path": "checkout.contract.md"
+      },
+      {
+        "kind": "contract-md",
+        "context": "order",
+        "path": "order.contract.md"
+      },
+      {
+        "kind": "contract-md",
+        "context": "inventory",
+        "path": "inventory.contract.md"
+      }
+    ]
+  },
+  "client_types": "TS types generated from OpenAPI via openapi-typescript -> fe/src/api/types.gen.ts; Go server stubs via oapi-codegen.",
+  "mock_plan": "Prism mock server per OpenAPI lets the FE leg start before the BE exists; Pact consumer stubs for the 4 services.",
+  "list_conventions": "Keyset/cursor pagination (has_more + next_cursor); orders list newest-first by created_at.",
+  "fe_state_binding": {
+    "summary": "loading=skeleton, empty=typed copy, error=failure_mode->microcopy key, optimistic=cart only (never money/confirm/capture).",
+    "states": {
+      "loading": "skeleton",
+      "empty": "typed copy",
+      "error": "failure_mode->microcopy key"
+    },
+    "optimistic": "cart only (never money/confirm/capture)",
+    "documents": [
+      {
+        "context": "auth",
+        "path": "auth.state-binding.md"
+      },
+      {
+        "context": "checkout",
+        "path": "checkout.state-binding.md"
+      },
+      {
+        "context": "order",
+        "path": "order.state-binding.md"
+      },
+      {
+        "context": "inventory",
+        "path": "inventory.state-binding.md"
+      }
+    ]
+  },
+  "contract_files": [
+    {
+      "context": "auth",
+      "operations": [
+        "auth.login",
+        "auth.refresh"
+      ],
+      "be_contract": "auth.contract.md",
+      "fe_binding": "auth.state-binding.md"
+    },
+    {
+      "context": "checkout",
+      "operations": [
+        "checkout.confirm",
+        "checkout.capture"
+      ],
+      "be_contract": "checkout.contract.md",
+      "fe_binding": "checkout.state-binding.md"
+    },
+    {
+      "context": "order",
+      "operations": [
+        "order.create",
+        "order.get",
+        "order.transition",
+        "order.payment.captured",
+        "order.status.changed"
+      ],
+      "be_contract": "order.contract.md",
+      "fe_binding": "order.state-binding.md"
+    },
+    {
+      "context": "inventory",
+      "operations": [
+        "inventory.reserve",
+        "inventory.release",
+        "inventory.adjust"
+      ],
+      "be_contract": "inventory.contract.md",
+      "fe_binding": "inventory.state-binding.md"
+    }
+  ]
+}

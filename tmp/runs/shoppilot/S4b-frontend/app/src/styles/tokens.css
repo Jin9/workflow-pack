@@ -1,0 +1,68 @@
+/*
+ * Design tokens — flattened 1:1 from
+ * tmp/runs/shoppilot/S1.5-ux-intake/ux-design-c3f8a1d2/tokens.json
+ * (W3C Design Tokens draft; $value nesting flattened to CSS custom properties).
+ * This is the ONLY file in the app that may contain raw color/dimension literals.
+ * Components/features/pages reference var(--...) exclusively.
+ */
+:root {
+  /* color.brand */
+  --color-brand-primary: #0b5fd8;
+  --color-brand-secondary: #e8590c;
+
+  /* color.text */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #595959;
+  --color-text-tertiary: #6e6e6e;
+
+  /* color.background */
+  --color-background-page: #ffffff;
+  --color-background-surface: #f4f4f5;
+  --color-background-divider: #e0e0e2;
+
+  /* color.semantic */
+  --color-semantic-success: #197a3d;
+  --color-semantic-warning: #8a5300;
+  --color-semantic-error: #b3261e;
+  --color-semantic-info: #1a5fb4;
+
+  /* spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-page-padding: 16px;
+  --spacing-page-padding-compact: 12px;
+  --spacing-card-gap: 12px;
+  --spacing-section-gap: 24px;
+
+  /* typography.font-family */
+  --font-family-default: system-ui, -apple-system, 'Noto Sans Thai', sans-serif;
+  --font-family-alternates: system-ui, -apple-system, 'Noto Sans Thai', sans-serif;
+
+  /* typography.scale */
+  --font-size-100: 12px;
+  --font-size-200: 14px;
+  --font-size-300: 16px;
+  --font-size-400: 18px;
+  --font-size-500: 20px;
+  --font-size-600: 24px;
+  --font-size-700: 30px;
+  --font-size-800: 36px;
+  --font-size-900: 48px;
+
+  /* typography.font-weight */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* radius */
+  --radius-card: 8px;
+  --radius-pill: 999px;
+  --radius-button: 8px;
+
+  /* motion */
+  --motion-duration: 200ms;
+}

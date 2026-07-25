@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cognitive-os/engine/gates.schema.json",
+  "title": "GatePolicy — machine-readable gate table consumed by the engine",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "gates"],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": { "const": "cognitive-os/v1" },
+    "kind": { "const": "GatePolicy" },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "pipeline": { "type": "string" }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verdicts": { "$ref": "#/definitions/Verdicts" },
+        "blocking": { "type": "boolean" }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/Gate" }
+    }
+  },
+  "definitions": {
+    "Verdicts": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "Gate": {
+      "type": "object",
+      "required": ["stage_id", "gate"],
+      "additionalProperties": false,
+      "properties": {
+        "stage_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*$" },
+        "gate": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "auto+exception",
+            "async-peer",
+            "sync",
+            "sync-named",
+            "human",
+            "hitl-on-hardfail"
+          ]
+        },
+        "owner_role": { "type": "string", "minLength": 1 },
+        "blocking": { "type": "boolean" },
+        "mandatory": { "type": "boolean" },
+        "confidence_independent": { "type": "boolean" },
+        "on_field": { "type": "string", "minLength": 1 },
+        "proceed_when": { "type": "string", "minLength": 1 },
+        "on_block": { "type": "string", "minLength": 1 },
+        "verdicts": { "$ref": "#/definitions/Verdicts" },
+        "exception_queue": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "description": "sync-named and human gates require an owner_role (a named human fills it at verdict time).",
+          "if": { "properties": { "gate": { "enum": ["sync-named", "human"] } } },
+          "then": { "required": ["owner_role"] }
+        },
+        {
+          "description": "auto+exception gates must name their exception queue.",
+          "if": { "properties": { "gate": { "const": "auto+exception" } } },
+          "then": { "required": ["exception_queue"] }
+        }
+      ]
+    }
+  }
+}

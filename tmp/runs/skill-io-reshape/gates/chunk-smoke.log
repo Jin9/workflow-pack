@@ -1,0 +1,9 @@
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-smoke-tests
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-smoke-tests
+
+0 finding(s) across 1 skills (STRICT mode)
+38 passed, 1 warning in 1.03s
+
+ALL PASS — 0 failure(s)
+
+3 finding(s) across 27 stages (STRICT mode) · baseline: 4 known, 1 fixed, 0 NEW

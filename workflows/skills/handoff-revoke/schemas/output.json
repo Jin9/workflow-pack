@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "handoff-revoke output",
+  "type": "object",
+  "required": [
+    "revoke_id",
+    "original_receipt_id",
+    "status",
+    "reason",
+    "effects",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "revoke_id": {
+      "type": "string",
+      "description": "Identifier of this compensation record.",
+      "minLength": 1
+    },
+    "original_receipt_id": {
+      "type": "string",
+      "description": "Must equal the input original_receipt.receipt_id.",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "revoked",
+        "partial",
+        "blocked"
+      ]
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id; LIVE derivations use UUIDv5(HOUSE_NS, \"release-handoff::compensation:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Fixture/corpus ids are grandfathered (sim-convention deterministic)."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Audit-visible reason, echoed from the compensation trigger."
+    },
+    "effects": {
+      "type": "object",
+      "required": [
+        "credentials",
+        "promotion"
+      ],
+      "additionalProperties": false,
+      "description": "What the revoke actually did. revoked = both effects succeeded; partial = mixed; blocked = none performed.",
+      "properties": {
+        "credentials": {
+          "type": "string",
+          "enum": [
+            "revoked",
+            "revoke-failed",
+            "not-attempted"
+          ]
+        },
+        "promotion": {
+          "type": "string",
+          "enum": [
+            "withheld",
+            "withhold-failed",
+            "not-attempted"
+          ]
+        }
+      }
+    },
+    "failure_code": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Required for partial/blocked status."
+    },
+    "confirmation": {
+      "type": "object",
+      "required": [
+        "actor_ref",
+        "role",
+        "decision"
+      ],
+      "additionalProperties": false,
+      "description": "Optional echo of the named revoke confirmation (see input contract; engine threading ledgered).",
+      "properties": {
+        "actor_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "const": "approve-revoke"
+        }
+      }
+    }
+  },
+  "$id": "https://squad-delivery/skills/handoff-revoke/schemas/output.json",
+  "allOf": [
+    {
+      "description": "revoked = both effects succeeded.",
+      "if": {
+        "properties": {
+          "status": {
+            "const": "revoked"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "effects": {
+            "properties": {
+              "credentials": {
+                "const": "revoked"
+              },
+              "promotion": {
+                "const": "withheld"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "partial/blocked must carry a failure_code.",
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "partial",
+              "blocked"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "failure_code"
+        ]
+      }
+    }
+  ]
+}

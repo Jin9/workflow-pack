@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/running-accessibility-tests/schemas/input.json",
+  "title": "running-accessibility-tests input",
+  "description": "ADVISORY — documents the assembled stage input; the engine validates workflow input and stage OUTPUTS only (engine/validation.py). Shape below is the POST-adapter payload delivered at stage accessibility-tests.",
+  "type": "object",
+  "required": [
+    "files_generated",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "description": "Shape: implement-frontend-feature schemas/output.json#/properties/files_generated. EXHAUSTIVE non-test manifest of every generated source/config file, paths relative to frontend_worktree_root (POSIX; no absolute paths, no '..')."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

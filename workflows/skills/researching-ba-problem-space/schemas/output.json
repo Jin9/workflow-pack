@@ -1,0 +1,324 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "researching-ba-problem-space output",
+  "type": "object",
+  "required": [
+    "problem_framing",
+    "assumptions",
+    "regulatory_regimes",
+    "recommendation",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "problem_framing": {
+      "type": "string",
+      "description": "What problem, for whom, why now (opportunity, not solution)."
+    },
+    "opportunities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "statement",
+          "risk_type",
+          "confidence"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "statement": {
+            "type": "string"
+          },
+          "risk_type": {
+            "type": "string",
+            "enum": [
+              "value",
+              "usability",
+              "feasibility",
+              "viability"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "de_risk": {
+            "type": "string",
+            "description": "How to test/de-risk (spike, interview, data)."
+          }
+        }
+      }
+    },
+    "regulatory_regimes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "KYC / AML / sanctions / PCI-DSS / data-residency in play."
+    },
+    "recommendation": {
+      "type": "string",
+      "enum": [
+        "proceed",
+        "needs-work",
+        "do-not-build"
+      ]
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"s1-discovery:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 independent of optional inputs, distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids predate this formula and are grandfathered \u2014 never rewrite recorded provenance.)"
+    },
+    "handoff_to_intake": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Typed advisory handoff, delivered to the brief node (eliciting-banking-brief) nested as input.discovery.handoff_to_intake via the engine NESTED_HANDOFF. Emitted ONLY when the top-level AND nested recommendation are 'proceed' (allOf). Blocked/failed discoveries (failure_state) never carry one.",
+      "required": [
+        "audit_id",
+        "recommendation"
+      ],
+      "properties": {
+        "audit_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "MUST equal the top-level audit_id \u2014 one audit identity across the discovery to brief chain."
+        },
+        "recommendation": {
+          "type": "string",
+          "enum": [
+            "proceed",
+            "needs-work",
+            "do-not-build"
+          ]
+        },
+        "tier_signal": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ],
+          "description": "Discovery's tier read. Intake treats it as a FLOOR only; it can raise but never lower an inferred tier."
+        },
+        "stakeholder_hints": {
+          "type": "array",
+          "description": "Absent-but-implied stakeholders discovery surfaced; intake seeds these into its absent-stakeholder enumeration (never discharges a Legal-absence gate).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role"
+            ],
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "engagement_required_for": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "opportunity_detail": {
+          "type": "array",
+          "description": "Optional richer opportunities than the flat opportunities[]; intake uses them as scope leads only.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "opportunity"
+            ],
+            "properties": {
+              "opportunity": {
+                "type": "string"
+              },
+              "outcome": {
+                "type": "string"
+              },
+              "regulatory_regimes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "failure_state": {
+      "type": "object",
+      "description": "Present ONLY on a blocked/failed discovery (RB-01 input unusable, RB-02 evidence insufficient, RB-03 fatal contradiction). A failure artifact still carries the required top-level fields and NEVER a handoff_to_intake.",
+      "required": [
+        "failure_code",
+        "message",
+        "remediation"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "failure_code": {
+          "type": "string",
+          "enum": [
+            "RB-01",
+            "RB-02",
+            "RB-03"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "open_questions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "description": "AI drafts, human decides: a ready-to-intake handoff is emitted only on a clear-to-proceed recommendation \u2014 both the nested and the TOP-LEVEL recommendation must be proceed. A needs-work / do-not-build artifact must not carry one.",
+      "if": {
+        "required": [
+          "handoff_to_intake"
+        ]
+      },
+      "then": {
+        "properties": {
+          "handoff_to_intake": {
+            "properties": {
+              "recommendation": {
+                "const": "proceed"
+              }
+            }
+          },
+          "recommendation": {
+            "const": "proceed"
+          }
+        }
+      }
+    },
+    {
+      "description": "Four-risk completeness: a proceed recommendation requires at least four assumptions, at least one per risk class (value/usability/feasibility/viability), each carrying a de_risk step. needs-work / do-not-build artifacts may be partial.",
+      "if": {
+        "properties": {
+          "recommendation": {
+            "const": "proceed"
+          }
+        },
+        "required": [
+          "recommendation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "assumptions": {
+            "minItems": 4,
+            "items": {
+              "required": [
+                "statement",
+                "risk_type",
+                "confidence",
+                "de_risk"
+              ]
+            },
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "risk_type": {
+                      "const": "value"
+                    }
+                  },
+                  "required": [
+                    "risk_type"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "risk_type": {
+                      "const": "usability"
+                    }
+                  },
+                  "required": [
+                    "risk_type"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "risk_type": {
+                      "const": "feasibility"
+                    }
+                  },
+                  "required": [
+                    "risk_type"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "risk_type": {
+                      "const": "viability"
+                    }
+                  },
+                  "required": [
+                    "risk_type"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "failure_state"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "handoff_to_intake"
+          ]
+        },
+        "properties": {
+          "recommendation": {
+            "enum": [
+              "needs-work",
+              "do-not-build"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

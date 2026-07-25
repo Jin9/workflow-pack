@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/validating-banking-implementation/schemas/input.json",
+  "title": "validating-banking-implementation input",
+  "description": "ADVISORY \u2014 documents the assembled stage input; the engine validates workflow input and stage OUTPUTS only (engine/validation.py). Shape below is the POST-adapter payload delivered at stage adversarial-pentest.",
+  "type": "object",
+  "required": [
+    "adversarial_pentest_context",
+    "totals",
+    "verdict",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "adversarial_pentest_context": {
+      "type": "object",
+      "description": "From workflow input (optional): OPTIONAL authorized-pentest context for the T10 gate (live runner mode). Absent in replay. Non-secret; authorization is explicit.",
+      "required": [
+        "target_ref",
+        "target_kind",
+        "authorization_ref"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_kind": {
+          "type": "string",
+          "enum": [
+            "ci-sandbox",
+            "uat-sandbox"
+          ]
+        },
+        "authorization_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reference to the signed authorization for this adversarial run \u2014 sanctioned-use gate; no live pentest without it."
+        },
+        "threat_personas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "persona_id",
+              "objective",
+              "auth_context"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "persona_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "objective": {
+                "type": "string",
+                "minLength": 1
+              },
+              "auth_context": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "runner_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ]
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "description": "Shape: executing-qa-test-suite schemas/output.json#/properties/totals. executed = passed + failed + skipped; derived from test_results[] when records exist."
+    },
+    "verdict": {
+      "type": "string",
+      "description": "Shape: executing-qa-test-suite schemas/output.json#/properties/verdict."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/run-plan.json",
+  "title": "S0 intake boundary \u2014 run plan / scope sheet (scoping-ba-intake output)",
+  "description": "Boundary contract for the S0 intake artifact (run-plan). Permissive stage boundary; required mirrors the YAML required_fields. The skill now ships its own strict schema (skills/scoping-ba-intake/schemas/output.json) \u2014 this boundary is the superset, not a substitute. Successful state is ready-for-discovery; unusably thin input fails the stage (no artifact).",
+  "type": "object",
+  "required": [
+    "normalized_request",
+    "run_plan",
+    "scope_sheet",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "normalized_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The request restated as a PII-redacted STRING (never an object) \u2014 consumed by s1-discovery and ba-research."
+    },
+    "run_plan": {
+      "type": "object",
+      "description": "The intake plan that seeds the pipeline: tier floor, stage span, and known gates.",
+      "additionalProperties": true,
+      "properties": {
+        "tier_floor": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ]
+        },
+        "stage_span": {
+          "type": "string"
+        },
+        "epics_expected": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scope_sheet": {
+      "type": "object",
+      "description": "The scoping-ba-intake Scope Sheet (envelope + contract) per its SKILL.md output shape.",
+      "additionalProperties": true
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

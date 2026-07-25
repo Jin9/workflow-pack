@@ -1,0 +1,3 @@
+# 2026-06-01 — Subproject CLAUDE.md files retired (context note)
+
+**Context note (subproject CLAUDE.md files retired).** Neither subproject that used to carry its **own `CLAUDE.md`** is live anymore: `business-analyse/` (bilingual EN/Thai banking-BA knowledge base + BA pipeline; had byte-identical skill-duplication invariants) is now **archived** in the sibling `../archive/`, and `design-diagram/` (draw.io house-style diagram skill) was **removed**. The root `CLAUDE.md` is now the single authoritative guide for the live workspace. For draw.io work, the raw-XML house style (never Mermaid) is now provided by the external **`drawio` skill**, not a local subproject.

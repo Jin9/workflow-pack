@@ -1,0 +1,6 @@
+{
+  "_comment": "Verifies TM-04 refusal pathway: ba_compliance_checklist.definition_of_ready_met=false. Fixture brief must be created at the path below; copy holdout and flip the one boolean.",
+  "ba_brief_ref": "./fixtures/004-dor-false-brief/",
+  "idempotency_key": "44444444-4444-4444-8444-444444444444",
+  "audit_mode": "enhanced"
+}

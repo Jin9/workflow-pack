@@ -1,0 +1,14 @@
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-accessibility-tests
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-performance-load-test
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-accessibility-tests
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-performance-load-test
+EXAMPLE  running-performance-load-test: ## Input contract example fails schema at performance_test_context: {'load_profile': {'vus': 50, 'duration': '10m'}, 'budget': {'p95_ms': 800, 'error_rate_max': 0.01, 'throughput_min_rps': 40}, 'target_env': 'staging', 'target_kind': 'staging'} is not of type 'string'
+
+1 finding(s) across 2 skills (STRICT mode)
+
+0 finding(s) across 2 skills (STRICT mode)
+38 passed, 1 warning in 1.07s
+
+ALL PASS — 0 failure(s)
+
+10 finding(s) across 27 stages (STRICT mode) · baseline: 13 known, 3 fixed, 0 NEW

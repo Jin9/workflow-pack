@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/befe-contract-design/schemas/input.json",
+  "title": "befe-contract-design input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage contract-design.",
+  "type": "object",
+  "required": [
+    "api_contracts",
+    "component_map",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "api_contracts": {
+      "type": "object",
+      "required": [
+        "template_version",
+        "contracts"
+      ],
+      "description": "Architecture-level cross-component INTERFACE contracts from tl-design \u2014 the connective tissue to elaborate into operation/event-level specs, NOT finished endpoint definitions. Full shape: designing-tech-lead-handoff schemas/output.json#/properties/api_contracts."
+    },
+    "component_map": {
+      "type": "object",
+      "required": [
+        "template_version",
+        "components"
+      ],
+      "description": "The tl-design component map; contract elaboration resolves providers/consumers against it. Full shape: designing-tech-lead-handoff schemas/output.json#/properties/component_map."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "id": "STORY-INVENTORY-02",
+  "epic_id": "EPIC-INVENTORY",
+  "title": "Admin adjusts stock with an audit trail",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "back-office admin",
+    "i_want": "to adjust a SKU's stock with a mandatory reason",
+    "so_that": "physical counts stay correct and every change is traceable"
+  },
+  "context": "Admin may receive/count/write-off stock but must give a reason and may not reduce available below the currently reserved quantity; each change is audited with before/after.",
+  "acceptance_criteria": [
+    {
+      "scenario_name": "adjust with a reason",
+      "scenario_type": "happy",
+      "given": [
+        "a SKU with 10 available and 2 reserved"
+      ],
+      "when": "the admin sets available to 12 with reason 'received from supplier'",
+      "then": [
+        "available becomes 12",
+        "an audit entry records actor, reason and before/after"
+      ]
+    },
+    {
+      "scenario_name": "reduce below reserved is rejected",
+      "scenario_type": "error",
+      "given": [
+        "a SKU with 5 available and 3 reserved"
+      ],
+      "when": "the admin tries to set available to 2",
+      "then": [
+        "the adjustment is rejected because it would drop below the reserved quantity",
+        "stock is unchanged"
+      ]
+    },
+    {
+      "scenario_name": "adjustment is audited",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any accepted adjustment"
+      ],
+      "when": "it resolves",
+      "then": [
+        "an audit event {event, actor, ts, sku, reason, before, after, audit_id} is emitted"
+      ]
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "not_applicable",
+      "justification": "stock adjustments carry no personal data"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "manual stock changes must be fully attributable"
+    },
+    "idempotency": {
+      "status": "not_applicable",
+      "justification": "each manual adjustment is a distinct intentional entry, not a replayed event"
+    },
+    "reversibility": {
+      "status": "not_applicable",
+      "justification": "a wrong adjustment is corrected by a new audited adjustment, not an in-place reversal"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "only admin role may adjust stock"
+    },
+    "regulatory": {
+      "status": "not_applicable",
+      "justification": "operational, no regulated processing"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no SAR/AML context"
+    }
+  },
+  "priority": "Should",
+  "sizing": {
+    "story_points": 3,
+    "complexity": "low",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": []
+  },
+  "dor_checklist": {
+    "format_clear": true,
+    "happy_path_present": true,
+    "error_path_present": true,
+    "banking_grade_evaluated": true,
+    "priority_set": true,
+    "dependencies_identified": true,
+    "sizing_done": true,
+    "no_blocking_ambiguities": true
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "open_questions": [],
+  "scope_ref": "../INDEX.json",
+  "change_log": [
+    {
+      "date": "2026-06-01",
+      "author": "eliciting-banking-brief-v1.5.0",
+      "change": "Created from requirement shoppilot-mvp"
+    }
+  ]
+}

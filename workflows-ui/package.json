@@ -1,0 +1,22 @@
+{
+  "name": "hell-factory-v2",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "HELL FACTORY — a top-down, Pokémon-8-bit agentic-office simulation (Vite + React).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/press-start-2p": "^5.2.7",
+    "@fontsource/vt323": "^5.2.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,41 @@
+== 1. corpus rebuild + determinism ==
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/console-smoke/c1.html (263156 bytes) · 12/12 menus present · gate rollup GREEN
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/console-smoke/c2.html (263156 bytes) · 12/12 menus present · gate rollup GREEN
+DETERMINISTIC
+== 2. corpus rollup + audit index sanity ==
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+AttributeError: 'NoneType' object has no attribute 'group'
+== 3. guards ==
+error: output must be a .html path: tmp/runs/shoppilot/S1b-ba-brief/INDEX.json
+error: output must be a .html path: /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/console-smoke/x.txt
+error: refusing to overwrite an existing non-console file: /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/console-smoke/existing.html
+== 4. malformed artifact ==
+1
+== 5. partial gates ==
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/console-smoke/partial.html (121991 bytes) · 1/12 menus present · gate rollup INCOMPLETE
+== 6. ambiguity ==
+error: ambiguous gate evidence for e2e-tests.json (no canonical gates/e2e-tests.json): x/e2e-tests.json, y/e2e-tests.json
+exit=0
+== 6b. ambiguity exit code ==
+exit=1 (want nonzero)
+== 2b. pack inspection ==
+PACK
+855:        raise SystemExit("error: template is missing the /* INJECT ... */ window.PACK marker")
+rollup: GREEN | evidence: 12 / 12 | complete: True | missing: []
+renderer: {'pack_schema_version': '1', 'renderer_skill': 'rendering-delivery-review-console', 'renderer_version': '1.2.0'}
+generated_from: shoppilot
+audit_index entries: 25 | renderer-kind leaks: []
+  {'audit_id': '82ca53e0-2bfd-56ef-bed1-dffa9ff88ba2', 'skill': 'scoping-ba-intake', 'stage': 'S0-intake'}
+  {'audit_id': '9d4e1f8a-2c07-4b63-a5e9-6f1b0c3d8e24', 'skill': 'researching-ba-problem-space', 'stage': 'S1a-ba-discovery'}
+  {'audit_id': '3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22', 'skill': 'eliciting-banking-brief', 'stage': 'S1b-ba-brief'}
+  {'audit_id': 'e5b9d740-2a18-4c63-b0f1-7d6c2a3e9f55', 'skill': 'generate-ux-pack', 'stage': 'S1.5-ux-intake', 'status': 'ready-for-audit'}
+error: frontmatter description is too long: 1036 > 1024
+offline grep done (want 0 above or no output)
+ok: /Users/admin/Desktop/project/research/workflow-pack/.claude/skills/rendering-delivery-review-console
+ok: /Users/admin/Desktop/project/research/workflow-pack/.claude/skills/rendering-delivery-review-console
+38 passed, 1 warning in 1.00s
+
+ALL PASS — 0 failure(s)
+
+22 finding(s) across 27 stages (STRICT mode) · baseline: 22 known, 0 fixed, 0 NEW

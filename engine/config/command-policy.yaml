@@ -1,0 +1,18 @@
+# Command-safety profiles — ALLOW is expressed as an explicit tool allowlist
+# enforced OUTSIDE the model (headless --allowedTools/--permission-mode flags,
+# SDK permission options). Anything not allowlisted is denied by the harness;
+# CONFIRM-class actions (deploy, push, migrations) are simply not in any
+# profile — they belong to humans behind the sync-named gates.
+profiles:
+  json-only:
+    # Analyze/design/review stages: read inputs, write the JSON artifact
+    # (+ ref-chain siblings) inside the stage dir. cwd is pinned to the stage dir.
+    allowed_tools: [Read, Write, Edit, Glob, Grep]
+    permission_mode: acceptEdits
+    max_turns: 40
+
+  code-gen:
+    # S4a/S4b: also need to run the sandboxed build/test loop.
+    allowed_tools: [Read, Write, Edit, Glob, Grep, Bash]
+    permission_mode: acceptEdits
+    max_turns: 80

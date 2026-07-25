@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/authoring-e2e-test-suite/schemas/input.json",
+  "title": "authoring-e2e-test-suite input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage e2e-tests.",
+  "type": "object",
+  "required": [
+    "epics",
+    "story_files",
+    "stories",
+    "verdict",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "epics": {
+      "type": "array",
+      "minItems": 1,
+      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (see eliciting-banking-brief schemas/epic-sidecar.json).",
+      "items": {
+        "type": "object"
+      }
+    },
+    "story_files": {
+      "type": "array",
+      "description": "The manifest's original story file refs, retained alongside the hydrated stories.",
+      "items": {
+        "type": "object"
+      }
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "description": "engine-hydrated: mapping.py _hydrate_ba_research adds this key by dereferencing story_files into inline story sidecar objects (see eliciting-banking-brief schemas/story-sidecar.json).",
+      "items": {
+        "type": "object"
+      }
+    },
+    "verdict": {
+      "const": "PASS",
+      "description": "qa-validate's suite verdict. E2E scenarios execute ONLY against a QA-passed build \u2014 a FAIL or ERROR verdict is an explicit stop."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

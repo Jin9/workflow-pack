@@ -1,0 +1,37 @@
+== 1. real corpus contract + determinism ==
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/a.html (15564 bytes) from tmp/runs/shoppilot/S2.5-plan-review/plan-review.json
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/b.html (15564 bytes) from tmp/runs/shoppilot/S2.5-plan-review/plan-review.json
+DETERMINISTIC
+== 2. offline scan of final bytes ==
+0
+OFFLINE-CLEAN (0 tokens)
+== 3. collision guard ==
+error: output path resolves to the input file: /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/x.json
+exit=2 (want 2)
+== 4. dup keys ==
+error: input is not valid strict JSON: duplicate object key: 'a'
+exit=2 (want 2)
+== 5. NaN ==
+error: input is not valid strict JSON: non-standard JSON constant: NaN
+exit=2 (want 2)
+== 6. hostile data neutralized ==
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/h.html (13065 bytes) from /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/hostile.json
+0
+NEUTRALIZED (0 tokens in bytes)
+roundtrip value ok: True
+== 7. theme force ==
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/light.html (13068 bytes) from /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/hostile.json
+1
+wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/auto.html (13065 bytes) from /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rcdv-smoke/hostile.json
+1
+ok: /Users/admin/Desktop/project/research/workflow-pack/.claude/skills/rendering-contract-debug-viewer
+ok: /Users/admin/Desktop/project/research/workflow-pack/.claude/skills/rendering-contract-debug-viewer
+
+0 finding(s) across 1 skills (STRICT mode)
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+38 passed, 1 warning in 1.05s
+PASS    gates/canary-analysis.json                           skill:ok bound:ok
+
+ALL PASS — 0 failure(s)
+
+27 finding(s) across 27 stages (STRICT mode) · baseline: 27 known, 0 fixed, 0 NEW

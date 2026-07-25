@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/red-teaming-implementation-plan/schemas/input.json",
+  "title": "red-teaming-implementation-plan input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage plan-review.",
+  "type": "object",
+  "required": [
+    "epics",
+    "story_files",
+    "governance_gaps",
+    "component_map",
+    "api_contracts",
+    "stories",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "epics": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (see eliciting-banking-brief schemas/epic-sidecar.json)."
+    },
+    "story_files": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "The manifest's original story file refs, retained alongside the hydrated stories."
+    },
+    "governance_gaps": {
+      "type": "array",
+      "description": "Shape: eliciting-banking-brief schemas/output.json#/properties/governance_gaps."
+    },
+    "component_map": {
+      "type": "object",
+      "description": "Shape: designing-tech-lead-handoff schemas/output.json#/properties/component_map. Verbatim shape of templates/tech-lead-components.md embedded schema. dependencies[] MUST resolve to api_contracts.contracts[].contract_name (referential integrity enforced at runtime by tests/assertions/contract-completeness.md \u2014 not expressible in draft-07)."
+    },
+    "api_contracts": {
+      "type": "object",
+      "description": "Shape: designing-tech-lead-handoff schemas/output.json#/properties/api_contracts. Verbatim shape of templates/tech-lead-contracts.md embedded schema. These are the cross-component INTERFACE contracts (the architecture's connective tissue), NOT per-service endpoint specs. payload_shape is intentionally open (free-form JSON-Schema-ish object per the template)."
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object"
+      },
+      "description": "engine-hydrated: mapping.py _hydrate_ba_research adds this key by dereferencing story_files into inline story sidecar objects (see eliciting-banking-brief schemas/story-sidecar.json)."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

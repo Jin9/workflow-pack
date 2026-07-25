@@ -1,0 +1,279 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/implement-backend-feature/schemas/output.json",
+  "title": "implement-backend-feature output",
+  "description": "Output contract for the implement-backend-feature Generate stage. Validated by the workflow engine after the stage returns. Failure to validate triggers one retry, then human-queue.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "files_generated",
+    "tests_generated",
+    "implementation_units",
+    "idempotency_strategy",
+    "compensating_actions",
+    "audit_events_emitted",
+    "uncertainty_flags",
+    "decision_metadata",
+    "audit_id"
+  ],
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Production files emitted by step 4. At least one entry. Empty array is invalid — a Generate stage that emits no files must signal loop_back instead.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content_hash",
+          "lines_added"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "lines_added": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "tests_generated": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Companion test files emitted by step 5. At least one entry — banking-grade Generate never emits production without tests.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content_hash",
+          "coverage_pct"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "coverage_pct": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        }
+      }
+    },
+    "idempotency_strategy": {
+      "type": "string",
+      "minLength": 8,
+      "description": "Plain-text explanation of how idempotency is enforced. For naturally idempotent paths state 'GET is naturally idempotent — no persistence' or equivalent."
+    },
+    "compensating_actions": {
+      "type": "array",
+      "description": "Empty if no irreversible external side-effect. Typed refs: skill actions use bare skill names; code actions use producer-relative paths.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trigger",
+          "action_kind",
+          "action_ref",
+          "timeout_seconds"
+        ],
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action_kind": {
+            "type": "string",
+            "enum": [
+              "skill",
+              "code"
+            ]
+          },
+          "action_ref": {
+            "type": "string",
+            "minLength": 1,
+            "description": "action_kind=skill: bare kebab-case skill name (e.g. handoff-revoke). action_kind=code: producer-relative POSIX path to the compensating code (no absolute paths, no ..)."
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "audit_events_emitted": {
+      "type": "array",
+      "description": "Canonical event_type strings that the generated code will emit. Every state-changing path contributes at least one entry. Empty array indicates a read-only feature.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+      }
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "description": "Non-blocking advisories surfaced during generation. A SUCCESS artifact may carry only advisory kinds (convention_conflict, scope_overrun, other); blocking uncertainty (design_ambiguity, dependency_addition, compensation_impossible) terminates execution WITHOUT a success artifact and routes retry -> human-queue. There is no loop_back wiring from this stage; loop_back_feedback arrives only FROM backend review.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "location",
+          "note"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "convention_conflict",
+              "scope_overrun",
+              "other"
+            ]
+          },
+          "location": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 8
+          }
+        }
+      }
+    },
+    "decision_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "complexity",
+        "pattern_choices",
+        "repo_conventions_followed"
+      ],
+      "properties": {
+        "complexity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "pattern_choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "decision",
+              "rationale"
+            ],
+            "properties": {
+              "decision": {
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "repo_conventions_followed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "implementation_units": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Traceability: which component each file/test belongs to and which contracts it implements. Every path must also appear in the flat manifests; producer-relative POSIX, no absolute paths, no '..'.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "component_name",
+          "contract_names",
+          "files",
+          "tests"
+        ],
+        "properties": {
+          "component_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "contract_names": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*\\.\\.).*\\.go$"
+            }
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*\\.\\.).*_test\\.go$"
+            }
+          }
+        }
+      }
+    },
+    "runtime_idempotency": {
+      "type": "array",
+      "description": "Optional structured application-runtime idempotency (derived from each contract's idempotency_rules — NEVER from the engine-injected workflow key, which is generation-attempt identity only).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_name",
+          "key_source",
+          "replay_behavior"
+        ],
+        "properties": {
+          "contract_name": {
+            "type": "string"
+          },
+          "key_source": {
+            "type": "string"
+          },
+          "dedup_store": {
+            "type": "string"
+          },
+          "replay_behavior": {
+            "type": "string"
+          },
+          "mismatch_behavior": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"backend-implement:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") for live derivations; corpus ids are sim-convention deterministic (grandfathered). Distinct from the engine's per-attempt execution audit id."
+    }
+  }
+}

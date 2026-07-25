@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/scoping-ba-intake/schemas/input.json",
+  "title": "scoping-ba-intake input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage intake.",
+  "type": "object",
+  "required": [
+    "raw_request",
+    "requester",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "raw_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "From workflow input: the raw requirement prose. Scale, system context and deadlines live INSIDE this text \u2014 the workflow input supplies no separate fields for them."
+    },
+    "requester": {
+      "type": "string",
+      "minLength": 1,
+      "description": "From workflow input: who asked. Never a real PII value in fixtures \u2014 redact as [PII:REDACTED:CLASS=...]."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    }
+  }
+}

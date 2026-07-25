@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/executing-frontend-unit-tests/schemas/input.json",
+  "title": "executing-frontend-unit-tests input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage frontend-unit-tests.",
+  "type": "object",
+  "required": [
+    "files_generated",
+    "tests_generated",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "description": "Shape: implement-frontend-feature schemas/output.json#/properties/files_generated."
+    },
+    "tests_generated": {
+      "type": "array",
+      "description": "Shape: implement-frontend-feature schemas/output.json#/properties/tests_generated."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

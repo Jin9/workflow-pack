@@ -1,0 +1,27 @@
+{
+  "verdict": "PASS",
+  "receipt_id": "RCPT-shoppilot-20260607-0001",
+  "probes": [
+    {
+      "name": "GET /health",
+      "executed": true,
+      "green": true
+    },
+    {
+      "name": "login",
+      "executed": true,
+      "green": true
+    },
+    {
+      "name": "order.get own-data",
+      "executed": true,
+      "green": true
+    }
+  ],
+  "all_green": true,
+  "execution": {
+    "mode": "replay",
+    "target_source": "reference-corpus"
+  },
+  "audit_id": "2b9bdffa-d5fb-5f4b-823c-80d65889e47a"
+}

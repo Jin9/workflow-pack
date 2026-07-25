@@ -1,0 +1,34 @@
+{
+  "files_generated": [
+    {
+      "path": "services/payments/app/payments/handler.go",
+      "content_hash": "cc33dd44ee55ff66aa77bb88cc99dd00ee11ff22aa33bb44cc55dd66ee77ff88",
+      "lines_added": 182
+    },
+    {
+      "path": "services/payments/app/payments/store.go",
+      "content_hash": "dd44ee55ff66aa77bb88cc99dd00ee11ff22aa33bb44cc55dd66ee77ff88aa99",
+      "lines_added": 96
+    }
+  ],
+  "tests_generated": [
+    {
+      "path": "services/payments/app/payments/handler_test.go",
+      "content_hash": "ee55ff66aa77bb88cc99dd00ee11ff22aa33bb44cc55dd66ee77ff88aa99bb00",
+      "coverage_pct": 0.95
+    }
+  ],
+  "api_contracts": {
+    "contracts": [
+      {
+        "contract_name": "payment-capture",
+        "provider_component": "payments-service",
+        "consumer_components": [
+          "checkout-service"
+        ],
+        "idempotency_rules": "capture dedupes on the client idempotency key; replay returns the stored response"
+      }
+    ]
+  },
+  "idempotency_key": "11111111-2222-4333-8444-555555555555"
+}

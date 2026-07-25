@@ -1,0 +1,132 @@
+{
+  "id": "STORY-INVENTORY-01",
+  "epic_id": "EPIC-INVENTORY",
+  "title": "Stock reservation lifecycle and last-item race",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "customer (via the system)",
+    "i_want": "my checkout to reserve stock atomically with a TTL",
+    "so_that": "two of us cannot both succeed on the last unit and stock never goes negative"
+  },
+  "context": "Reserve on confirm (not add-to-cart); a 30-minute TTL auto-releases; payment converts to sold; failure/timeout/cancel releases; concurrent last-item checkouts yield exactly one winner.",
+  "acceptance_criteria": [
+    {
+      "scenario_name": "reserve on confirm and auto-release on TTL",
+      "scenario_type": "happy",
+      "given": [
+        "a product with 1 unit available"
+      ],
+      "when": "a customer confirms and does not pay within 30 minutes",
+      "then": [
+        "the unit is reserved at confirm",
+        "the reservation auto-releases back to available after the TTL"
+      ]
+    },
+    {
+      "scenario_name": "last-item race has one winner",
+      "scenario_type": "error",
+      "given": [
+        "a product with 1 unit available and two simultaneous confirms"
+      ],
+      "when": "both customers confirm at nearly the same time",
+      "then": [
+        "exactly one confirm succeeds",
+        "the other is rejected with an out-of-stock error at confirm, not at payment",
+        "available stock never goes negative"
+      ]
+    },
+    {
+      "scenario_name": "duplicate reserve signal reserves once",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "a reservation already taken for a confirm"
+      ],
+      "when": "the reserve operation is retried for the same confirm",
+      "then": [
+        "only one reservation exists",
+        "available stock is decremented once"
+      ]
+    },
+    {
+      "scenario_name": "reserve and release are audited",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any reserve or release"
+      ],
+      "when": "it resolves",
+      "then": [
+        "an audit event {event, actor, ts, sku, before, after, audit_id} is emitted"
+      ]
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "not_applicable",
+      "justification": "stock counts carry no personal data"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "reservations and releases change sellable inventory and are audited"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "a retried reserve/release must apply once",
+      "fields_or_events": [
+        "stock_reserve",
+        "stock_release"
+      ],
+      "treatment": "reservation keyed to the order/confirm"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "release is the compensating action for unpaid/failed/cancelled holds",
+      "compensating_action": "release reserved units on TTL, payment failure/timeout, or cancel-before-pay"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "reservations are system-driven and scoped to the confirming customer's order"
+    },
+    "regulatory": {
+      "status": "not_applicable",
+      "justification": "operational stock integrity, no regulated processing"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no SAR/AML context"
+    }
+  },
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": [
+      "STORY-CHECKOUT-01"
+    ]
+  },
+  "dor_checklist": {
+    "format_clear": true,
+    "happy_path_present": true,
+    "error_path_present": true,
+    "banking_grade_evaluated": true,
+    "priority_set": true,
+    "dependencies_identified": true,
+    "sizing_done": true,
+    "no_blocking_ambiguities": true
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "open_questions": [],
+  "scope_ref": "../INDEX.json",
+  "change_log": [
+    {
+      "date": "2026-06-01",
+      "author": "eliciting-banking-brief-v1.5.0",
+      "change": "Created from requirement shoppilot-mvp"
+    }
+  ]
+}

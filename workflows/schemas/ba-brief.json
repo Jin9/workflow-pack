@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/ba-brief.json",
+  "title": "S1 ba-brief boundary manifest (eliciting-banking-brief + deterministic render)",
+  "description": "Boundary manifest for the S1 brief node (ba-research): the INDEX of the 3-level ref-chain pack (INDEX -> EPIC-* files -> STORY-* files). Permissive (additionalProperties:true) so the same artifact can also carry brief.json sections and the discovery/brief layer links. HYDRATION: consumers do not receive this manifest raw — engine/mapping.py _hydrate_ba_research dereferences epics[].file / story_files[].file into inline sidecar objects (shapes: eliciting-banking-brief schemas/epic-sidecar.json + schemas/story-sidecar.json) and ADDS a `stories` key alongside the retained `story_files` refs. required mirrors the YAML required_fields.",
+  "type": "object",
+  "required": [
+    "epics",
+    "story_files",
+    "governance_gaps",
+    "state",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id (house formula ba-research:{idempotency_key}); same value in INDEX and the canonical brief; independent of the optional discovery input."
+    },
+    "stage": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "ready-for-tl",
+        "needs-work",
+        "blocked"
+      ],
+      "description": "TL readiness signal; tl-design's pre-flight requires ready-for-tl."
+    },
+    "confidence": {
+      "type": "string"
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "string"
+    },
+    "discovery_file": {
+      "type": "string",
+      "description": "Link to the discovery layer artifact produced by s1-discovery."
+    },
+    "brief_file": {
+      "type": "string"
+    },
+    "viewer_file": {
+      "type": "string"
+    },
+    "layers": {
+      "type": "object",
+      "description": "Four-layer pack map: discovery, brief, epics, stories (see tmp/runs/shoppilot/S1b-ba-brief/INDEX.json)."
+    },
+    "epics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "file",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^EPIC-[A-Z0-9-]+$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "story_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "story_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "epic_id",
+          "file",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^STORY-[A-Z0-9-]+-\\d+$"
+          },
+          "epic_id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Must",
+              "Should",
+              "Could",
+              "Won't"
+            ]
+          }
+        }
+      }
+    },
+    "governance_gaps": {
+      "type": "array"
+    },
+    "open_questions": {
+      "type": "array"
+    },
+    "count_check": {
+      "type": "object"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

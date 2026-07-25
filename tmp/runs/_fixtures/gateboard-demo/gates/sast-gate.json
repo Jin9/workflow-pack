@@ -1,0 +1,8 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000003-0000-4000-8000-000000000003",
+  "headline": "2 high findings + 1 leaked secret -> RED, blocks merge.",
+  "high": 2,
+  "secrets": 1,
+  "verdict": "FAIL"
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "S6 release-handoff boundary — handoff receipt",
+  "type": "object",
+  "required": [
+    "receipt_id",
+    "status",
+    "release_ref",
+    "target_env",
+    "approver",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "description": "Immutable handoff receipt identifier emitted by handoff-to-deploy."
+    },
+    "status": {
+      "const": "handed_off"
+    },
+    "release_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Artifact/commit reference promoted across the control-plane boundary."
+    },
+    "approver": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "description": "Named human with release authority who approved the synchronous gate.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "target_env": {
+      "type": "string",
+      "minLength": 1
+    },
+    "approval_ref": {
+      "type": "string"
+    }
+  }
+}

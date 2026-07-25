@@ -1,0 +1,22 @@
+=== END-TO-END VERIFICATION (post-reshape, 30/31 skills applied) ===
+Sun Jul 12 23:03:26 +07 2026
+
+--- fresh full replay (gates driven by named approver, like the pytest harness) ---
+terminal state: done
+artifacts written: 27 / 27
+
+--- engine validate-run (dual-schema, the engine's own validator) ---
+
+27/27 pass, 0 fail, 0 missing — ALL PASS
+
+--- engine verify-audit ---
+audit chain OK — 292 events verified (runs/reshape-verify/events.jsonl)
+
+--- pytest (intake NO LONGER schema-exempt) ---
+38 passed, 1 warning in 1.07s
+
+--- _sim oracle ---
+ALL PASS — 0 failure(s)
+
+NOTE: the bare 'engine replay' CLI parks at the s1-discovery named-approver gate BY DESIGN
+(no code path auto-approves a sync-named gate). runs/replay-1 is a STALE Jul-4 run dir.

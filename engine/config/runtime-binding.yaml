@@ -1,0 +1,74 @@
+# Runtime binding: which executor / model / permission profile runs each stage.
+# The pipeline YAML carries no model or executor hints by design — they live here.
+# mode=replay (CLI/API) overrides everything to the token-free replay executor;
+# mode=live uses these entries, and any stage NOT listed stays on replay (so the
+# live surface grows one stage at a time).
+#
+# Headless gotchas honored by the executor, not this file: --effort low is
+# mandatory (a child inherits the session's high effort and hangs), and macOS
+# has no `timeout` binary (Python enforces the per-stage timeout_seconds).
+# Per-stage INPUT contract enforcement against the ASSEMBLED payload
+# (skills/<skill>/schemas/input.json — the real post-adapter shape since the
+# 2026-07-12 reshape). off | warn (emit input.validation.failed, continue) |
+# enforce (fail-closed, like output validation).
+input_validation: enforce
+
+defaults:
+  executor: replay
+  model: opus
+  effort: low
+  profile: json-only
+
+stages:
+  # ── P3 live slice: S0 → S1a → human gate → S1b ────────────────────────────
+  intake:
+    executor: headless
+    model: haiku # mechanical normalization; cheapest tier
+  s1-discovery:
+    executor: headless
+    model: opus # problem-space research quality matters at the human gate
+  ba-research:
+    executor: headless
+    model: opus
+    timeout_multiplier: 2.0 # multi-file ref-chain output takes longer than the 180s p95
+
+  # ── P5 live design leg + reviews (headless opus) ───────────────────────────
+  # ux-intake stays replay: generate-ux-pack needs a real UX drop
+  # (frontend spec + prototype HTML) that a synthetic run doesn't have.
+  # qa-validate stays replay: executing-qa-test-suite is the GAP-05 execution
+  # node — an agent without a test harness must not fabricate evidence.
+  tl-design:
+    executor: headless
+    model: opus
+    timeout_multiplier: 1.5 # the system-design blueprint is the largest JSON contract
+  plan-review:
+    executor: headless
+    model: opus
+  contract-design:
+    executor: headless
+    model: opus
+  backend-review:
+    executor: headless
+    model: opus
+  frontend-review:
+    executor: headless
+    model: opus
+
+  # ── P5 machine-threshold gates run the REAL test suites (no LLM) ───────────
+  backend-unit-tests:
+    executor: script
+  frontend-unit-tests:
+    executor: script
+
+  # ── P5: code-gen legs ride the SDK — PROVEN LIVE on run-33333333 (2026-07-04:
+  # both stages ran as parallel claude-agent-sdk sessions and passed dual-schema
+  # validation first-try), then re-bound to replay for cost control. Uncomment
+  # to take them live again; worktree isolation is still a P5 item.
+  # backend-implement:
+  #   executor: sdk
+  #   model: opus
+  #   profile: code-gen
+  # frontend-implement:
+  #   executor: sdk
+  #   model: opus
+  #   profile: code-gen

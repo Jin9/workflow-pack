@@ -1,0 +1,12 @@
+42 passed, 1 warning in 1.20s
+ALL PASS — 0 failure(s)
+0 finding(s) across 27 stages (BLOCKING mode)
+0 finding(s) across 28 skills (BLOCKING mode)
+28 pipeline skills: gates OK
+=== FINAL E2E under fail-closed INPUT enforcement ===
+Mon Jul 13 08:37:38 +07 2026
+terminal state: done
+artifacts written: 27 / 27
+27/27 pass, 0 fail, 0 missing — ALL PASS
+audit chain OK — 146 events verified (runs/enforce-final/events.jsonl)
+input-contract breaches across 27 stages: 0

@@ -1,0 +1,8 @@
+{
+  "_synthetic": "SYNTHETIC FIXTURE - no real PII; demonstrates the Quality-Gate Board roll-up only.",
+  "audit_id": "f0000006-0000-4000-8000-000000000006",
+  "failed": 0,
+  "headline": "34 integration suites green.",
+  "suites": 34,
+  "verdict": "PASS"
+}

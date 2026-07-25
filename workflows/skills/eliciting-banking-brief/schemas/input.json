@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/eliciting-banking-brief/schemas/input.json",
+  "title": "eliciting-banking-brief input contract",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage ba-research.",
+  "type": "object",
+  "required": [
+    "raw_request",
+    "requester",
+    "normalized_request",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "raw_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The raw BA input (Jira, Slack, meeting notes, email, mixed prose). Very short input is NOT rejected here \u2014 it yields output_type: needs_clarification (EC-05)."
+    },
+    "requester": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Named human who submitted the request (provenance)."
+    },
+    "normalized_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Pick from `intake`: the PII-redacted normalized request STRING (the boundary, the producer schema and the corpus all emit a string; the structured breakdown stays in intake's scope_sheet, which is NOT passed downstream)."
+    },
+    "discovery": {
+      "type": "object",
+      "description": "engine-nested (NESTED_HANDOFF): the s1-discovery picks, delivered as one advisory object. Absent when discovery did not run \u2014 behaviour is then byte-identical.",
+      "additionalProperties": false,
+      "required": [
+        "audit_id",
+        "problem_framing",
+        "recommendation",
+        "regulatory_regimes"
+      ],
+      "properties": {
+        "problem_framing": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Shape: researching-ba-problem-space schemas/output.json#/properties/problem_framing \u2014 a STRING (the producer, its boundary and the corpus all agree)."
+        },
+        "regulatory_regimes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of STRINGS. Guaranteed by the producer (s1-discovery required_fields since the 2026-07-12 reshape); may be [] = none identified. Seeds pending-citation rows / a tier FLOOR only \u2014 never suppresses a detector."
+        },
+        "recommendation": {
+          "type": "string",
+          "description": "proceed | needs-work | do-not-build; only proceed releases this node."
+        },
+        "audit_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Provenance ref recorded as frontmatter.upstream_refs.discovery_audit_id \u2014 distinct from this skill's own audit_id."
+        },
+        "handoff_to_intake": {
+          "type": "object",
+          "description": "Optional typed handoff (tier_signal, stakeholder_hints) \u2014 read via discovery.handoff_to_intake.*; producer does not guarantee it."
+        }
+      }
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/implement-frontend-feature/schemas/input.json",
+  "title": "implement-frontend-feature input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage frontend-implement.",
+  "type": "object",
+  "required": [
+    "api_contracts",
+    "component_map",
+    "tokens_path",
+    "route_map_path",
+    "component_inventory_path",
+    "microcopy_path",
+    "idempotency_key",
+    "maturity_level",
+    "status",
+    "p1_findings",
+    "screen_states_path",
+    "form_validation_path",
+    "responsive_spec_path",
+    "accessibility_spec_path"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "api_contracts": {
+      "type": "object",
+      "description": "Shape: designing-tech-lead-handoff schemas/output.json#/properties/api_contracts. Verbatim shape of templates/tech-lead-contracts.md embedded schema. These are the cross-component INTERFACE contracts (the architecture's connective tissue), NOT per-service endpoint specs. payload_shape is intentionally open (free-form JSON-Schema-ish object per the template)."
+    },
+    "component_map": {
+      "type": "object",
+      "description": "Shape: designing-tech-lead-handoff schemas/output.json#/properties/component_map. Verbatim shape of templates/tech-lead-components.md embedded schema. dependencies[] MUST resolve to api_contracts.contracts[].contract_name (referential integrity enforced at runtime by tests/assertions/contract-completeness.md \u2014 not expressible in draft-07)."
+    },
+    "tokens_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "route_map_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "component_inventory_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "microcopy_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    },
+    "maturity_level": {
+      "type": "integer",
+      "enum": [
+        2,
+        3
+      ],
+      "description": "UX pack maturity. 3 = implementation-ready; 2 = BA-derived draft \u2014 proceed WITH a P2 advisory uncertainty flag (zero P1 findings still required)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready-for-audit",
+        "ready-for-implementation"
+      ]
+    },
+    "p1_findings": {
+      "type": "array",
+      "maxItems": 0,
+      "description": "Must be empty: any P1 UX finding blocks implementation."
+    },
+    "screen_states_path": {
+      "type": "string",
+      "description": "ux-intake pack-relative POSIX path."
+    },
+    "form_validation_path": {
+      "type": "string",
+      "description": "ux-intake pack-relative POSIX path."
+    },
+    "responsive_spec_path": {
+      "type": "string",
+      "description": "ux-intake pack-relative POSIX path."
+    },
+    "accessibility_spec_path": {
+      "type": "string",
+      "description": "ux-intake pack-relative POSIX path."
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "id": "EPIC-ORDER",
+  "title": "Orders, fulfillment and price snapshot",
+  "problem_statement": "Customers must be able to track only their own order through a state machine with a frozen price snapshot, and admins must advance fulfillment with no illegal backward transitions, every change audited.",
+  "why_now": "Orders are the post-payment customer experience and the admin's daily work; they depend on checkout.",
+  "hypothesis": "An append-only audited state machine plus an order-time price/name/address snapshot gives trustworthy tracking that never drifts with catalog edits.",
+  "success_criteria": [
+    {
+      "metric": "cross-customer order access",
+      "baseline": "n/a",
+      "target": "0 (A never sees B's order)",
+      "measurement_method": "authorization tests"
+    },
+    {
+      "metric": "illegal backward transitions accepted",
+      "baseline": "n/a",
+      "target": "0",
+      "measurement_method": "state-machine tests"
+    }
+  ],
+  "scope": {
+    "in": [
+      "own-order tracking",
+      "price/name/address snapshot at creation",
+      "human-readable order number",
+      "status timeline",
+      "admin paid->packing->shipped(tracking)->delivered",
+      "admin cancel-before-packing with reason"
+    ],
+    "out_explicit": [
+      "returns",
+      "automated refunds"
+    ],
+    "out_deferred": [
+      "customer-confirmed delivery",
+      "partial fulfillment"
+    ]
+  },
+  "stakeholders": [
+    {
+      "role": "Operations Lead",
+      "name_or_team": "Khun Mali",
+      "raci": "R"
+    },
+    {
+      "role": "Product Manager",
+      "name_or_team": "Khun Pim",
+      "raci": "A"
+    }
+  ],
+  "legal_status": "present",
+  "inferred_tier": "T2",
+  "tier_signals": [
+    {
+      "signal": "customer PII shown with own-data-only isolation",
+      "weight": "high",
+      "evidence_quote": "A customer sees only their own data - never another customer's orders or addresses"
+    }
+  ],
+  "story_refs": [
+    {
+      "id": "STORY-ORDER-01",
+      "slug": "customer-tracks-order-frozen-price-snapshot",
+      "file": "STORY-ORDER-01-customer-tracks-order-frozen-price-snapshot.json",
+      "title": "Customer tracks an order with a frozen price snapshot",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-ORDER-02",
+      "slug": "admin-advances-fulfillment-state-machine",
+      "file": "STORY-ORDER-02-admin-advances-fulfillment-state-machine.json",
+      "title": "Admin advances the fulfillment state machine",
+      "priority": "Must"
+    }
+  ],
+  "change_log": [
+    {
+      "date": "2026-06-01",
+      "author": "eliciting-banking-brief-v1.5.0",
+      "change": "Created from requirement shoppilot-mvp"
+    }
+  ]
+}

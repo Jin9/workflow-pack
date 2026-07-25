@@ -1,0 +1,486 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/implement-frontend-feature/schemas/output.json",
+  "title": "implement-frontend-feature output",
+  "description": "Output contract for the implement-frontend-feature Generate stage. Nested a11y_compliance and security_review objects are REQUIRED, not best-effort. Validation failure triggers one retry, then human-queue.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "output_type",
+    "audit_id"
+  ],
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content_hash",
+          "size_bytes"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "lines_added": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Line count; meaningful for text files only."
+          },
+          "component_pillar": {
+            "type": "string",
+            "enum": [
+              "Page",
+              "Feature",
+              "Primitive",
+              "Hook",
+              "Type",
+              "Util"
+            ],
+            "description": "Optional pillar classification for component-like files."
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Real byte size of the emitted file."
+          },
+          "artifact_kind": {
+            "type": "string",
+            "enum": [
+              "component",
+              "hook",
+              "type",
+              "util",
+              "style",
+              "config",
+              "generated-client",
+              "localization",
+              "fixture",
+              "asset"
+            ],
+            "description": "Optional coarse classification (advisory; heuristic classifiers should omit rather than guess)."
+          }
+        }
+      },
+      "description": "EXHAUSTIVE non-test manifest of every generated source/config file, paths relative to frontend_worktree_root (POSIX; no absolute paths, no '..')."
+    },
+    "tests_generated": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content_hash",
+          "test_type",
+          "coverage_pct"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "test_type": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "component",
+              "integration",
+              "e2e",
+              "visual",
+              "a11y"
+            ]
+          },
+          "coverage_pct": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        }
+      }
+    },
+    "a11y_compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wcag_level",
+        "keyboard_navigable",
+        "screen_reader_tested",
+        "color_contrast_verified",
+        "focus_management_implemented",
+        "axe_clean"
+      ],
+      "description": "Every sub-field present, no defaults. Below-AA wcag_level is a verdict-level rejection.",
+      "properties": {
+        "wcag_level": {
+          "type": "string",
+          "enum": [
+            "AA",
+            "AAA"
+          ]
+        },
+        "keyboard_navigable": {
+          "type": "boolean"
+        },
+        "screen_reader_tested": {
+          "type": "boolean"
+        },
+        "color_contrast_verified": {
+          "type": "boolean"
+        },
+        "focus_management_implemented": {
+          "type": "boolean"
+        },
+        "axe_clean": {
+          "type": "boolean"
+        }
+      }
+    },
+    "security_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "xss_surfaces",
+        "csrf_protected",
+        "csp_compliant",
+        "token_storage_strategy",
+        "pii_fields_handled"
+      ],
+      "properties": {
+        "xss_surfaces": {
+          "type": "array",
+          "description": "Empty when no dangerouslySetInnerHTML. Each entry MUST have a mitigation.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "location",
+              "mitigation"
+            ],
+            "properties": {
+              "location": {
+                "type": "string"
+              },
+              "mitigation": {
+                "type": "string",
+                "minLength": 8
+              }
+            }
+          }
+        },
+        "csrf_protected": {
+          "type": "boolean"
+        },
+        "csp_compliant": {
+          "type": "boolean"
+        },
+        "token_storage_strategy": {
+          "type": "string",
+          "enum": [
+            "httpOnly-cookie",
+            "in-memory",
+            "n/a"
+          ]
+        },
+        "pii_fields_handled": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "treatment"
+            ],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "treatment": {
+                "type": "string",
+                "enum": [
+                  "mask",
+                  "redact",
+                  "audit-on-view",
+                  "none"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "state_ownership": {
+      "type": "object",
+      "description": "Map of state_piece -> owner. Every state piece named in the design must appear.",
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "server",
+          "client",
+          "URL",
+          "form",
+          "local",
+          "derived"
+        ]
+      }
+    },
+    "bundle_impact_estimate_kb": {
+      "type": "number",
+      "minimum": 0
+    },
+    "compensating_actions": {
+      "type": "array",
+      "description": "Required for any mutation path. Empty for read-only display components.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trigger",
+          "action",
+          "timeout_seconds"
+        ],
+        "properties": {
+          "trigger": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600
+          }
+        }
+      }
+    },
+    "audit_events_emitted": {
+      "type": "array",
+      "description": "Analytics event types the code will emit. Every user-significant action contributes one. Empty array only for display-only components.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+      }
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "location",
+          "note"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "design_ambiguity",
+              "convention_conflict",
+              "dependency_addition",
+              "token_gap",
+              "bundle_overrun",
+              "scope_overrun",
+              "compensation_impossible",
+              "other"
+            ]
+          },
+          "location": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 8
+          }
+        }
+      },
+      "description": "Advisory flags on a success artifact (e.g. the documented P2 advisory when implementing from a maturity-2 BA-fallback UX pack). Blocking ambiguity terminates execution instead; loop_back_feedback arrives only FROM frontend review."
+    },
+    "decision_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pillar_choices",
+        "state_library_choices",
+        "repo_conventions_followed"
+      ],
+      "properties": {
+        "pillar_choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "pillar",
+              "rationale"
+            ],
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "pillar": {
+                "type": "string",
+                "enum": [
+                  "Page",
+                  "Feature",
+                  "Primitive",
+                  "Hook",
+                  "Type",
+                  "Util"
+                ]
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "state_library_choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "concern",
+              "choice",
+              "rationale"
+            ],
+            "properties": {
+              "concern": {
+                "type": "string"
+              },
+              "choice": {
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "repo_conventions_followed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "frontend_worktree_root": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\.\\.).*$",
+      "description": "Traversal-safe root (relative to the producer artifact directory) that every manifest path resolves under. Corpus value: app."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"frontend-implement:{idempotency_key}\") for live derivations (corpus ids are sim-convention, grandfathered). Distinct from the engine's per-attempt id."
+    },
+    "output_type": {
+      "type": "string",
+      "enum": [
+        "implementation",
+        "blocked_implementation"
+      ],
+      "description": "Discriminator. blocked_implementation intentionally fails the success boundary and routes retry -> human queue."
+    },
+    "blockers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "description"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Present on blocked_implementation."
+    }
+  },
+  "oneOf": [
+    {
+      "description": "implementation — success. a11y/security claims are producer SELF-REVIEW (T4/T7 provide the test evidence); blocking booleans must hold.",
+      "properties": {
+        "output_type": {
+          "const": "implementation"
+        },
+        "a11y_compliance": {
+          "properties": {
+            "keyboard_navigable": {
+              "const": true
+            },
+            "axe_clean": {
+              "const": true
+            },
+            "color_contrast_verified": {
+              "const": true
+            }
+          }
+        },
+        "security_review": {
+          "properties": {
+            "csrf_protected": {
+              "const": true
+            },
+            "csp_compliant": {
+              "const": true
+            }
+          }
+        }
+      },
+      "required": [
+        "output_type",
+        "files_generated",
+        "tests_generated",
+        "frontend_worktree_root",
+        "a11y_compliance",
+        "security_review",
+        "state_ownership",
+        "bundle_impact_estimate_kb",
+        "compensating_actions",
+        "audit_events_emitted",
+        "uncertainty_flags",
+        "decision_metadata",
+        "audit_id"
+      ]
+    },
+    {
+      "description": "blocked_implementation — pre-emission stop; intentionally fails the success boundary.",
+      "properties": {
+        "output_type": {
+          "const": "blocked_implementation"
+        }
+      },
+      "required": [
+        "output_type",
+        "blockers",
+        "audit_id"
+      ]
+    }
+  ]
+}

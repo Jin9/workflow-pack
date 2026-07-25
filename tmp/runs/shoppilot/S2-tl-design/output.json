@@ -1,0 +1,484 @@
+{
+  "output_type": "design",
+  "component_map": {
+    "template_version": "1.0.0",
+    "components": [
+      {
+        "component_name": "web",
+        "required": true,
+        "complexity": "complex",
+        "complexity_rationale": "SSR storefront + admin; consumes all four service contracts; owns session/token handling and UX from S1.5.",
+        "dependencies": [
+          "auth.login",
+          "auth.refresh",
+          "checkout.confirm",
+          "checkout.capture",
+          "order.get",
+          "order.transition",
+          "inventory.adjust"
+        ],
+        "parallel_safe": false
+      },
+      {
+        "component_name": "auth-service",
+        "required": true,
+        "complexity": "standard",
+        "complexity_rationale": "Credentials + rotating refresh-token families; no upstream deps.",
+        "dependencies": [],
+        "parallel_safe": true
+      },
+      {
+        "component_name": "inventory-service",
+        "required": true,
+        "complexity": "complex",
+        "complexity_rationale": "Atomic reservation under the last-item race + TTL sweep; consumes payment/status events.",
+        "dependencies": [
+          "order.payment.captured",
+          "order.status.changed"
+        ],
+        "parallel_safe": true
+      },
+      {
+        "component_name": "checkout-service",
+        "required": true,
+        "complexity": "complex",
+        "complexity_rationale": "Server-side totals, coupon, idempotent confirm, mock PSP; sync-orchestrates reserve+create (ADR-007/008).",
+        "dependencies": [
+          "inventory.reserve",
+          "inventory.release",
+          "order.create"
+        ],
+        "parallel_safe": false
+      },
+      {
+        "component_name": "order-service",
+        "required": true,
+        "complexity": "standard",
+        "complexity_rationale": "Immutable snapshots + forward-only fulfillment state machine; consumes payment events.",
+        "dependencies": [
+          "order.payment.captured"
+        ],
+        "parallel_safe": true
+      }
+    ]
+  },
+  "api_contracts": {
+    "template_version": "1.0.0",
+    "contracts": [
+      {
+        "contract_name": "auth.login",
+        "payload_shape": {
+          "request": {
+            "email": "string",
+            "password": "string"
+          },
+          "response": {
+            "access_token": "string",
+            "refresh_token": "string"
+          }
+        },
+        "semantics": "sync",
+        "idempotency_rules": "Not idempotent by design; rate-limited; each login issues a new session pair.",
+        "failure_modes": [
+          "invalid_credentials_generic",
+          "rate_limited"
+        ],
+        "ordering_guarantees": "Synchronous request/response; no ordering concern.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "auth.refresh",
+        "payload_shape": {
+          "request": {
+            "refresh_token": "string"
+          },
+          "response": {
+            "access_token": "string",
+            "refresh_token": "string"
+          }
+        },
+        "semantics": "sync",
+        "idempotency_rules": "Single-use token keyed on refresh_token_id; concurrent refresh yields exactly one rotation, others fail closed.",
+        "failure_modes": [
+          "expired_token",
+          "replayed_token_family_revoked",
+          "invalid_token"
+        ],
+        "ordering_guarantees": "Synchronous; rotation is atomic.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "inventory.reserve",
+        "payload_shape": {
+          "request": {
+            "confirm_id": "string",
+            "items": "array"
+          },
+          "response": {
+            "reservation_id": "string",
+            "ttl_seconds": 1800
+          }
+        },
+        "semantics": "system_internal",
+        "idempotency_rules": "Keyed on confirm_id; atomic conditional decrement; retry reserves once; already-reserved returns existing.",
+        "failure_modes": [
+          "insufficient_stock",
+          "sku_not_found"
+        ],
+        "ordering_guarantees": "Synchronous; atomic decrement serializes the last-item race.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "inventory.release",
+        "payload_shape": {
+          "request": {
+            "reservation_id": "string",
+            "reason": "string"
+          }
+        },
+        "semantics": "system_internal",
+        "idempotency_rules": "Keyed on reservation_id; release once; already-released is a no-op.",
+        "failure_modes": [
+          "reservation_not_found"
+        ],
+        "ordering_guarantees": "Synchronous or event-driven; compensating, commutative.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "inventory.adjust",
+        "payload_shape": {
+          "request": {
+            "sku": "string",
+            "new_available": "int",
+            "reason": "string"
+          }
+        },
+        "semantics": "sync",
+        "idempotency_rules": "Each adjustment is a distinct intentional entry; guarded by a current-state precondition (no below-reserved).",
+        "failure_modes": [
+          "below_reserved_rejected",
+          "sku_not_found",
+          "missing_reason"
+        ],
+        "ordering_guarantees": "Synchronous; precondition-guarded.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "checkout.confirm",
+        "payload_shape": {
+          "request": {
+            "cart_id": "string",
+            "address": "string",
+            "coupon": "string|null",
+            "idempotency_key": "string"
+          },
+          "response": {
+            "order_id": "string",
+            "total": "int",
+            "status": "awaiting-payment"
+          }
+        },
+        "semantics": "sync",
+        "idempotency_rules": "Client idempotency_key; duplicate confirm returns the same order; no second order/reservation; crash-safe via ADR-008.",
+        "failure_modes": [
+          "coupon_expired",
+          "out_of_stock",
+          "validation_error",
+          "auth_required"
+        ],
+        "ordering_guarantees": "Synchronous; reserve precedes create.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "checkout.capture",
+        "payload_shape": {
+          "request": {
+            "order_id": "string",
+            "provider_event_id": "string"
+          },
+          "response": {
+            "outcome": "success|failure|timeout"
+          }
+        },
+        "semantics": "sync",
+        "idempotency_rules": "Dedupe on provider_event_id; duplicate provider callback applies once; captured amount must equal the server total.",
+        "failure_modes": [
+          "payment_declined",
+          "payment_timeout",
+          "amount_mismatch_rejected"
+        ],
+        "ordering_guarantees": "Synchronous trigger; provider callback deduped.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "order.create",
+        "payload_shape": {
+          "request": {
+            "confirm_id": "string",
+            "snapshot": "object"
+          },
+          "response": {
+            "order_id": "string"
+          }
+        },
+        "semantics": "system_internal",
+        "idempotency_rules": "Idempotent on confirm_id; duplicate returns the existing order; snapshots frozen at creation; safe to retry (ADR-008).",
+        "failure_modes": [
+          "invalid_payload"
+        ],
+        "ordering_guarantees": "Synchronous; called once per confirm.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "order.get",
+        "payload_shape": {
+          "request": {
+            "order_no": "string",
+            "requester_id": "string"
+          },
+          "response": {
+            "order": "object"
+          }
+        },
+        "semantics": "sync",
+        "idempotency_rules": "Read-only; naturally idempotent.",
+        "failure_modes": [
+          "not_owner_denied",
+          "not_found"
+        ],
+        "ordering_guarantees": "Synchronous read; own-data-only authz.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "order.transition",
+        "payload_shape": {
+          "request": {
+            "order_no": "string",
+            "target_state": "string",
+            "tracking_no": "string|null"
+          }
+        },
+        "semantics": "sync",
+        "idempotency_rules": "Guarded by current-state precondition; re-submitting the same transition no-ops; forward-only.",
+        "failure_modes": [
+          "illegal_backward_rejected",
+          "missing_tracking_on_shipped",
+          "not_admin"
+        ],
+        "ordering_guarantees": "Synchronous; precondition serializes transitions.",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "order.payment.captured",
+        "payload_shape": {
+          "event": {
+            "order_id": "string",
+            "outcome": "string",
+            "amount": "int",
+            "audit_id": "string"
+          }
+        },
+        "semantics": "async",
+        "idempotency_rules": "Consumers dedupe on order_id+provider_event_id; effectively-once.",
+        "failure_modes": [
+          "consumer_lag",
+          "dlq_on_poison_message"
+        ],
+        "ordering_guarantees": "Kafka partition key = audit_id (per-run FIFO); at-least-once + idempotent consumers; published via transactional outbox (ADR-008).",
+        "contract_version": "1.0.0"
+      },
+      {
+        "contract_name": "order.status.changed",
+        "payload_shape": {
+          "event": {
+            "order_id": "string",
+            "before": "string",
+            "after": "string",
+            "audit_id": "string"
+          }
+        },
+        "semantics": "async",
+        "idempotency_rules": "Consumers dedupe on order_id+after; effectively-once.",
+        "failure_modes": [
+          "consumer_lag",
+          "dlq_on_poison_message"
+        ],
+        "ordering_guarantees": "Kafka partition key = audit_id; at-least-once + idempotent consumers; via outbox (ADR-008).",
+        "contract_version": "1.0.0"
+      }
+    ]
+  },
+  "infra_summary": {
+    "path": "design/architecture/03-infra-summary.md",
+    "content": "5 containerized services; per-service MySQL (no shared DB); Redis; Kafka with per-service transactional outbox; mock PSP/courier; ap-southeast (TH/SG) residency; GitLab CI per repo. Full doc at path."
+  },
+  "infra_topology": {
+    "path": "design/architecture/04-infra-topology.md",
+    "content": "One-screen ASCII topology: web → 4 services (sync) → per-service MySQL/Redis; checkout → inventory/order (sync) + mock-psp; outbox → Kafka (audit_id-keyed) → inventory/order consumers. Full doc at path."
+  },
+  "connectivity": {
+    "path": "design/architecture/05-connectivity.md",
+    "content": "From/To/Kind/Contract matrix for every sync call and event flow; mTLS intra-cluster; all events via per-service outbox. Full doc at path."
+  },
+  "observability_spec": {
+    "path": "design/architecture/06-observability-spec.md",
+    "content": "slog JSON (no PII/token/PAN); append-only audit {event,actor,ts,before,after,outcome,audit_id}; RED + domain SLO metrics (stock-mismatch/double-charge targets 0); audit_id trace; alerts on stock<0, outbox lag, DLQ. Numeric latency SLOs are TBD-confirm-with-PM. Full doc at path."
+  },
+  "adrs": [
+    {
+      "id": "ADR-001",
+      "slug": "polyrepo-per-context",
+      "path": "design/architecture/ADRs/ADR-001-polyrepo-per-context.md",
+      "content": "Polyrepo, one service per bounded context; no shared DB; sync HTTP + Kafka.",
+      "status": "Accepted"
+    },
+    {
+      "id": "ADR-002",
+      "slug": "reserve-on-confirm-sync-atomic",
+      "path": "design/architecture/ADRs/ADR-002-reserve-on-confirm-sync-atomic.md",
+      "content": "Reserve at confirm via sync idempotent atomic conditional decrement; 30-min TTL; resolves the last-item race to one winner.",
+      "status": "Accepted"
+    },
+    {
+      "id": "ADR-003",
+      "slug": "order-immutable-snapshots",
+      "path": "design/architecture/ADRs/ADR-003-order-immutable-snapshots.md",
+      "content": "Order freezes price/items/address snapshot at creation; catalog edits never drift a placed order.",
+      "status": "Accepted"
+    },
+    {
+      "id": "ADR-004",
+      "slug": "failure-not-rollback",
+      "path": "design/architecture/ADRs/ADR-004-failure-not-rollback.md",
+      "content": "No distributed rollback; failure paths emit compensating release; unpaid reservations auto-release on TTL.",
+      "status": "Accepted"
+    },
+    {
+      "id": "ADR-005",
+      "slug": "mock-psp-gateway",
+      "path": "design/architecture/ADRs/ADR-005-mock-psp-gateway.md",
+      "content": "Mock PSP behind client_psp gateway in checkout-service only; no PAN/CVV; one-adapter swap to a real PSP.",
+      "status": "Accepted"
+    },
+    {
+      "id": "ADR-006",
+      "slug": "append-only-audit",
+      "path": "design/architecture/ADRs/ADR-006-append-only-audit.md",
+      "content": "Cross-cutting append-only audit keyed by audit_id; per-service table + shared topic; retention 5y/1y.",
+      "status": "Accepted"
+    },
+    {
+      "id": "ADR-007",
+      "slug": "sync-orchestration-no-orchestrator",
+      "path": "design/architecture/ADRs/ADR-007-sync-orchestration-no-orchestrator.md",
+      "content": "MVP: no standalone Orchestrator for the single checkout journey; checkout-service orchestrates synchronously. Deviation accepted; revisit on a 2nd cross-context journey. Recorded in architecture_smells.",
+      "status": "Accepted"
+    },
+    {
+      "id": "ADR-008",
+      "slug": "transactional-outbox-idempotent-retry",
+      "path": "design/architecture/ADRs/ADR-008-transactional-outbox-idempotent-retry.md",
+      "content": "Added in the S2.5 loop-back (RT-2): transactional outbox per producing service + idempotent order.create/capture retry close the dual-write gap and the partial-failure window; TTL is the backstop.",
+      "status": "Accepted"
+    }
+  ],
+  "diagrams": {
+    "architecture_drawio": "diagrams/shoppilot-architecture.drawio",
+    "architecture_spec": "diagrams/shoppilot-architecture.spec.json",
+    "erd_consolidated": "diagrams/shoppilot-architecture.drawio",
+    "offline": true
+  },
+  "coverage_gaps": [
+    {
+      "kind": "ba_story_without_ux_route",
+      "detail": "STORY-ORDER-02, STORY-INVENTORY-01, STORY-INVENTORY-02 are admin/back-office or system-driven; no customer UX route by design (carried from S1.5)."
+    },
+    {
+      "kind": "ux_route_without_ba_story",
+      "detail": "/, /products/:sku and /cart are implied by checkout but have no dedicated BA story (carried from S1.5; flagged for BA)."
+    }
+  ],
+  "architecture_smells": [
+    {
+      "check": "Contexts split by business workstream, not tech layer",
+      "status": "pass",
+      "resolution": "n/a"
+    },
+    {
+      "check": "Each aggregate owns one consistency boundary; no god-aggregate",
+      "status": "pass",
+      "resolution": "n/a"
+    },
+    {
+      "check": "Domain logic in the domain layer, not handlers (no anemic domain)",
+      "status": "pass",
+      "resolution": "n/a"
+    },
+    {
+      "check": "Every component dependency resolves to a named contract (no orphans)",
+      "status": "pass",
+      "resolution": "n/a"
+    },
+    {
+      "check": "Events split domain vs process; no orphan events",
+      "status": "pass",
+      "resolution": "n/a"
+    },
+    {
+      "check": "No shared database across contexts",
+      "status": "pass",
+      "resolution": "n/a"
+    },
+    {
+      "check": "Dual-write (DB + broker) atomicity addressed",
+      "status": "pass",
+      "resolution": "n/a"
+    },
+    {
+      "check": "Orchestrator instantiated on multi-aggregate/compensation/temporal signals",
+      "status": "fail",
+      "resolution": "adr",
+      "adr_ref": "ADR-007"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-1",
+      "severity": "P3",
+      "question": "Does the customer confirm delivery, or does only the admin mark an order delivered?",
+      "why_matters": "Adding customer-confirmed delivery introduces a new flow + notification and changes the order state machine; deferred but affects ORDER scope if pulled forward.",
+      "suggested_resolver": "Product Manager (Khun Pim)"
+    },
+    {
+      "id": "OQ-2",
+      "severity": "P3",
+      "question": "What is the abandoned-cart handling beyond the 30-day purge (notify vs silent purge)?",
+      "why_matters": "Affects the cart-abandonment KPI and a possible future reminder notification; not blocking for the MVP.",
+      "suggested_resolver": "Marketing Lead (Khun Fah)"
+    },
+    {
+      "id": "OQ-3",
+      "severity": "P2",
+      "question": "What are the numeric SLO thresholds for order-confirm p95 and order-listing latency?",
+      "why_matters": "S1 §3 names these success signals but gives no numeric targets; the observability alerts and a meaningful gate need concrete thresholds.",
+      "suggested_resolver": "Product Manager + Tech Lead"
+    }
+  ],
+  "audit_id": "a7d3e9f1-5b24-4c80-9e16-3f8a2b5c1d09",
+  "processing_metadata": {
+    "skill_name": "designing-tech-lead-handoff",
+    "skill_version": "0.2.0",
+    "started_at": "2026-06-04T00:00:00Z",
+    "completed_at": "2026-06-04T00:00:00Z",
+    "tier": "T2",
+    "mode": "full",
+    "idempotency_key": "d4b8c2a0-7e31-4f95-8a6d-2c9e1b0f3a47",
+    "ba_brief_status_seen": "ready-for-tl",
+    "contexts_derived": [
+      "auth",
+      "inventory",
+      "checkout",
+      "order"
+    ]
+  }
+}

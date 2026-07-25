@@ -1,0 +1,235 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/delivery-pipeline-input.json",
+  "title": "delivery-pipeline workflow input",
+  "description": "Top-level workflow input for delivery-pipeline.yaml.",
+  "type": "object",
+  "required": [
+    "raw_request",
+    "requester",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "raw_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The raw requirement / initiative text."
+    },
+    "requester": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "request_type": {
+      "type": "string",
+      "enum": [
+        "new-product",
+        "fix",
+        "enhance"
+      ],
+      "default": "new-product",
+      "description": "Advisory intake classification. All types run the full pipeline today; skip-profiles per type are a later, additive change."
+    },
+    "contract_test_context": {
+      "type": "object",
+      "description": "Optional runner context for the T5 contract-tests gate in live mode: {pact_refs[]{consumer, ref}, provider_ref, environment, broker_profile_ref (non-secret)}. Absent => T5 replays or stops needs-input in live runner mode.",
+      "additionalProperties": true
+    },
+    "integration_test_context": {
+      "type": "object",
+      "description": "Optional runner context for the T6 integration-tests gate in live mode: {suite_ref, target_env, runner_profile_ref, teardown_probe_ref (non-secret)}. Absent => T6 replays or stops needs-input in live runner mode.",
+      "additionalProperties": true
+    },
+    "release_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional: immutable release reference for the S6 handoff. Live mode stops needs-input without it."
+    },
+    "target_env": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional: target environment for the S6 handoff (idempotency identity is (idempotency_key, release_ref, target_env))."
+    },
+    "performance_test_context": {
+      "type": "object",
+      "description": "OPTIONAL runner context for the T9 perf/load gate (live runner mode). Absent in replay. Non-secret.",
+      "required": [
+        "load_profile",
+        "budget",
+        "target_env",
+        "target_kind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "load_profile": {
+          "type": "object",
+          "description": "Arrival shape: rps/vus/duration \u2014 runner-specific but non-secret."
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "p95_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "p99_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "error_rate_max": {
+              "type": "number",
+              "minimum": 0
+            },
+            "throughput_min_rps": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "description": "Upper bounds (p95/p99/error_rate: observed >= threshold breaches) and the throughput lower bound (observed < threshold breaches)."
+        },
+        "target_env": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_kind": {
+          "type": "string",
+          "enum": [
+            "staging",
+            "uat"
+          ]
+        },
+        "runner_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "appsec_scan_context": {
+      "type": "object",
+      "description": "OPTIONAL runner context for the T7 AppSec gate (live runner mode). Absent in replay. All refs are non-secret.",
+      "required": [
+        "target_ref",
+        "target_kind",
+        "build_ref",
+        "sbom_ref",
+        "severity_floor"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_kind": {
+          "type": "string",
+          "enum": [
+            "ci-sandbox",
+            "sit-sandbox"
+          ]
+        },
+        "build_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sbom_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SBOM reference \u2014 REQUIRED: the integrated gate cannot certify CVE cleanliness without SCA evidence."
+        },
+        "severity_floor": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "baseline_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dast_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sca_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "adversarial_pentest_context": {
+      "type": "object",
+      "description": "OPTIONAL authorized-pentest context for the T10 gate (live runner mode). Absent in replay. Non-secret; authorization is explicit.",
+      "required": [
+        "target_ref",
+        "target_kind",
+        "authorization_ref"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_kind": {
+          "type": "string",
+          "enum": [
+            "ci-sandbox",
+            "uat-sandbox"
+          ]
+        },
+        "authorization_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reference to the signed authorization for this adversarial run \u2014 sanctioned-use gate; no live pentest without it."
+        },
+        "threat_personas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "persona_id",
+              "objective",
+              "auth_context"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "persona_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "objective": {
+                "type": "string",
+                "minLength": 1
+              },
+              "auth_context": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "runner_profile_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "T1",
+            "T2",
+            "T3"
+          ]
+        }
+      }
+    }
+  }
+}

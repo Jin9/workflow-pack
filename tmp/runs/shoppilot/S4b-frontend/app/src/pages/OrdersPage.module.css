@@ -1,0 +1,28 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-card-gap);
+}
+
+.orderNo {
+  font-weight: var(--font-weight-semibold);
+}
+
+.badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-pill);
+  background: var(--color-background-page);
+  border: 1px solid var(--color-background-divider);
+  font-size: var(--font-size-100);
+  color: var(--color-text-secondary);
+}
+
+.track {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}

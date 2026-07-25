@@ -1,0 +1,31 @@
+# Expected directory tree for Test 004 — Email / Card Disputes (HOLD-OUT)
+# idem8 = "test-004"
+# output_type: blocked_partial_brief (Legal absent on VCR + tipping-off, regulator citation unresolved, DPO absent)
+# scope_kind: single-epic (Phase 1 in-scope; Phase 2 in out_deferred[])
+# 5 Phase 1 stories per 004 expected.md
+#
+# Expected file count: 17
+#   1 README.md
+#   1 output.json
+#   1 00-BRIEF.md
+#   8 cross-cutting 0N-*.md
+#   1 EPIC.md
+#   5 STORY-*.md
+
+output-test-004/EN/00-BRIEF.md
+output-test-004/EN/01-governance-gaps.md
+output-test-004/EN/02-open-questions.md
+output-test-004/EN/03-assumptions.md
+output-test-004/EN/04-glossary.md
+output-test-004/EN/05-pii-inventory.md
+output-test-004/EN/06-regulatory-dependencies.md
+output-test-004/EN/07-processing-metadata.md
+output-test-004/EN/08-audit-trace.md
+output-test-004/EN/README.md
+output-test-004/EN/epics/EPIC-CARD-DISPUTE-P1/EPIC.md
+output-test-004/EN/epics/EPIC-CARD-DISPUTE-P1/stories/STORY-1-map-ingest-visa-vcr-new-reason-codes.md
+output-test-004/EN/epics/EPIC-CARD-DISPUTE-P1/stories/STORY-2-per-case-sla-timer-countdown-breach.md
+output-test-004/EN/epics/EPIC-CARD-DISPUTE-P1/stories/STORY-3-unified-case-view-layered.md
+output-test-004/EN/epics/EPIC-CARD-DISPUTE-P1/stories/STORY-4-mastercard-portal-session-keepalive-interim.md
+output-test-004/EN/epics/EPIC-CARD-DISPUTE-P1/stories/STORY-5-visa-network-api-integration-expansion.md
+output-test-004/output.json

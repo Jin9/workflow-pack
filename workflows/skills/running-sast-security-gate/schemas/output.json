@@ -1,0 +1,358 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "running-sast-security-gate output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "findings",
+    "secrets",
+    "new_vs_baseline",
+    "policy",
+    "blocking_reasons",
+    "execution",
+    "scan_scope",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "baseline_status",
+          "blocking",
+          "file",
+          "fingerprint",
+          "rule",
+          "severity",
+          "summary"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "rule": {
+            "type": "string",
+            "description": "Scanner rule / check id that fired."
+          },
+          "file": {
+            "type": "string",
+            "description": "Source file (path:line) the finding maps to."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Finding summary; secrets redacted as PII:REDACTED."
+          },
+          "fingerprint": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable finding identity across scans (rule+location hash)."
+          },
+          "baseline_status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "existing"
+            ],
+            "description": "Current findings are new or existing; `fixed` lives in new_vs_baseline (baseline findings absent from this scan)."
+          },
+          "blocking": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "secrets": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of detected secrets; any non-zero is a hard fail."
+    },
+    "new_vs_baseline": {
+      "type": "object",
+      "required": [
+        "new",
+        "existing",
+        "fixed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "new": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Findings not present in the baseline."
+        },
+        "fixed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Baseline findings no longer present."
+        },
+        "existing": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"sast-gate:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids use the grandfathered corpus convention.)"
+    },
+    "execution": {
+      "type": "object",
+      "description": "Execution provenance \u2014 replay = byte-verbatim reference corpus (no scanner ran); runner = a real scan ran in this run.",
+      "required": [
+        "mode",
+        "target_source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "target_source": {
+          "type": "string",
+          "enum": [
+            "current-run",
+            "reference-corpus"
+          ]
+        },
+        "scanner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scanner_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "runner"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "scanner",
+              "scanner_version",
+              "evidence_ref",
+              "report_sha256"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "replay"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target_source": {
+                "const": "reference-corpus"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "scan_scope": {
+      "type": "object",
+      "required": [
+        "targets_scanned"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "targets_scanned": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "severity_floor",
+        "baseline_mode"
+      ],
+      "additionalProperties": false,
+      "description": "The gate policy this decision applied \u2014 machine-auditable, never implicit.",
+      "properties": {
+        "severity_floor": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "baseline_mode": {
+          "type": "string",
+          "enum": [
+            "strict",
+            "baseline-aware"
+          ]
+        },
+        "baseline_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Why the gate blocked \u2014 one entry per blocking cause. Empty on PASS."
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "secrets": {
+            "const": 0
+          },
+          "blocking_reasons": {
+            "maxItems": 0
+          },
+          "findings": {
+            "not": {
+              "contains": {
+                "properties": {
+                  "blocking": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "blocking"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "FAIL"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "blocking_reasons": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "secrets": {
+            "minimum": 1
+          }
+        },
+        "required": [
+          "secrets"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "FAIL"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "ERROR"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "required": [
+          "errors"
+        ],
+        "properties": {
+          "errors": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

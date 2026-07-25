@@ -1,0 +1,115 @@
+# GatePolicy — machine-readable gate table for delivery-pipeline.yaml.
+#
+# Externalized 2026-07-04 from the pipeline YAML's HITL header table (its gate column has no
+# v1-schema slot), the per-stage gate comments, dashboard-data.json stage `gate:` fields, and
+# README Part A's approval-gates table. The engine enforces THIS file; the pipeline YAML's
+# `human_review` block (s1-discovery only) is mirrored here and must stay in sync.
+#
+# Semantics the engine applies:
+#   blocking: true   → after the stage SUCCEEDS, dependents (and run-terminal for leaves) wait
+#                      for a recorded human verdict.
+#   blocking: false  → advisory review; a review record may be attached but never holds the run.
+#   sync-named       → verdict REQUIRES a named human approver; no code path may auto-approve.
+#   auto+exception   → machine thresholds decide; a FAIL escalates to exception_queue instead of retry-exhaust.
+#   Verdict vocabularies are per-gate and NEVER normalized (T10 pass|conditional|fail stays verbatim).
+apiVersion: cognitive-os/v1
+kind: GatePolicy
+metadata:
+  name: delivery-pipeline-gates
+  version: 1.0.0
+  pipeline: delivery-pipeline@3.0.0
+
+defaults:
+  verdicts: [approve, reject]
+  blocking: false
+
+gates:
+  # ── S-stages ────────────────────────────────────────────────────────────────
+  - stage_id: intake
+    gate: auto # light / auto plan sign-off — Delivery Ops
+    owner_role: delivery-ops
+  - stage_id: s1-discovery
+    gate: async-peer # L2 — BA lead. AI drafts; a named human decides the recommendation.
+    owner_role: ba-lead
+    blocking: true
+    on_field: recommendation
+    proceed_when: proceed
+    verdicts: [proceed, needs-work, do-not-build]
+    on_block: ba-discovery-review
+  - stage_id: ba-research
+    gate: async-peer # L2 — BA lead (advisory; release is controlled by the s1-discovery gate)
+    owner_role: ba-lead
+  - stage_id: ux-intake
+    gate: async-peer # L2 — Tech Lead
+    owner_role: tech-lead
+  - stage_id: tl-design
+    gate: sync-named # L3 — Tech Lead + governance. A design ripples to N components.
+    owner_role: tech-lead
+    mandatory: true
+    blocking: true
+  - stage_id: plan-review
+    gate: hitl-on-hardfail # human only when the loop-back cap aborts (no fan-out on a bad plan)
+    owner_role: tech-lead
+  - stage_id: contract-design
+    gate: auto
+  - stage_id: backend-implement
+    gate: auto # sandboxed; ALLOW tests-in-sandbox
+  - stage_id: backend-review
+    gate: async-peer # L2 — dev-squad
+    owner_role: dev-squad
+  - stage_id: frontend-implement
+    gate: auto # sandboxed
+  - stage_id: frontend-review
+    gate: async-peer # L2 — dev-squad
+    owner_role: dev-squad
+  - stage_id: qa-plan
+    gate: sync # L3 conditional-go — qa-squad lead
+    owner_role: qa-lead
+    blocking: true
+  - stage_id: qa-validate
+    gate: sync # L3 — qa-squad lead
+    owner_role: qa-lead
+    blocking: true
+  - stage_id: release-handoff
+    gate: sync-named # L3 — Release Manager — MANDATORY, IRREVERSIBLE, confidence-independent
+    owner_role: release-manager
+    mandatory: true
+    confidence_independent: true
+    blocking: true
+  - stage_id: prod-validate
+    gate: sync # L3 — On-call / Release Mgr; a named rollback decision is required
+    owner_role: on-call
+    blocking: true
+
+  # ── T-gates (leaves; machine thresholds unless marked human) ────────────────
+  - stage_id: backend-unit-tests
+    gate: auto
+  - stage_id: sast-gate
+    gate: auto
+  - stage_id: frontend-unit-tests
+    gate: auto
+  - stage_id: accessibility-tests
+    gate: auto+exception
+    exception_queue: accessibility-exceptions
+  - stage_id: contract-tests
+    gate: auto
+  - stage_id: integration-tests
+    gate: auto+exception
+    exception_queue: integration-test-exceptions
+  - stage_id: appsec-scan
+    gate: auto
+  - stage_id: e2e-tests
+    gate: auto+exception
+    exception_queue: e2e-test-exceptions
+  - stage_id: perf-load-test
+    gate: auto
+  - stage_id: adversarial-pentest
+    gate: human # sync named verification — persona judgment, no machine threshold
+    owner_role: governance
+    blocking: true
+    verdicts: [pass, conditional, fail]
+  - stage_id: smoke-tests
+    gate: auto
+  - stage_id: canary-analysis
+    gate: auto+exception
+    exception_queue: canary-analysis-exceptions

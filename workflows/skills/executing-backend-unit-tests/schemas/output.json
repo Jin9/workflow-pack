@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "executing-backend-unit-tests output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "totals",
+    "failures",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR"
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "executed",
+        "passed",
+        "failed",
+        "skipped"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "executed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "executed = passed + failed + skipped."
+    },
+    "coverage_measured": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Measured line coverage from the runner, not self-claimed. OPTIONAL this pass: the live runner does not emit coverage yet (ledgered); when present, PASS requires >= 0.80."
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "description": "Transitional: runner-emitted failure identifier / tool-error string (what engine/executors/script.py emits today)."
+          },
+          {
+            "type": "object",
+            "required": [
+              "test",
+              "summary"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "test": {
+                "type": "string",
+                "minLength": 1
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "repro": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "test-failure",
+                  "flaky",
+                  "runner-error",
+                  "coverage"
+                ]
+              }
+            },
+            "description": "Canonical structured failure. PII in summaries/repro is redacted as [PII:REDACTED:CLASS=...]."
+          }
+        ]
+      },
+      "description": "Failed-test evidence; [] on PASS. Items are strings (runner today) or canonical objects."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, \"backend-unit-tests:{idempotency_key}\") with HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Distinct from the engine's per-attempt execution audit id (the live script executor currently stamps the attempt id - correction ledgered with the runner enrichment follow-up)."
+    },
+    "flaky": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "OPTIONAL: flaky test identifiers surfaced by bounded re-run (runner enrichment ledgered); when present, PASS requires []."
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false,
+      "description": "Honest execution provenance. OPTIONAL this pass: the live script executor does not emit it yet (ledgered); the replay corpus carries it. target_source says WHAT was tested - the reference corpus code, not freshly generated output.",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "runner",
+            "replay"
+          ]
+        },
+        "target_source": {
+          "type": "string",
+          "enum": [
+            "current-run",
+            "reference-corpus"
+          ]
+        },
+        "runner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_ref": {
+          "type": "string"
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "$id": "https://squad-delivery/skills/executing-backend-unit-tests/schemas/output.json",
+  "allOf": [
+    {
+      "description": "PASS must be backed by executed tests and zero failures.",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "totals": {
+            "properties": {
+              "failed": {
+                "const": 0
+              },
+              "executed": {
+                "minimum": 1
+              }
+            }
+          },
+          "failures": {
+            "maxItems": 0
+          },
+          "coverage_measured": {
+            "minimum": 0.8
+          },
+          "flaky": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

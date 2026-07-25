@@ -1,0 +1,211 @@
+{
+  "system": "workflows-ui pipeline binding",
+  "subtitle": "Build-time pipeline pack: delivery-pipeline data plane -> HELL FACTORY browser sim (design-only)",
+  "contexts": [
+    {
+      "id": "binding-adapter",
+      "label": "Binding Adapter (build-time)"
+    },
+    {
+      "id": "office-sim",
+      "label": "Office Sim (workflows-ui runtime)"
+    },
+    {
+      "id": "pipeline-data-plane",
+      "label": "Pipeline Data Plane (static sources)"
+    }
+  ],
+  "actors": [
+    {
+      "id": "player",
+      "label": "YOU\n(player avatar)",
+      "uses": "office-sim",
+      "edge": "roam · watch replay"
+    },
+    {
+      "id": "reviewer",
+      "label": "Reviewer\n(gate owner)",
+      "uses": "office-sim",
+      "edge": "gate board · verdicts"
+    }
+  ],
+  "externals": [],
+  "services": [
+    {
+      "id": "gate-board",
+      "label": "quality-gate board\n(PLANNED)",
+      "context": "office-sim",
+      "status": "new"
+    },
+    {
+      "id": "pack-generator",
+      "label": "build_pipeline_pack.py\n(PLANNED · deterministic)",
+      "context": "binding-adapter",
+      "status": "new"
+    },
+    {
+      "id": "pipeline-adapter",
+      "label": "pipeline-adapter\n(PLANNED)",
+      "context": "office-sim",
+      "status": "new"
+    },
+    {
+      "id": "replay-controller",
+      "label": "replay-controller\n(PLANNED)",
+      "context": "office-sim",
+      "status": "new"
+    },
+    {
+      "id": "review-console",
+      "label": "delivery-review console\n(per-run HTML)",
+      "context": "pipeline-data-plane",
+      "status": "existing"
+    },
+    {
+      "id": "sidebar-feed",
+      "label": "Sidebar / Feed\n(remount — PLANNED)",
+      "context": "office-sim",
+      "status": "enhanced"
+    },
+    {
+      "id": "sim-core",
+      "label": "sim core\nmap.jsx · sim.jsx · App.jsx",
+      "context": "office-sim",
+      "status": "existing"
+    },
+    {
+      "id": "squad-dashboard",
+      "label": "squad-delivery dashboard\n(standalone.html)",
+      "context": "pipeline-data-plane",
+      "status": "existing"
+    }
+  ],
+  "datastores": [
+    {
+      "id": "ds-dashboard-data",
+      "label": "dashboard-data.json\n27 stage records",
+      "context": "pipeline-data-plane",
+      "kind": "db",
+      "status": "existing"
+    },
+    {
+      "id": "ds-pipeline-pack",
+      "label": "pipeline-pack.json\nTHE UI contract (PLANNED)",
+      "context": "binding-adapter",
+      "kind": "db",
+      "status": "new"
+    },
+    {
+      "id": "ds-pipeline-yaml",
+      "label": "delivery-pipeline.yaml\nDAG · failure policy",
+      "context": "pipeline-data-plane",
+      "kind": "db",
+      "status": "existing"
+    },
+    {
+      "id": "ds-run-shoppilot",
+      "label": "tmp/runs/shoppilot\nartifacts · 12 gate JSONs",
+      "context": "pipeline-data-plane",
+      "kind": "db",
+      "status": "existing"
+    },
+    {
+      "id": "ds-schemas",
+      "label": "workflows/schemas\n30 boundary schemas",
+      "context": "pipeline-data-plane",
+      "kind": "db",
+      "status": "existing"
+    }
+  ],
+  "topology": [
+    {
+      "from": "pack-generator",
+      "to": "ds-dashboard-data",
+      "kind": "sync",
+      "label": "build: read stage records + tests + skillmap"
+    },
+    {
+      "from": "pack-generator",
+      "to": "ds-pipeline-yaml",
+      "kind": "sync",
+      "label": "build: read depends_on DAG + failure_policy"
+    },
+    {
+      "from": "pack-generator",
+      "to": "ds-run-shoppilot",
+      "kind": "sync",
+      "label": "build: read artifacts + gate verdicts"
+    },
+    {
+      "from": "pack-generator",
+      "to": "ds-schemas",
+      "kind": "sync",
+      "label": "build: revalidate artifacts (fail-closed)"
+    },
+    {
+      "from": "pack-generator",
+      "to": "ds-pipeline-pack",
+      "kind": "sync",
+      "label": "build: emit byte-deterministic pack"
+    },
+    {
+      "from": "pipeline-adapter",
+      "to": "ds-pipeline-pack",
+      "kind": "sync",
+      "label": "runtime: load + validate pack (only seam)"
+    },
+    {
+      "from": "replay-controller",
+      "to": "pipeline-adapter",
+      "kind": "sync",
+      "label": "runtime: timeline · roster"
+    },
+    {
+      "from": "replay-controller",
+      "to": "sim-core",
+      "kind": "async",
+      "label": "runtime: drive states · pushFeed"
+    },
+    {
+      "from": "gate-board",
+      "to": "pipeline-adapter",
+      "kind": "sync",
+      "label": "runtime: T1–T12 → R/A/G"
+    },
+    {
+      "from": "sidebar-feed",
+      "to": "gate-board",
+      "kind": "sync",
+      "label": "runtime: host gate board"
+    },
+    {
+      "from": "sidebar-feed",
+      "to": "sim-core",
+      "kind": "sync",
+      "label": "runtime: feed (existing)"
+    },
+    {
+      "from": "squad-dashboard",
+      "to": "ds-dashboard-data",
+      "kind": "sync",
+      "label": "existing: data-module roundtrip"
+    },
+    {
+      "from": "review-console",
+      "to": "ds-run-shoppilot",
+      "kind": "sync",
+      "label": "existing: run-folder render"
+    }
+  ],
+  "process_aggregates": [
+    {
+      "id": "replay-proc",
+      "label": "Run Replay (process)",
+      "context": "office-sim",
+      "note": "ADR-002 · temporal sequencing of the DAG-ordered replay timeline (orchestrator signal 3 only)"
+    }
+  ],
+  "aggregates": [],
+  "tables": {},
+  "fks": []
+}

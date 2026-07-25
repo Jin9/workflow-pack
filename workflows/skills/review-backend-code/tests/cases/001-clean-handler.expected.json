@@ -1,0 +1,33 @@
+{
+  "verdict": "approve",
+  "loop_back_target_stage": null,
+  "findings": [],
+  "claim_checks": [
+    {
+      "claim_ref": "backend-artifacts.json#/idempotency_strategy",
+      "claim_type": "idempotency",
+      "status": "verified",
+      "evidence": "capture reads the client key at the boundary, persists (key, request_hash, response, status), replay branch returns the stored response"
+    },
+    {
+      "claim_ref": "backend-artifacts.json#/audit_events_emitted",
+      "claim_type": "audit",
+      "status": "verified",
+      "evidence": "payment.captured emit call present on the state-changing path"
+    },
+    {
+      "claim_ref": "ADR-006",
+      "claim_type": "compensation",
+      "status": "verified",
+      "evidence": "release call sited at the capture failure/timeout branch"
+    }
+  ],
+  "audit_metadata": {
+    "rules_evaluated": 22,
+    "production_files_scanned": 2,
+    "test_files_scanned": 1,
+    "lines_scanned": 278
+  },
+  "uncertainty_flags": [],
+  "audit_id": "f6b6f262-ae03-59dd-9166-d9b3a1b81e94"
+}

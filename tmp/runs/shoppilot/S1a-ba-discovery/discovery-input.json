@@ -1,0 +1,6 @@
+{
+  "raw_request": "ShopPilot — a single Thai merchant wants its own B2C web storefront where customers self-serve the full purchase journey (browse -> cart -> checkout -> mock payment -> delivery tracking) and back-office staff manage catalog, stock, orders and coupons from one console, without phone or chat. The MVP must 'actually sell' in a simulated setting (stock reservation, coupon and pre-shipment cancellation rules genuinely enforced), stay extensible to a real payment/shipping provider and a future loyalty program, and double as the team's end-to-end software-delivery (SDLC) workflow testbed.",
+  "requester": "shoppilot-demo",
+  "normalized_request": "Build ShopPilot — a single-merchant, Thai-market B2C storefront plus an admin back office covering the full business flow (browse -> cart -> checkout -> pay -> fulfil -> track), with banking-grade governance (PDPA B.E. 2562, Revenue Code retention, Consumer Protection Act, PCI-DSS scope-excluded via a tokenizing mock PSP).",
+  "idempotency_key": "7b2d9c41-0e63-4a8f-b1d2-5c9a3e0f8a17"
+}

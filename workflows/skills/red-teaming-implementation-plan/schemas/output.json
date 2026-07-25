@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "red-teaming-implementation-plan output",
+  "type": "object",
+  "required": [
+    "verdict",
+    "steelman",
+    "findings",
+    "bias_checks",
+    "confidence",
+    "audit_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PROCEED",
+        "REVISE",
+        "BLOCK"
+      ]
+    },
+    "steelman": {
+      "type": "string",
+      "description": "The strongest honest case FOR the plan, written before the findings.",
+      "minLength": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "category",
+          "claim",
+          "evidence",
+          "recommendation"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^RT-[0-9]+$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "requirements",
+              "architecture",
+              "contract",
+              "data",
+              "security",
+              "operability",
+              "cost",
+              "testability",
+              "governance"
+            ]
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommendation": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "bias_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Reviewer-bias mitigations applied (self-preference, position/verbosity, hallucinated-flaw, heterogeneity).",
+      "minItems": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped provenance id for the handoff trace: UUIDv5(HOUSE_NS, \"plan-review:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\"). Independent of optional inputs; distinct from the per-attempt audit id the engine writes to events.jsonl."
+    }
+  }
+}

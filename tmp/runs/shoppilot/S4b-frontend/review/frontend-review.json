@@ -1,0 +1,53 @@
+{
+  "verdict": "approve",
+  "loop_back_target_stage": null,
+  "findings": [],
+  "claim_checks": [
+    {
+      "claim_ref": "a11y_verdict",
+      "claim_type": "a11y",
+      "status": "verified",
+      "evidence": "WCAG AA verified (axe clean, role/label queries present, focus managed)"
+    },
+    {
+      "claim_ref": "security_verdict.token_storage_verified",
+      "claim_type": "security",
+      "status": "verified",
+      "evidence": "auth token in httpOnly cookie — no localStorage/sessionStorage write"
+    },
+    {
+      "claim_ref": "security_verdict.pii_helpers_verified",
+      "claim_type": "pii",
+      "status": "verified",
+      "evidence": "PII fields rendered through declared mask/audit-on-view helpers"
+    },
+    {
+      "claim_ref": "security_verdict.csrf_protections_verified",
+      "claim_type": "security",
+      "status": "verified",
+      "evidence": "no dangerouslySetInnerHTML; CSRF protection on mutations"
+    }
+  ],
+  "a11y_verdict": {
+    "wcag_level_verified": "AA",
+    "axe_run_evidence_present": true,
+    "role_label_queries_present": true,
+    "focus_management_evident": true
+  },
+  "security_verdict": {
+    "xss_mitigations_verified": true,
+    "token_storage_verified": true,
+    "pii_helpers_verified": true,
+    "csrf_protections_verified": true,
+    "dependency_additions_detected": []
+  },
+  "audit_metadata": {
+    "rules_evaluated": 26,
+    "production_files_scanned": 37,
+    "test_files_scanned": 3,
+    "lines_scanned": 2316,
+    "claims_checked": 4
+  },
+  "uncertainty_flags": [],
+  "audit_id": "bb8a499e-ebe9-5f55-98fc-3b2bac2639df"
+}

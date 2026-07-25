@@ -1,0 +1,11 @@
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-sast-security-gate
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/scanning-appsec-pipeline-gate
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/running-sast-security-gate
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/scanning-appsec-pipeline-gate
+
+0 finding(s) across 2 skills (STRICT mode)
+38 passed, 1 warning in 1.00s
+
+ALL PASS — 0 failure(s)
+
+4 finding(s) across 27 stages (STRICT mode) · baseline: 10 known, 6 fixed, 0 NEW

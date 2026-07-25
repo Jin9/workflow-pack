@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/review-frontend-code/schemas/input.json",
+  "title": "review-frontend-code input",
+  "description": "ENFORCED \u2014 the engine validates this ASSEMBLED stage input against this schema BEFORE the stage runs (engine/validation.py validate_stage_input; fail-closed, engine/config/runtime-binding.yaml input_validation: enforce). Shape below is the POST-adapter payload delivered at stage frontend-review.",
+  "type": "object",
+  "required": [
+    "files_generated",
+    "tests_generated",
+    "api_contracts",
+    "pack_dir",
+    "tokens_path",
+    "component_inventory_path",
+    "screen_states_path",
+    "form_validation_path",
+    "responsive_spec_path",
+    "accessibility_spec_path",
+    "idempotency_key"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "files_generated": {
+      "type": "array",
+      "description": "Shape: implement-frontend-feature schemas/output.json#/properties/files_generated. EXHAUSTIVE non-test manifest of every generated source/config file, paths relative to frontend_worktree_root (POSIX; no absolute paths, no '..')."
+    },
+    "tests_generated": {
+      "type": "array",
+      "description": "Shape: implement-frontend-feature schemas/output.json#/properties/tests_generated."
+    },
+    "api_contracts": {
+      "type": "object",
+      "description": "Shape: designing-tech-lead-handoff schemas/output.json#/properties/api_contracts. Verbatim shape of templates/tech-lead-contracts.md embedded schema. These are the cross-component INTERFACE contracts (the architecture's connective tissue), NOT per-service endpoint specs. payload_shape is intentionally open (free-form JSON-Schema-ish object per the template)."
+    },
+    "pack_dir": {
+      "description": "Pick from `ux-intake`."
+    },
+    "component_inventory_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "screen_states_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "form_validation_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "responsive_spec_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "accessibility_spec_path": {
+      "description": "Pick from `ux-intake`."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "engine-injected: the workflow's single idempotency key, injected into every stage payload."
+    },
+    "upstream_artifacts": {
+      "type": "object",
+      "description": "engine-injected: map of producer stage id to its artifact path relative to this stage's dir.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "engine-injected (conditional): reviewer findings threaded into a re-run after a loop_back."
+    },
+    "tokens_path": {
+      "description": "Pick from `ux-intake`. NOTE: not guaranteed by ux-intake's required_fields (omit+warn at runtime)."
+    }
+  }
+}

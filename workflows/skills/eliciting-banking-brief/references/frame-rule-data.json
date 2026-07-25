@@ -1,0 +1,126 @@
+{
+  "$comment": "Source-of-truth for FM-17 Frame 4 sub-topic coverage rules. Mirrors references/hidden-requirements-frames.md lines 183-207. Loaded by scripts/render_markdown_tree.py at import time. v1.3.0+.",
+  "version": "1.3.0",
+  "triggers": {
+    "pii_collection": [
+      {
+        "sub_topic_id": "dsar_workflow",
+        "coverage_keywords": ["dsar", "data subject access", "subject access request", "right of access"],
+        "jurisdiction_note": "PDPA s.30; GDPR art.15; CCPA right-to-know"
+      },
+      {
+        "sub_topic_id": "right_to_erasure",
+        "coverage_keywords": ["right to erasure", "right-to-erasure", "right to be forgotten", "erasure workflow", "deletion request"],
+        "jurisdiction_note": "PDPA s.33; GDPR art.17; CCPA right-to-delete"
+      },
+      {
+        "sub_topic_id": "retention_schedule",
+        "coverage_keywords": ["retention schedule", "retention period", "retention policy", "data retention"],
+        "jurisdiction_note": "Thai tax: 5y; PDPA: purpose-bound; GDPR: storage limitation"
+      },
+      {
+        "sub_topic_id": "breach_notification",
+        "coverage_keywords": ["breach notification", "breach notice", "72h", "72 hour", "incident notification"],
+        "jurisdiction_note": "PDPA s.37 (72h); GDPR art.33-34 (72h)"
+      },
+      {
+        "sub_topic_id": "lawful_basis",
+        "coverage_keywords": ["lawful basis", "consent ux", "consent capture", "legal basis", "consent flow"],
+        "jurisdiction_note": "PDPA s.19; GDPR art.6 / art.7"
+      },
+      {
+        "sub_topic_id": "cross_border_transfer",
+        "coverage_keywords": ["cross-border", "cross border", "data transfer", "scc ", "adequacy", "data residency"],
+        "jurisdiction_note": "PDPA Chapter 5; GDPR art.44-50"
+      }
+    ],
+    "jurisdiction_thailand": [
+      {
+        "sub_topic_id": "pdpa_applicability",
+        "coverage_keywords": ["pdpa"],
+        "jurisdiction_note": "PDPA B.E. 2562 / 2019"
+      },
+      {
+        "sub_topic_id": "consumer_protection_act",
+        "coverage_keywords": ["consumer protection act", "cpa", "cooling-off", "direct sales"],
+        "jurisdiction_note": "CPA B.E. 2522 + DSDMA"
+      },
+      {
+        "sub_topic_id": "computer_crime_act",
+        "coverage_keywords": ["computer crime act", "cca", "log retention"],
+        "jurisdiction_note": "CCA B.E. 2550 (90d log retention)"
+      },
+      {
+        "sub_topic_id": "revenue_code_vat",
+        "coverage_keywords": ["revenue code", "vat", "e-tax", "tax invoice"],
+        "jurisdiction_note": "Thai Revenue Code (VAT 7% + e-Tax invoice broker)"
+      }
+    ],
+    "payment_processing": [
+      {
+        "sub_topic_id": "psp_vendor_decision",
+        "coverage_keywords": ["psp", "payment provider", "payment service provider", "real payment"],
+        "jurisdiction_note": "Omise / 2C2P / GBPrimePay / Stripe TH"
+      },
+      {
+        "sub_topic_id": "pci_dss_scope",
+        "coverage_keywords": ["pci-dss", "pci dss", "pci scope", "saq"],
+        "jurisdiction_note": "SAQ A vs A-EP vs D"
+      },
+      {
+        "sub_topic_id": "settlement_fees",
+        "coverage_keywords": ["settlement", "merchant fee", "transaction fee", "processing fee"],
+        "jurisdiction_note": "T+1 to T+7 typical TH"
+      },
+      {
+        "sub_topic_id": "webhook_signature",
+        "coverage_keywords": ["webhook signature", "webhook verification", "callback signature"],
+        "jurisdiction_note": "HMAC + idempotency-key"
+      },
+      {
+        "sub_topic_id": "chargeback_workflow",
+        "coverage_keywords": ["chargeback", "dispute"],
+        "jurisdiction_note": "Visa/MC 120-day window typical"
+      }
+    ],
+    "audit_logging": [
+      {
+        "sub_topic_id": "log_retention_period",
+        "coverage_keywords": ["log retention", "audit retention", "log preservation"],
+        "jurisdiction_note": "CCA 90d [TH]; SOX 7y [US]; PCI 1y"
+      },
+      {
+        "sub_topic_id": "log_immutability",
+        "coverage_keywords": ["tamper-evident", "tamper evident", "append-only", "immutable log", "log immutability"],
+        "jurisdiction_note": "PCI-DSS req. 10.5"
+      },
+      {
+        "sub_topic_id": "log_pii_redaction",
+        "coverage_keywords": ["pii redaction", "log redaction", "sensitive field exclusion"],
+        "jurisdiction_note": "PDPA / GDPR: logs are personal data when linked"
+      }
+    ],
+    "consumer_facing": [
+      {
+        "sub_topic_id": "privacy_policy_authoring",
+        "coverage_keywords": ["privacy policy", "privacy notice", "privacy statement"],
+        "jurisdiction_note": "PDPA s.23; GDPR art.13; CCPA notice-at-collection"
+      },
+      {
+        "sub_topic_id": "terms_of_service",
+        "coverage_keywords": ["terms of service", "t&c", "terms and conditions"],
+        "jurisdiction_note": "Contract formation per local CPA"
+      },
+      {
+        "sub_topic_id": "cookie_consent",
+        "coverage_keywords": ["cookie consent", "cookie banner", "cookie notice"],
+        "jurisdiction_note": "ePrivacy [EU]; PDPA s.19 if cookies link to identifiable user"
+      },
+      {
+        "sub_topic_id": "merchant_identity_disclosure",
+        "coverage_keywords": ["merchant identity", "merchant disclosure", "seller identification", "business identification"],
+        "jurisdiction_note": "Thai CPA + DSDMA"
+      }
+    ]
+  }
+}

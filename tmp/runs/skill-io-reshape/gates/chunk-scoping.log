@@ -1,0 +1,12 @@
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/scoping-ba-intake
+ok: /Users/admin/Desktop/project/research/workflow-pack/workflows/skills/scoping-ba-intake
+EXAMPLE  eliciting-banking-brief: ## Input contract example fails schema at normalized_request: {'task_id': 'REQ-shoppilot-mvp'} is not of type 'string'
+
+1 finding(s) across 3 skills (STRICT mode)
+
+0 finding(s) across 3 skills (STRICT mode)
+38 passed, 1 warning in 1.02s
+
+ALL PASS — 0 failure(s)
+
+1 finding(s) across 27 stages (STRICT mode) · baseline: 1 known, 0 fixed, 0 NEW

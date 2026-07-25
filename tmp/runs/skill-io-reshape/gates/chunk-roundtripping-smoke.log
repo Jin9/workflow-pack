@@ -1,0 +1,22 @@
+== 1. out==html guard ==
+error: --out resolves to the bundle itself: squad-delivery-dashboard.standalone.html
+exit=0
+== 2. existing non-default out w/o --force ==
+error: refusing to overwrite existing /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rtdc-smoke/exists.json (non-default path; pass --force)
+== 3. with --force ==
+Wrote /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rtdc-smoke/forced.json (41206 bytes) from squad-delivery-dashboard.standalone.html
+valid json
+== 4. default out roundtrip (should equal checked-in) ==
+LOSSLESS
+== 5. dupe-key rejection ==
+error: /private/tmp/claude-501/-Users-admin-Desktop-project-research-workflow-pack/c4d5ee9c-4c2e-497f-907b-c48e2ba7880b/scratchpad/rtdc-smoke/dup.json is not strict JSON: duplicate object key: 'tier'
+== 6. data==html guard ==
+error: --data resolves to the bundle itself: squad-delivery-dashboard.standalone.html
+ok: /Users/admin/Desktop/project/research/workflow-pack/.claude/skills/roundtripping-dashboard-data-contract
+ok: /Users/admin/Desktop/project/research/workflow-pack/.claude/skills/roundtripping-dashboard-data-contract
+VERIFY: in sync (contract valid and bundle matches).
+38 passed, 1 warning in 1.03s
+
+ALL PASS — 0 failure(s)
+
+10 finding(s) across 27 stages (STRICT mode) · baseline: 10 known, 0 fixed, 0 NEW

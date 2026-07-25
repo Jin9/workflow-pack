@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/ux-intake.json",
+  "title": "S1.5 ux-intake boundary manifest (generate-ux-pack output)",
+  "description": "Boundary for the S1.5 ux-intake node: permissive superset over generate-ux-pack/schemas/output.json (ux_pack success variant); required mirrors the YAML required_fields. Success policy: a ux_pack at maturity 2 (ready-for-audit) or 3 (ready-for-implementation, zero P1 findings) with all nine core files; partial/blocked/failure shapes intentionally fail this boundary and route retry -> ux-intake-pending.",
+  "type": "object",
+  "required": [
+    "pack_dir",
+    "tokens_path",
+    "route_map_path",
+    "component_inventory_path",
+    "microcopy_path",
+    "screen_states_path",
+    "form_validation_path",
+    "responsive_spec_path",
+    "accessibility_spec_path",
+    "maturity_level",
+    "status",
+    "p1_findings",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "pack_dir": {
+      "type": "string",
+      "description": "Root directory of the UX pack."
+    },
+    "tokens_path": {
+      "type": "string",
+      "description": "Path to the design-token file (tokens.json) the TL handoff consumes."
+    },
+    "route_map_path": {
+      "type": "string",
+      "description": "Path to the route map the frontend leg consumes."
+    },
+    "component_inventory_path": {
+      "type": "string",
+      "description": "Optional path to the component inventory."
+    },
+    "maturity_level": {
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "description": "UX pack maturity (mirrors generate-ux-pack: 0=skeleton, 1=basic, 2=draft, 3=ready-for-implementation); gates S4b frontend-implement (raise the gate as the pack matures)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready-for-audit",
+        "ready-for-implementation"
+      ],
+      "description": "Pack status discriminator emitted by generate-ux-pack."
+    },
+    "viewer_file": {
+      "type": "string",
+      "description": "Path to the self-contained offline HTML viewer for the pack."
+    },
+    "audit_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default (generic tree).",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "verdict_map": {
+          "type": "object"
+        }
+      }
+    },
+    "microcopy_path": {
+      "type": "string"
+    },
+    "screen_states_path": {
+      "type": "string"
+    },
+    "form_validation_path": {
+      "type": "string"
+    },
+    "responsive_spec_path": {
+      "type": "string"
+    },
+    "accessibility_spec_path": {
+      "type": "string"
+    },
+    "p1_findings": {
+      "type": "array"
+    }
+  }
+}

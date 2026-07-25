@@ -1,0 +1,79 @@
+// Template: handler_<action>.go
+// Replace <DOMAIN>, <Action>, <action>, <Dep>, <Method>, and request/response fields.
+// File path: app/<DOMAIN>/handler_<action>.go
+
+package <DOMAIN>
+
+import (
+	"log/slog"
+	"net/http"
+
+	"gitlab.com/<MODULE-PATH>/common/app"
+	"gitlab.com/<MODULE-PATH>/common/serror"
+	"gitlab.com/<MODULE-PATH>/common/wrapper"
+
+	"gitlab.com/<MODULE-PATH>/<SERVICE>/app/<DOMAIN>/access"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+)
+
+type <Action>Request struct {
+	<Field1> string    `json:"<field1>" binding:"required"`
+	<Field2> uuid.UUID `json:"<field2>" binding:"required"`
+}
+
+type <Action>Response struct {
+	<ResultID> uuid.UUID `json:"<resultId>"`
+}
+
+func (h *handler) <Action>(c *gin.Context) {
+	req, ok := wrapper.BindJSON[<Action>Request](c, slog.String("handler", "<Action>"))
+	if !ok {
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	entity := access.<Model>{
+		<EntityField1>: req.<Field1>,
+		<EntityField2>: req.<Field2>.String(),
+		<StatusField>:  access.<Model>StatusDefault,
+	}
+
+	saved, err := h.<dep>Storage.<Method>(ctx, entity)
+	if err != nil {
+		wrapper.Respond(c, wrapper.ResponseOption[<Action>Response]{
+			HTTPStatus: http.StatusInternalServerError,
+			Code:       app.CodeInternalError,
+			Message:    app.MessageInternalError,
+			Err: serror.Wrap(err).With(
+				slog.String("<field1>", req.<Field1>),
+				slog.String("<field2>", req.<Field2>.String()),
+			),
+		})
+		return
+	}
+
+	id, err := saved.GetID()
+	if err != nil {
+		wrapper.Respond(c, wrapper.ResponseOption[<Action>Response]{
+			HTTPStatus: http.StatusInternalServerError,
+			Code:       app.CodeInternalError,
+			Message:    app.MessageInternalError,
+			Err: serror.Wrap(err).With(
+				slog.String("<entityField1>", saved.<EntityField1>),
+			),
+		})
+		return
+	}
+
+	wrapper.Respond(c, wrapper.ResponseOption[<Action>Response]{
+		HTTPStatus: http.StatusCreated,
+		Code:       app.CodeSuccess,
+		Message:    app.MessageSuccess,
+		Data: &<Action>Response{
+			<ResultID>: id,
+		},
+	})
+}

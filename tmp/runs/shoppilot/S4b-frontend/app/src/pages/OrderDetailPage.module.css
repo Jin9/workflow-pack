@@ -1,0 +1,11 @@
+.back {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.address {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}

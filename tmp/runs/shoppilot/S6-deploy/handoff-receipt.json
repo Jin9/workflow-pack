@@ -1,0 +1,11 @@
+{
+  "receipt_id": "RCPT-shoppilot-20260607-0001",
+  "status": "handed_off",
+  "release_ref": "shoppilot@release-1.0.0+06d94543973d",
+  "target_env": "production",
+  "approver": {
+    "name": "Khun Ratana",
+    "role": "Release Manager"
+  },
+  "audit_id": "50012a63-945d-513f-b7eb-33edae948cba"
+}
