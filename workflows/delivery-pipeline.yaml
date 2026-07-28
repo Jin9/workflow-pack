@@ -21,7 +21,8 @@
 #   S1a s1-discovery     BA lead           ⏸ async peer (L2) — recommendation gate (proceed releases the brief node)
 #   S1b ba-breakdown     3 amigos          🔒 sync NAMED QUORUM (L3) — ba-lead + dev-lead + qa-lead must EACH sign
 #                                          (`agreed` releases; anything else loops the breakdown back, cap 2)
-#   S1c ba-research      BA lead           (elaboration; runs only after the three-amigos gate clears `agreed`)
+#   S1c ba-research      BA lead           ⏸ async peer (L2) — runs only after the three-amigos gate clears
+#                                          `agreed`; the brief releases only on `approve` AND state ready-for-tl
 #   S1.5 ux-intake       Tech Lead         ⏸ async peer (L2)
 #   S2  tl-design        Tech Lead + gov   🔒 sync NAMED (L3)
 #   S2.5 plan-review     Tech Lead         ◆ HITL on HardFail
@@ -56,7 +57,7 @@ kind: Workflow
 
 metadata:
   name: delivery-pipeline
-  version: 3.1.0
+  version: 3.2.0
   owner: delivery
   description: >
     Complete banking-grade delivery pipeline from a raw requirement to a validated production release,
@@ -192,8 +193,11 @@ spec:
             ]
       output:
         schema_ref: schemas/ba-breakdown.json
+        # blocks_elaboration is REQUIRED, not incidental: elaboration re-checks it
+        # fail-closed, and a field the consumer never receives cannot be re-checked.
         required_fields:
-          [epics, story_files, flows, rules_file, domain_file, governance_gaps, state, audit_id]
+          [epics, story_files, flows, rules_file, domain_file, governance_gaps, state,
+           blocks_elaboration, audit_id]
       timeout_seconds: 180
       # A non-agreed three-amigos verdict is an ORDINARY review outcome, not a run
       # failure: it loops the breakdown back to itself with the reviewers' findings
@@ -211,7 +215,7 @@ spec:
     - id: ba-research
       type: analyze
       skill_ref: skills/elaborating-user-stories
-      skill_version: "1.0.0"
+      skill_version: "1.1.0"
       depends_on: [intake, ba-breakdown]
       input:
         from_workflow_input: [raw_request, requester]
@@ -227,6 +231,7 @@ spec:
               domain_file,
               governance_gaps,
               state,
+              blocks_elaboration,
               audit_id,
             ]
       output:

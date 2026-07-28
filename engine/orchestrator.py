@@ -275,6 +275,32 @@ class Orchestrator:
                     self.emit("gate.hook-refused", stage_id, reason=str(e)[:200])
                     break
 
+    def _upstream_quorum_verdict(self, spec) -> Optional[dict]:
+        """The recorded decision of an upstream QUORUM gate, handed to the stage that
+        has to act on it.
+
+        `conditions` are the reviewers' own signature notes. A note on a releasing
+        signature is the only channel an amigo currently has to attach a binding
+        condition ("agreed, but split checkout at payment"), so it is carried as one
+        rather than dropped on the floor. Only a RELEASED gate is threaded: a blocked
+        or still-pending gate has no decision to act on, and a looped-back gate is
+        popped, so its findings travel as loop_back_feedback instead."""
+        for src in spec.input_from_stage:
+            gate = self.gates.get(src)
+            if gate is None or not gate.spec.quorum:
+                continue
+            if gate.status not in ("released", "released-with-caveat"):
+                continue
+            return {
+                "verdict": gate.verdict,
+                "approvers": [
+                    {"role": a["role"], "name": a["approver"]}
+                    for a in gate.approvals if a.get("role")
+                ],
+                "conditions": [a["note"] for a in gate.approvals if a.get("note")],
+            }
+        return None
+
     # ── stage attempt ──────────────────────────────────────────────────────────
     async def _run_stage(self, stage_id: str) -> None:
         spec = self.workflow.stage_by_id[stage_id]
@@ -308,6 +334,12 @@ class Orchestrator:
             # A downstream reviewer looped back to this stage: the re-run must see
             # WHY ("reroute high findings back" — the loop is pointless blind).
             payload["loop_back_feedback"] = feedback
+        quorum_verdict = self._upstream_quorum_verdict(spec)
+        if quorum_verdict is not None:
+            # A reviewer who signs "agreed, but split checkout at payment" has said
+            # something BINDING. Without this the condition was recorded in the audit
+            # trail and never reached the stage that would act on it.
+            payload["amigos_verdict"] = quorum_verdict
         for w in warnings:
             self.emit("mapping.warning", stage_id, message=w)
 

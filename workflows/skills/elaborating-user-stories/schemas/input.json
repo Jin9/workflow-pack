@@ -14,7 +14,7 @@
     "breakdown": {
       "type": "object",
       "description": "The ba-breakdown pack, hydrated. This is the AUTHORITATIVE shape of the work: elaboration adds detail to these stories and never re-groups the epics, invents a story, or restates a rule.",
-      "required": ["audit_id", "state", "epics", "stories", "rules", "domain", "flows"],
+      "required": ["audit_id", "state", "blocks_elaboration", "epics", "stories", "rules", "domain", "flows"],
       "additionalProperties": true,
       "properties": {
         "audit_id": { "type": "string", "description": "The breakdown's provenance id; recorded in upstream_refs, never reused as this stage's audit_id." },
@@ -23,7 +23,10 @@
           "enum": ["ready-for-amigos", "blocked", "needs-clarification"],
           "description": "Only ready-for-amigos may be elaborated. The engine gate enforces this; the skill re-checks it fail-closed."
         },
-        "blocks_elaboration": { "type": "boolean" },
+        "blocks_elaboration": {
+          "type": "boolean",
+          "description": "True when a governance gap blocks. Required, because the skill re-checks it fail-closed and a field that never arrives cannot be re-checked."
+        },
         "epics": { "type": "array", "minItems": 1, "items": { "type": "object" } },
         "stories": {
           "type": "array",
@@ -52,7 +55,7 @@
     },
     "amigos_verdict": {
       "type": "object",
-      "description": "The recorded three-amigos gate decision. Only `agreed` reaches this stage; the block is carried for provenance and to thread any conditions the reviewers attached.",
+      "description": "The recorded three-amigos gate decision, threaded in by the engine from the released quorum gate. Only `agreed` reaches this stage; the block is carried for provenance and to thread the conditions the reviewers attached to their signatures.",
       "additionalProperties": true,
       "properties": {
         "verdict": { "type": "string", "enum": ["agreed", "split-stories", "descope", "needs-rework"] },
@@ -66,8 +69,11 @@
             "properties": { "role": { "type": "string" }, "name": { "type": "string" } }
           }
         },
-        "conditions": { "type": "array", "items": { "type": "string" } },
-        "resolved_open_questions": { "type": "array", "items": { "type": "object" } }
+        "conditions": {
+          "type": "array",
+          "description": "The reviewers' own signature notes, in signing order. Binding: a condition is elaborated like a rule.",
+          "items": { "type": "string" }
+        }
       }
     },
     "upstream_artifacts": { "type": "object" },

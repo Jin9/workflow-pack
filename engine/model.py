@@ -110,8 +110,18 @@ class GateSpec:
 
     @property
     def named(self) -> bool:
-        """sync-named, human and quorum gates require a named human approver."""
-        return self.gate in ("sync-named", "human") or bool(self.required_roles)
+        """sync-named, human, quorum — and ANY blocking gate — require a named human.
+
+        `blocking` is in this list because s1-discovery is an async-peer gate with no
+        required_roles, and it decides proceed vs do-not-build: the highest-blast-radius
+        call in the BA leg was accepting a one-character approver while the breakdown
+        gate demanded distinct named humans. If a gate is worth parking a run for, it is
+        worth a name on the record."""
+        return (
+            self.gate in ("sync-named", "human")
+            or bool(self.required_roles)
+            or self.blocking
+        )
 
     @property
     def quorum(self) -> bool:

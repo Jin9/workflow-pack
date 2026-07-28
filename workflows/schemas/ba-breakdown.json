@@ -12,6 +12,7 @@
     "domain_file",
     "governance_gaps",
     "state",
+    "blocks_elaboration",
     "audit_id"
   ],
   "additionalProperties": true,

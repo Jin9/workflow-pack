@@ -16,8 +16,8 @@ apiVersion: cognitive-os/v1
 kind: GatePolicy
 metadata:
   name: delivery-pipeline-gates
-  version: 1.1.0
-  pipeline: delivery-pipeline@3.1.0
+  version: 1.2.0
+  pipeline: delivery-pipeline@3.2.0
 
 defaults:
   verdicts: [approve, reject]
@@ -55,8 +55,21 @@ gates:
     verdicts: [agreed, split-stories, descope, needs-rework]
     on_block: ba-breakdown-review
   - stage_id: ba-research
-    gate: async-peer # L2 — BA lead (advisory; release is controlled by the ba-breakdown gate)
+    # L2 — BA lead. The three amigos signed the SHAPE (story skeletons, no acceptance
+    # criteria); this gate signs the FLESH written afterwards — the acceptance criteria,
+    # the rule-anchored edge-case ledgers and the seven banking-grade concern rows, which
+    # is where regulatory interpretation actually happens. Without it the leg's deepest
+    # artifact reached tl-design with no human signature and no state check at all.
+    gate: async-peer
     owner_role: ba-lead
+    blocking: true
+    on_field: state
+    proceed_when: approve
+    # Structural, not advisory: a brief whose own state is needs-work or blocked cannot be
+    # released, whatever the BA lead signs. Same mechanism as the ba-breakdown gate.
+    release_requires_field_value: ready-for-tl
+    verdicts: [approve, needs-work, reject]
+    on_block: ba-brief-review
   - stage_id: ux-intake
     gate: async-peer # L2 — Tech Lead
     owner_role: tech-lead

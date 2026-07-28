@@ -34,6 +34,15 @@ def _gate():
                         contract_sha256="x", artifact_field_value="ready-for-amigos")
 
 
+def _brief_spec():
+    return GateBook.load(load_workflow()).spec_for("ba-research")
+
+
+def _brief_gate(state="ready-for-tl"):
+    return GateInstance(run_id="r", stage_id="ba-research", spec=_brief_spec(),
+                        contract_sha256="x", artifact_field_value=state)
+
+
 # ── the gate is a real quorum ────────────────────────────────────────────────
 def test_gate_declares_three_distinct_roles():
     s = _spec()
@@ -201,3 +210,123 @@ def test_non_agreed_verdict_loops_back_instead_of_failing_the_run(tmp_path):
     # and the run still completes once the amigos agree
     assert state == "done", orch.terminal_reason
     assert orch.gates["ba-breakdown"].status == "released"
+
+
+# ── the gate on the FLESH, not just the shape ────────────────────────────────
+# The amigos sign story skeletons with no acceptance criteria. Everything written
+# afterwards — 65 AC, the edge-case ledgers, the seven banking-grade rows, which is
+# where regulatory interpretation actually happens — used to reach tl-design with no
+# human signature and no state check at all: the gate was advisory, so _open_gate
+# returned early and `ready-for-tl` was enforced nowhere in the engine.
+def test_the_brief_gate_is_blocking_and_named():
+    s = _brief_spec()
+    assert s.blocking and s.named and not s.quorum
+    assert s.proceed_when == "approve"
+    assert s.release_requires_field_value == "ready-for-tl"
+    assert set(s.verdicts) == {"approve", "needs-work", "reject"}
+
+
+def test_no_signature_releases_a_needs_work_brief():
+    """The BA lead may sign approve; a brief that declares itself unready stays put."""
+    for state in ("needs-work", "blocked"):
+        g = _brief_gate(state)
+        record_verdict(g, "approve", "Khun Pim")
+        assert g.status == "blocked", state
+        assert "ready-for-tl" in (g.note or "")
+
+
+def test_a_ready_brief_releases_on_approve_and_blocks_on_reject():
+    g = _brief_gate()
+    record_verdict(g, "approve", "Khun Pim")
+    assert g.status == "released"
+
+    g2 = _brief_gate()
+    record_verdict(g2, "reject", "Khun Pim")
+    assert g2.status == "blocked"
+
+
+def test_a_blocking_gate_refuses_an_unnamed_approver():
+    """s1-discovery decides proceed vs do-not-build — the highest-blast-radius call
+    in the leg — on an async-peer gate with no required_roles, so the named-approver
+    check did not apply and `approver="x"` was accepted."""
+    s = GateBook.load(load_workflow()).spec_for("s1-discovery")
+    assert s.blocking and s.named
+    g = GateInstance(run_id="r", stage_id="s1-discovery", spec=s,
+                     contract_sha256="x", artifact_field_value="proceed")
+    with pytest.raises(GateApprovalError):
+        record_verdict(g, "proceed", "x")
+    assert g.status == "pending"  # never mutates on failure
+
+
+def test_a_missing_gates_yaml_does_not_disarm_the_rest_of_the_pipeline():
+    """The fallback kept the amigos quorum but defaulted everything else to
+    auto/non-blocking, silently disarming every sync-named gate the file would have
+    declared — tl-design, the brief's only downstream human, included."""
+    from engine.gates import _fail_closed_fallback
+    fb = _fail_closed_fallback(load_workflow())
+    assert fb["tl-design"].blocking and fb["tl-design"].named
+    assert all(g.blocking for g in fb.values())
+
+
+# ── the reviewers' conditions actually arrive ────────────────────────────────
+def test_amigos_conditions_reach_elaboration(tmp_path, monkeypatch):
+    """A reviewer who signs "agreed, but ..." has said something BINDING. The skill
+    declared amigos_verdict as binding input; the engine populated it nowhere, so the
+    condition was recorded in the audit trail and dropped on the floor."""
+    from engine.executors.replay import ReplayExecutor
+    CONDITION = "guest checkout stays out of scope for this release"
+    seen: dict = {}
+    original = ReplayExecutor.execute
+
+    async def spy(self, ctx):
+        seen.setdefault(ctx.stage.id, ctx.input_payload)
+        return await original(self, ctx)
+
+    monkeypatch.setattr(ReplayExecutor, "execute", spy)
+
+    def hook(gate):
+        if gate.spec.quorum:
+            for role in gate.outstanding_roles:
+                note = CONDITION if role == "ba-lead" else f"test {role} approval"
+                return ("agreed", AMIGOS[role], note, role)
+            return None
+        return quorum_aware_hook("Replay Test Operator")(gate)
+
+    wf = load_workflow()
+    orch = Orchestrator(
+        wf, GateBook.load(wf), RuntimeBinding.load(), run_id="amigos-conditions",
+        workflow_input=WF_INPUT, mode="replay",
+        store=RunStore("amigos-conditions", base=tmp_path / "runs"), approve_hook=hook,
+    )
+    state = asyncio.run(orch.start())
+    assert state == "done", orch.terminal_reason
+
+    av = seen["ba-research"]["amigos_verdict"]
+    assert av["verdict"] == "agreed"
+    assert [a["role"] for a in av["approvers"]] == ["ba-lead", "dev-lead", "qa-lead"]
+    assert [a["name"] for a in av["approvers"]] == [
+        AMIGOS["ba-lead"], AMIGOS["dev-lead"], AMIGOS["qa-lead"]]
+    assert CONDITION in av["conditions"]
+    # and it is threaded ONLY from a released quorum gate: tl-design's upstreams
+    # (ba-research, ux-intake) are ordinary gates, so it must not appear there.
+    assert "amigos_verdict" not in seen["tl-design"]
+
+
+def test_blocks_elaboration_reaches_the_consumer_that_re_checks_it():
+    """The skill re-checks breakdown.blocks_elaboration fail-closed, but it was not in
+    ba-research's picks and not required in its input schema, so the check no-opped."""
+    wf = load_workflow()
+    stage = wf.stage_by_id["ba-research"]
+    assert "blocks_elaboration" in stage.input_from_stage["ba-breakdown"]
+    index = json.loads((SHOPPILOT / "S1b-breakdown" / "INDEX.json").read_text())
+    payload, _ = assemble_input(
+        stage, WF_INPUT,
+        {"intake": {"normalized_request": "n"}, "ba-breakdown": index},
+        wf.input_required,
+        stage_dirs={"ba-breakdown": SHOPPILOT / "S1b-breakdown"},
+    )
+    assert payload["breakdown"]["blocks_elaboration"] is False
+    assert validate_stage_input(stage, payload) == []
+    # and a payload missing it is now REFUSED rather than silently accepted
+    del payload["breakdown"]["blocks_elaboration"]
+    assert validate_stage_input(stage, payload) != []

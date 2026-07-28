@@ -1,6 +1,6 @@
 ---
 name: elaborating-user-stories
-version: 1.0.0
+version: 1.1.0
 description: Elaborate an APPROVED epic and story breakdown into implementation-ready stories - rule-anchored Gherkin acceptance criteria, the seven force-evaluated banking-grade rows, a systematic edge-case sweep derived from the business-rule catalogue and the domain state machines, and the hidden-requirements frame sweep. This IS the delivery pipeline's ba-research stage, running only after the three-amigos gate agrees the breakdown. Use when asked to write acceptance criteria or Gherkin for agreed stories, elaborate a story skeleton into a ready story, derive edge cases from business rules or a state machine, or produce the TL-ready brief. Do NOT use to create or regroup epics, invent stories, or edit the rule catalogue (use breaking-down-ba-scope, which runs before the gate). Do NOT use for problem-space discovery (use researching-ba-problem-space), technical design (use designing-tech-lead-handoff), test execution or code. PII is redacted, never echoed.
 stage_type: analyze
 input_schema: schemas/input.json
@@ -57,11 +57,14 @@ and **`breakdown`** — the approved pack with its ref-chain already hydrated:
 `epics[]`, `stories[]` (skeletons), `rules{rules[]}`, `domain{entities[]}`,
 `flows[]`, plus the governance roll-up.
 
-Optional `amigos_verdict` carries the recorded gate decision: the verdict, the
-named approvers one per required role, any `conditions` the reviewers attached,
-and open questions they resolved in the session. Conditions are **binding
-input** — a condition is elaborated like a rule, and a scenario written to
-satisfy one is tagged `derived_from: amigos_condition`.
+Optional `amigos_verdict` carries the recorded gate decision, threaded in by the
+engine from the released quorum gate: the verdict, the named approvers one per
+required role, and `conditions` — the reviewers' own signature notes, which is
+the channel an amigo uses to qualify an `agreed` ("agreed, but split checkout at
+payment"). Conditions are **binding input** — a condition is elaborated like a
+rule, and a scenario written to satisfy one is tagged
+`derived_from: amigos_condition`. A gate that blocked or looped back is not
+threaded here; those findings arrive as `loop_back_feedback` instead.
 
 **Two preconditions are re-checked fail-closed** even though the engine gate
 already enforces them: `breakdown.state` must be `ready-for-amigos`, and

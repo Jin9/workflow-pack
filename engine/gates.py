@@ -199,7 +199,16 @@ def _fail_closed_fallback(workflow: WorkflowSpec) -> Dict[str, GateSpec]:
                 blocking=True, mandatory=True, confidence_independent=True,
             )
         else:
-            specs[s.id] = GateSpec(stage_id=s.id, gate="auto", blocking=False)
+            # Everything else parks for a human. A missing gates.yaml is a
+            # MISCONFIGURATION, not a licence to run ungated: the previous default
+            # here was auto/non-blocking, which silently disarmed every sync-named
+            # gate the file would have declared — tl-design included — while the
+            # branches above made the fallback look fail-closed.
+            specs[s.id] = GateSpec(
+                stage_id=s.id, gate="human", owner_role="delivery-ops",
+                blocking=True, mandatory=True,
+                on_block="gates-policy-missing",
+            )
     return specs
 
 
