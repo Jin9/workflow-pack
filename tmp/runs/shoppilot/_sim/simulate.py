@@ -68,9 +68,10 @@ s0 = {
         "tier_floor": "T2",
         "stage_span": "S0-S7 + T1-T12",
         "epics_expected": 4,
-        "pipeline": "delivery-pipeline 3.0.0",
+        "pipeline": "delivery-pipeline 3.1.0",
         "human_gates": [
             "S1a discovery recommendation (async-peer, BA lead)",
+            "S1b ba-breakdown three-amigos (sync NAMED quorum — BA + dev + QA leads)",
             "S2 tl-design (sync NAMED, Tech Lead + governance)",
             "S2.5 plan-review (HITL on HardFail)",
             "S4c qa-plan (sync conditional-go, QA lead)",
@@ -535,9 +536,13 @@ written.append(w("S4b-frontend/review/frontend-review.json", s4br))
 # ───────────────────────── S4c · QA test design ─────────────────────────
 # Story ids come from the REAL ba-brief manifest (STORY-<DOMAIN>-NN), never synthesized:
 # QA trace keys must join the hydrated sidecars exactly.
-_index = readj("S1b-ba-brief/INDEX.json")
-STORIES = [(sf["id"], sf["epic_id"], sf["epic_id"].split("-", 1)[1])
-           for sf in _index["story_files"]]
+_index = readj("S1c-brief/INDEX.json")
+# The tag comes from the STORY id (STORY-<TAG>-NN), not the epic id: after the
+# business-dependency regroup an epic id can be long, and TC ids must stay short.
+STORIES = [(sf["id"], sf["epic_id"], sf["id"].split("-")[1]) for sf in _index["story_files"]]
+EPIC_IDS = [e["id"] for e in _index["epics"]]
+# Every story's elaborated sidecar, for the dependency edges below.
+_SIDE = {sf["id"]: readj("S1c-brief/" + sf["file"]) for sf in _index["story_files"]}
 test_cases = []
 stories_out = []
 by_story_cov = {}
@@ -545,7 +550,7 @@ ctr = {}
 for sid, eid, tag in STORIES:
     ctr[tag] = ctr.get(tag, 0) + 1
     tc_id = "TC-%s-%03d" % (tag, ctr[tag])
-    smoke = sid in ("EPIC-AUTH-01", "EPIC-CHECKOUT-01", "EPIC-CHECKOUT-02")
+    smoke = ctr[tag] == 1  # the first test case of each epic carries the smoke subset
     test_cases.append({
         "id": tc_id, "story_id": sid, "scenario_ref": "%s/AC-1" % sid, "scenario_type": "happy",
         "test_type": "functional", "pyramid_level": "integration", "owner": "qa-squad",
@@ -556,12 +561,50 @@ for sid, eid, tag in STORIES:
     by_story_cov[sid] = 1
     stories_out.append({"story_id": sid, "epic_id": eid, "test_case_ids": [tc_id], "coverage_status": "complete"})
 
+# NFR epic_ids are DERIVED from the story each NFR measures, so a BA regroup can
+# never leave them pointing at an epic that no longer exists.
+def _epic_of(story_id):
+    return next(sf["epic_id"] for sf in _index["story_files"] if sf["id"] == story_id)
+
+
+def _story_with(rule_id):
+    """The first story that references a given business rule."""
+    return next((sid for sid, _e, _t in STORIES if rule_id in _SIDE[sid].get("rule_refs", [])), None)
+
+
+# id shape is ^NFR-<scope>-(perf|sec|a11y|reliab|obs|data)-NNN$; the scope token is
+# the RULE's own domain, so both the id and the epic_id are derived from the pack.
+_NFR_SUFFIX = {"performance": "perf", "security": "sec", "data-integrity": "data"}
+_nfr_anchors = [
+    ("RULE-CHECKOUT-01", "performance", "order-confirm p95", "TBD pending OQ-3", ["OQ-3"]),
+    ("RULE-AUTH-02", "security", "account-enumeration leak", "0", []),
+    ("RULE-STOCK-04", "data-integrity", "negative stock occurrences", "0", []),
+]
+_nfr_tests = []
+for _rule, _kind, _metric, _target, _oqs in _nfr_anchors:
+    _nid = "NFR-%s-%s-001" % (_rule.split("-")[1], _NFR_SUFFIX[_kind])
+    _s = _story_with(_rule)
+    if _s is None:
+        continue  # the rule is out of scope for this run -> no NFR, never a dangling ref
+    _row = {"id": _nid, "epic_id": _epic_of(_s), "nfr_type": _kind, "metric": _metric, "target": _target}
+    if _oqs:
+        _row["blocking_oqs"] = _oqs
+    _nfr_tests.append(_row)
+
 epics_out = [
     {"epic_id": e, "test_tier": "T2",
      "critical_paths": ["happy path", "idempotency-replay", "audit emission"],
      "stakeholder_owners": ["Khun Pim (PM)", "Khun Anan (TL)"]}
-    for e in ["EPIC-AUTH", "EPIC-CHECKOUT", "EPIC-ORDER", "EPIC-INVENTORY"]
+    for e in EPIC_IDS
 ]
+_tc_of = {tc["story_id"]: tc["id"] for tc in test_cases}
+_dag_edges = []
+for _sid, _eid, _tag in STORIES:
+    for _dep in _SIDE[_sid].get("dependencies", {}).get("depends_on", []):
+        if _dep in _tc_of and _sid in _tc_of:
+            _dag_edges.append({"from": "N-%s" % _tc_of[_dep], "to": "N-%s" % _tc_of[_sid],
+                               "kind": "ordering"})
+
 s4c = {
     "output_type": "test_plan",
     "blocks_qa_execution": False,
@@ -589,11 +632,7 @@ s4c = {
         "by_pyramid_level": {"integration": len(test_cases)},
         "by_tier": {"T2": len(test_cases)},
     },
-    "nfr_tests": [
-        {"id": "NFR-CHECKOUT-perf-001", "epic_id": "EPIC-CHECKOUT", "nfr_type": "performance", "metric": "order-confirm p95", "target": "TBD pending OQ-3", "blocking_oqs": ["OQ-3"]},
-        {"id": "NFR-AUTH-sec-001", "epic_id": "EPIC-AUTH", "nfr_type": "security", "metric": "account-enumeration leak", "target": "0"},
-        {"id": "NFR-INVENTORY-data-001", "epic_id": "EPIC-INVENTORY", "nfr_type": "data-integrity", "metric": "negative stock occurrences", "target": "0"},
-    ],
+    "nfr_tests": _nfr_tests,
     "compliance_tests": [
         {"id": "COMP-PDPA-001", "regulator": "PDPA B.E. 2562", "regulator_code": "PDPA", "template_key": "pdpa", "test_type": "privacy", "scope": "PII encryption, residency, retention, redaction in logs"},
         {"id": "COMP-PCI_DSS-001", "regulator": "PCI-DSS", "regulator_code": "PCI_DSS", "template_key": "pci_dss", "test_type": "security", "scope": "no PAN/CVV stored; mock PSP scope-exclusion confirmed"},
@@ -603,8 +642,10 @@ s4c = {
     ],
     "execution_dag": {
         "nodes": [{"id": "N-%s" % tc["id"], "test_case_ref": tc["id"]} for tc in test_cases],
-        "edges": [{"from": "N-TC-AUTH-001", "to": "N-TC-CHECKOUT-001", "kind": "ordering"},
-                  {"from": "N-TC-INVENTORY-001", "to": "N-TC-CHECKOUT-001", "kind": "data"}],
+        # Edges come from each story's own declared depends_on, so every node
+        # referenced is guaranteed to exist. Hardcoded edges survived the schema
+        # but pointed at nodes the regroup had renamed away.
+        "edges": _dag_edges,
     },
     "environments": [
         {"id": "sit", "purpose": "system integration test", "required_mocks": ["mock-psp", "mock-courier"], "real_services": ["auth", "checkout", "order", "inventory", "kafka", "mysql"]},
@@ -624,8 +665,8 @@ s4c = {
         "all_dependencies_have_test_envs": True, "no_blocking_ba_governance_gaps": True,
     },
     "processing_metadata": {
-        "ba_brief_version": "1.6.0", "ba_brief_idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
-        "tier_decisions": [{"target": e, "tier": "T2", "rationale": "customer-facing T2 per BA brief"} for e in ["EPIC-AUTH", "EPIC-CHECKOUT", "EPIC-ORDER", "EPIC-INVENTORY"]],
+        "ba_brief_version": "1.0.0", "ba_brief_idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
+        "tier_decisions": [{"target": e, "tier": "T2", "rationale": "customer-facing T2 per BA brief"} for e in EPIC_IDS],
         "scenario_mapping_table_version": "1.0.0", "pyramid_allocation_rules_version": "1.0.0",
         "tl_design_consumed": True, "environment_inventory_consumed": True, "role_boundaries": [],
     },

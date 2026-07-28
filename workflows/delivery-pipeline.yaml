@@ -133,7 +133,8 @@ spec:
     # ── S1 · BA Research (COMPOSITE: discovery → human gate → brief + epics + stories) ──────
     # gate: async peer (L2) — BA lead. Two-skill chain. `researching-ba-problem-space` AI-drafts a
     # discovery artifact; a NAMED human decides on its recommendation BEFORE intake. On `proceed`,
-    # `eliciting-banking-brief` produces the brief + 3-level epic/story ref-chain pack. The brief node
+    # `breaking-down-ba-scope` produces the breakdown pack; after the THREE-AMIGOS gate,
+    # `elaborating-user-stories` writes the acceptance criteria. The elaboration node
     # keeps id `ba-research` so S1.5 / S2 / S2.5 / S4c consume it unchanged. Governance P1 → human.
 
     # S1a · discovery — upstream problem-space research, BEFORE intake

@@ -20,7 +20,7 @@
     "epics": {
       "type": "array",
       "minItems": 1,
-      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (eliciting-banking-brief schemas/epic-sidecar.json). Epic ids match ^EPIC-[A-Z0-9-]+$.",
+      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (elaborating-user-stories schemas/epic-sidecar.json). Epic ids match ^EPIC-[A-Z0-9-]+$.",
       "items": {
         "type": "object"
       }
@@ -36,7 +36,7 @@
     "stories": {
       "type": "array",
       "minItems": 1,
-      "description": "engine-hydrated: inline story sidecar objects (eliciting-banking-brief schemas/story-sidecar.json). Story ids match ^STORY-[A-Z0-9-]+-\\d+$ and carry banking_grade_concerns force-fill rows.",
+      "description": "engine-hydrated: inline story sidecar objects (elaborating-user-stories schemas/story-sidecar.json). Story ids match ^STORY-[A-Z0-9-]+-\\d+$ and carry banking_grade_concerns force-fill rows.",
       "items": {
         "type": "object"
       }

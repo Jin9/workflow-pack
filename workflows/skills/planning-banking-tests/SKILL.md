@@ -1,7 +1,7 @@
 ---
 name: planning-banking-tests
 version: 2.0.0
-description: Convert the hydrated BA brief (eliciting-banking-brief, exact-pinned in the pipeline) into a structured QA test plan covering every Gherkin scenario, banking-grade concern, NFR target, regulatory dependency, and compliance requirement. Emits canonical output.json plus deterministic markdown tree. Use when implementing Stage 4c Test Design after BA Stage 1 completes. Use when QA needs a per-story test roster derived from a structured brief. Use when sign-off criteria must be derived from BA governance gaps. Do NOT use to generate runnable test code, measure coverage on running systems, file defects, or substitute for TL Design.
+description: Convert the hydrated BA brief (elaborating-user-stories, exact-pinned in the pipeline) into a structured QA test plan covering every Gherkin scenario, banking-grade concern, NFR target, regulatory dependency, and compliance requirement. Emits canonical output.json plus deterministic markdown tree. Use when implementing Stage 4c Test Design after BA Stage 1 completes. Use when QA needs a per-story test roster derived from a structured brief. Use when sign-off criteria must be derived from BA governance gaps. Do NOT use to generate runnable test code, measure coverage on running systems, file defects, or substitute for TL Design.
 stage_type: analyze
 input_schema: schemas/input.json
 output_schema: schemas/output.json

@@ -57,7 +57,7 @@ def test_resolution_abort_is_recorded(mini_workflow, tmp_path):
 def test_hydration_inlines_epics_and_stories_from_the_manifest():
     wf = load_workflow()
     tl = wf.stage_by_id["tl-design"]
-    index = json.loads((SHOPPILOT / "S1b-ba-brief" / "INDEX.json").read_text())
+    index = json.loads((SHOPPILOT / "S1c-brief" / "INDEX.json").read_text())
     ux = json.loads((SHOPPILOT / "S1.5-ux-intake" / "output.json").read_text())
     payload, warnings = assemble_input(
         tl,
@@ -65,7 +65,7 @@ def test_hydration_inlines_epics_and_stories_from_the_manifest():
          "idempotency_key": "00000000-0000-4000-8000-000000000042"},
         {"ba-research": index, "ux-intake": ux},
         wf.input_required,
-        stage_dirs={"ba-research": SHOPPILOT / "S1b-ba-brief",
+        stage_dirs={"ba-research": SHOPPILOT / "S1c-brief",
                     "ux-intake": SHOPPILOT / "S1.5-ux-intake"},
     )
     # refs became inline Epic objects (the inline-era consumer contract)
@@ -81,7 +81,7 @@ def test_hydration_inlines_epics_and_stories_from_the_manifest():
 def test_hydration_absent_without_stage_dirs():
     wf = load_workflow()
     tl = wf.stage_by_id["tl-design"]
-    index = json.loads((SHOPPILOT / "S1b-ba-brief" / "INDEX.json").read_text())
+    index = json.loads((SHOPPILOT / "S1c-brief" / "INDEX.json").read_text())
     payload, _ = assemble_input(tl, {}, {"ba-research": index, "ux-intake": {}}, ())
     assert "stories" not in payload  # no dirs -> refs pass through untouched
     assert "file" in payload["epics"][0]

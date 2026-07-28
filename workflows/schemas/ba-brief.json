@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://squad-delivery/schemas/ba-brief.json",
-  "title": "S1 ba-brief boundary manifest (eliciting-banking-brief + deterministic render)",
-  "description": "Boundary manifest for the S1 brief node (ba-research): the INDEX of the 3-level ref-chain pack (INDEX -> EPIC-* files -> STORY-* files). Permissive (additionalProperties:true) so the same artifact can also carry brief.json sections and the discovery/brief layer links. HYDRATION: consumers do not receive this manifest raw — engine/mapping.py _hydrate_ba_research dereferences epics[].file / story_files[].file into inline sidecar objects (shapes: eliciting-banking-brief schemas/epic-sidecar.json + schemas/story-sidecar.json) and ADDS a `stories` key alongside the retained `story_files` refs. required mirrors the YAML required_fields.",
+  "title": "S1c ba-brief boundary manifest (elaborating-user-stories)",
+  "description": "Boundary manifest for the S1 brief node (ba-research): the INDEX of the 3-level ref-chain pack (INDEX -> EPIC-* files -> STORY-* files). Permissive (additionalProperties:true) so the same artifact can also carry brief.json sections and the discovery/brief layer links. HYDRATION: consumers do not receive this manifest raw — engine/mapping.py _hydrate_ba_research dereferences epics[].file / story_files[].file into inline sidecar objects (shapes: elaborating-user-stories schemas/epic-sidecar.json + schemas/story-sidecar.json) and ADDS a `stories` key alongside the retained `story_files` refs. required mirrors the YAML required_fields.",
   "type": "object",
   "required": [
     "epics",
@@ -57,7 +57,7 @@
     },
     "layers": {
       "type": "object",
-      "description": "Four-layer pack map: discovery, brief, epics, stories (see tmp/runs/shoppilot/S1b-ba-brief/INDEX.json)."
+      "description": "Legacy four-layer pack map (discovery, brief, epics, stories). Retained for artifacts recorded before 2026-07-28; the current pack is INDEX -> epic sidecars -> story sidecars, with rules/domain/flows carried as refs."
     },
     "epics": {
       "type": "array",

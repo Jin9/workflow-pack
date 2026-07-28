@@ -5,9 +5,10 @@
     "tier_floor": "T2",
     "stage_span": "S0-S7 + T1-T12",
     "epics_expected": 4,
-    "pipeline": "delivery-pipeline 3.0.0",
+    "pipeline": "delivery-pipeline 3.1.0",
     "human_gates": [
       "S1a discovery recommendation (async-peer, BA lead)",
+      "S1b ba-breakdown three-amigos (sync NAMED quorum — BA + dev + QA leads)",
       "S2 tl-design (sync NAMED, Tech Lead + governance)",
       "S2.5 plan-review (HITL on HardFail)",
       "S4c qa-plan (sync conditional-go, QA lead)",

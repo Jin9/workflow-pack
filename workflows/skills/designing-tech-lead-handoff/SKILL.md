@@ -1,7 +1,7 @@
 ---
 name: designing-tech-lead-handoff
 version: 0.3.0
-description: "Convert an approved BA epic-and-stories brief plus a UX design pack into the system-design blueprint: bounded contexts, integration contracts, component map, infrastructure topology, ADRs, and a consolidated offline L1-L4 architecture diagram. Canonical 4-layer DDD+CQRS house style, failure-not-rollback discipline. Use when a BA brief is ready-for-tl and architecture, contracts, and component boundaries must be locked before backend/frontend fan-out. Use when a UX pack must be reconciled against BA stories for coverage gaps. Do NOT use for BA elicitation (eliciting-banking-brief), code generation, code or architecture review, QA test design, greenfield architecture chat (architecting-fintech-systems), or inputs not past the BA ready-for-tl gate. Do NOT use for detailed design — per-service API endpoint specs, per-story L4 implementation specs, or the event catalog (a separate detailed-design concern)."
+description: "Convert an approved BA epic-and-stories brief plus a UX design pack into the system-design blueprint: bounded contexts, integration contracts, component map, infrastructure topology, ADRs, and a consolidated offline L1-L4 architecture diagram. Canonical 4-layer DDD+CQRS house style, failure-not-rollback discipline. Use when a BA brief is ready-for-tl and architecture, contracts, and component boundaries must be locked before backend/frontend fan-out. Use when a UX pack must be reconciled against BA stories for coverage gaps. Do NOT use for BA elicitation (breaking-down-ba-scope or elaborating-user-stories), code generation, code or architecture review, QA test design, greenfield architecture chat (architecting-fintech-systems), or inputs not past the BA ready-for-tl gate. Do NOT use for detailed design — per-service API endpoint specs, per-story L4 implementation specs, or the event catalog (a separate detailed-design concern)."
 stage_type: design
 input_schema: schemas/input.json
 output_schema: schemas/output.json
@@ -35,7 +35,7 @@ context.
 
 ## When to use this skill
 
-- Use: a BA `eliciting-banking-brief` manifest with `state: ready-for-tl` and a
+- Use: a BA `elaborating-user-stories` manifest with `state: ready-for-tl` and a
   `generate-ux-pack` pack are available; the `designing-tech-lead-handoff`
   pipeline stage (S2) fires.
 - Use: architecture, contracts, and component boundaries must be locked before
@@ -53,7 +53,7 @@ context.
 ADVISORY — documents the assembled stage input; the engine validates workflow input
 and stage OUTPUTS only (engine/validation.py). Validate against `schemas/input.json`.
 Required: `epics` + `stories` (engine-hydrated from the ba-brief ref-chain;
-`story_files` refs retained; hydrated shapes owned by eliciting-banking-brief's
+`story_files` refs retained; hydrated shapes owned by elaborating-user-stories'
 `epic-sidecar.json` / `story-sidecar.json`), `governance_gaps`, the ux-intake
 paths `pack_dir` + `tokens_path` + `route_map_path` + `component_inventory_path`
 (pack-relative POSIX — resolve via `dirname(upstream_artifacts["ux-intake"])`,

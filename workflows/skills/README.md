@@ -16,7 +16,8 @@ workspace has no git and the upstream `treasury/` source is not present here.
 |---|---|---|
 | scoping-ba-intake | S0 intake | `pack-A-ba-pipeline/` |
 | researching-ba-problem-space | S1 s1-discovery | `squad-delivery-skills/` |
-| eliciting-banking-brief | S1 ba-research | `standalone/` |
+| breaking-down-ba-scope | S1b ba-breakdown | authored 2026-07-28 (split of eliciting-banking-brief) |
+| elaborating-user-stories | S1c ba-research | authored 2026-07-28 (split of eliciting-banking-brief) |
 | generate-ux-pack | S1.5 ux-intake | `pack-F-tl-design-build/` |
 | designing-tech-lead-handoff | S2 tl-design | `pack-F-tl-design-build/` |
 | red-teaming-implementation-plan | S2.5 plan-review | `squad-delivery-skills/` |

@@ -31,7 +31,7 @@
   },
   "epics": [
     {
-      "epic_id": "EPIC-AUTH",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "test_tier": "T2",
       "critical_paths": [
         "happy path",
@@ -44,33 +44,7 @@
       ]
     },
     {
-      "epic_id": "EPIC-CHECKOUT",
-      "test_tier": "T2",
-      "critical_paths": [
-        "happy path",
-        "idempotency-replay",
-        "audit emission"
-      ],
-      "stakeholder_owners": [
-        "Khun Pim (PM)",
-        "Khun Anan (TL)"
-      ]
-    },
-    {
-      "epic_id": "EPIC-ORDER",
-      "test_tier": "T2",
-      "critical_paths": [
-        "happy path",
-        "idempotency-replay",
-        "audit emission"
-      ],
-      "stakeholder_owners": [
-        "Khun Pim (PM)",
-        "Khun Anan (TL)"
-      ]
-    },
-    {
-      "epic_id": "EPIC-INVENTORY",
+      "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
       "test_tier": "T2",
       "critical_paths": [
         "happy path",
@@ -85,82 +59,105 @@
   ],
   "stories": [
     {
-      "story_id": "STORY-AUTH-01",
-      "epic_id": "EPIC-AUTH",
+      "story_id": "STORY-PURCHASE-01",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "test_case_ids": [
-        "TC-AUTH-001"
+        "TC-PURCHASE-001"
       ],
       "coverage_status": "complete"
     },
     {
-      "story_id": "STORY-AUTH-02",
-      "epic_id": "EPIC-AUTH",
+      "story_id": "STORY-PURCHASE-02",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "test_case_ids": [
-        "TC-AUTH-002"
+        "TC-PURCHASE-002"
       ],
       "coverage_status": "complete"
     },
     {
-      "story_id": "STORY-CHECKOUT-01",
-      "epic_id": "EPIC-CHECKOUT",
+      "story_id": "STORY-PURCHASE-03",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "test_case_ids": [
-        "TC-CHECKOUT-001"
+        "TC-PURCHASE-003"
       ],
       "coverage_status": "complete"
     },
     {
-      "story_id": "STORY-CHECKOUT-02",
-      "epic_id": "EPIC-CHECKOUT",
+      "story_id": "STORY-PURCHASE-04",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "test_case_ids": [
-        "TC-CHECKOUT-002"
+        "TC-PURCHASE-004"
       ],
       "coverage_status": "complete"
     },
     {
-      "story_id": "STORY-ORDER-01",
-      "epic_id": "EPIC-ORDER",
+      "story_id": "STORY-PURCHASE-05",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "test_case_ids": [
-        "TC-ORDER-001"
+        "TC-PURCHASE-005"
       ],
       "coverage_status": "complete"
     },
     {
-      "story_id": "STORY-ORDER-02",
-      "epic_id": "EPIC-ORDER",
+      "story_id": "STORY-PURCHASE-06",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "test_case_ids": [
-        "TC-ORDER-002"
+        "TC-PURCHASE-006"
       ],
       "coverage_status": "complete"
     },
     {
-      "story_id": "STORY-INVENTORY-01",
-      "epic_id": "EPIC-INVENTORY",
+      "story_id": "STORY-BACKOFFICE-01",
+      "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
       "test_case_ids": [
-        "TC-INVENTORY-001"
+        "TC-BACKOFFICE-001"
       ],
       "coverage_status": "complete"
     },
     {
-      "story_id": "STORY-INVENTORY-02",
-      "epic_id": "EPIC-INVENTORY",
+      "story_id": "STORY-BACKOFFICE-02",
+      "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
       "test_case_ids": [
-        "TC-INVENTORY-002"
+        "TC-BACKOFFICE-002"
       ],
       "coverage_status": "complete"
     }
   ],
   "test_cases": [
     {
-      "id": "TC-AUTH-001",
-      "story_id": "STORY-AUTH-01",
-      "scenario_ref": "STORY-AUTH-01/AC-1",
+      "id": "TC-PURCHASE-001",
+      "story_id": "STORY-PURCHASE-01",
+      "scenario_ref": "STORY-PURCHASE-01/AC-1",
       "scenario_type": "happy",
       "test_type": "functional",
       "pyramid_level": "integration",
       "owner": "qa-squad",
       "environment_ref": "sit",
       "tags": [
-        "auth",
+        "purchase",
+        "banking-grade"
+      ],
+      "risk_level": "medium",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": true
+    },
+    {
+      "id": "TC-PURCHASE-002",
+      "story_id": "STORY-PURCHASE-02",
+      "scenario_ref": "STORY-PURCHASE-02/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "purchase",
         "banking-grade"
       ],
       "risk_level": "medium",
@@ -174,16 +171,16 @@
       "smoke_subset_member": false
     },
     {
-      "id": "TC-AUTH-002",
-      "story_id": "STORY-AUTH-02",
-      "scenario_ref": "STORY-AUTH-02/AC-1",
+      "id": "TC-PURCHASE-003",
+      "story_id": "STORY-PURCHASE-03",
+      "scenario_ref": "STORY-PURCHASE-03/AC-1",
       "scenario_type": "happy",
       "test_type": "functional",
       "pyramid_level": "integration",
       "owner": "qa-squad",
       "environment_ref": "sit",
       "tags": [
-        "auth",
+        "purchase",
         "banking-grade"
       ],
       "risk_level": "medium",
@@ -197,62 +194,16 @@
       "smoke_subset_member": false
     },
     {
-      "id": "TC-CHECKOUT-001",
-      "story_id": "STORY-CHECKOUT-01",
-      "scenario_ref": "STORY-CHECKOUT-01/AC-1",
+      "id": "TC-PURCHASE-004",
+      "story_id": "STORY-PURCHASE-04",
+      "scenario_ref": "STORY-PURCHASE-04/AC-1",
       "scenario_type": "happy",
       "test_type": "functional",
       "pyramid_level": "integration",
       "owner": "qa-squad",
       "environment_ref": "sit",
       "tags": [
-        "checkout",
-        "banking-grade"
-      ],
-      "risk_level": "high",
-      "expected_assertions": [
-        {
-          "type": "state",
-          "description": "happy path produces the contracted result and an audit event"
-        }
-      ],
-      "reviewer_role": "qa-lead",
-      "smoke_subset_member": false
-    },
-    {
-      "id": "TC-CHECKOUT-002",
-      "story_id": "STORY-CHECKOUT-02",
-      "scenario_ref": "STORY-CHECKOUT-02/AC-1",
-      "scenario_type": "happy",
-      "test_type": "functional",
-      "pyramid_level": "integration",
-      "owner": "qa-squad",
-      "environment_ref": "sit",
-      "tags": [
-        "checkout",
-        "banking-grade"
-      ],
-      "risk_level": "high",
-      "expected_assertions": [
-        {
-          "type": "state",
-          "description": "happy path produces the contracted result and an audit event"
-        }
-      ],
-      "reviewer_role": "qa-lead",
-      "smoke_subset_member": false
-    },
-    {
-      "id": "TC-ORDER-001",
-      "story_id": "STORY-ORDER-01",
-      "scenario_ref": "STORY-ORDER-01/AC-1",
-      "scenario_type": "happy",
-      "test_type": "functional",
-      "pyramid_level": "integration",
-      "owner": "qa-squad",
-      "environment_ref": "sit",
-      "tags": [
-        "order",
+        "purchase",
         "banking-grade"
       ],
       "risk_level": "medium",
@@ -266,16 +217,16 @@
       "smoke_subset_member": false
     },
     {
-      "id": "TC-ORDER-002",
-      "story_id": "STORY-ORDER-02",
-      "scenario_ref": "STORY-ORDER-02/AC-1",
+      "id": "TC-PURCHASE-005",
+      "story_id": "STORY-PURCHASE-05",
+      "scenario_ref": "STORY-PURCHASE-05/AC-1",
       "scenario_type": "happy",
       "test_type": "functional",
       "pyramid_level": "integration",
       "owner": "qa-squad",
       "environment_ref": "sit",
       "tags": [
-        "order",
+        "purchase",
         "banking-grade"
       ],
       "risk_level": "medium",
@@ -289,19 +240,19 @@
       "smoke_subset_member": false
     },
     {
-      "id": "TC-INVENTORY-001",
-      "story_id": "STORY-INVENTORY-01",
-      "scenario_ref": "STORY-INVENTORY-01/AC-1",
+      "id": "TC-PURCHASE-006",
+      "story_id": "STORY-PURCHASE-06",
+      "scenario_ref": "STORY-PURCHASE-06/AC-1",
       "scenario_type": "happy",
       "test_type": "functional",
       "pyramid_level": "integration",
       "owner": "qa-squad",
       "environment_ref": "sit",
       "tags": [
-        "inventory",
+        "purchase",
         "banking-grade"
       ],
-      "risk_level": "high",
+      "risk_level": "medium",
       "expected_assertions": [
         {
           "type": "state",
@@ -312,19 +263,42 @@
       "smoke_subset_member": false
     },
     {
-      "id": "TC-INVENTORY-002",
-      "story_id": "STORY-INVENTORY-02",
-      "scenario_ref": "STORY-INVENTORY-02/AC-1",
+      "id": "TC-BACKOFFICE-001",
+      "story_id": "STORY-BACKOFFICE-01",
+      "scenario_ref": "STORY-BACKOFFICE-01/AC-1",
       "scenario_type": "happy",
       "test_type": "functional",
       "pyramid_level": "integration",
       "owner": "qa-squad",
       "environment_ref": "sit",
       "tags": [
-        "inventory",
+        "backoffice",
         "banking-grade"
       ],
-      "risk_level": "high",
+      "risk_level": "medium",
+      "expected_assertions": [
+        {
+          "type": "state",
+          "description": "happy path produces the contracted result and an audit event"
+        }
+      ],
+      "reviewer_role": "qa-lead",
+      "smoke_subset_member": true
+    },
+    {
+      "id": "TC-BACKOFFICE-002",
+      "story_id": "STORY-BACKOFFICE-02",
+      "scenario_ref": "STORY-BACKOFFICE-02/AC-1",
+      "scenario_type": "happy",
+      "test_type": "functional",
+      "pyramid_level": "integration",
+      "owner": "qa-squad",
+      "environment_ref": "sit",
+      "tags": [
+        "backoffice",
+        "banking-grade"
+      ],
+      "risk_level": "medium",
       "expected_assertions": [
         {
           "type": "state",
@@ -337,18 +311,21 @@
   ],
   "smoke_subset": {
     "wall_clock_budget_seconds": 300,
-    "test_case_ids": []
+    "test_case_ids": [
+      "TC-PURCHASE-001",
+      "TC-BACKOFFICE-001"
+    ]
   },
   "coverage_matrix": {
     "by_story": {
-      "STORY-AUTH-01": 1,
-      "STORY-AUTH-02": 1,
-      "STORY-CHECKOUT-01": 1,
-      "STORY-CHECKOUT-02": 1,
-      "STORY-ORDER-01": 1,
-      "STORY-ORDER-02": 1,
-      "STORY-INVENTORY-01": 1,
-      "STORY-INVENTORY-02": 1
+      "STORY-PURCHASE-01": 1,
+      "STORY-PURCHASE-02": 1,
+      "STORY-PURCHASE-03": 1,
+      "STORY-PURCHASE-04": 1,
+      "STORY-PURCHASE-05": 1,
+      "STORY-PURCHASE-06": 1,
+      "STORY-BACKOFFICE-01": 1,
+      "STORY-BACKOFFICE-02": 1
     },
     "by_scenario_type": {
       "happy": 8
@@ -363,7 +340,7 @@
   "nfr_tests": [
     {
       "id": "NFR-CHECKOUT-perf-001",
-      "epic_id": "EPIC-CHECKOUT",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "nfr_type": "performance",
       "metric": "order-confirm p95",
       "target": "TBD pending OQ-3",
@@ -373,14 +350,14 @@
     },
     {
       "id": "NFR-AUTH-sec-001",
-      "epic_id": "EPIC-AUTH",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "nfr_type": "security",
       "metric": "account-enumeration leak",
       "target": "0"
     },
     {
-      "id": "NFR-INVENTORY-data-001",
-      "epic_id": "EPIC-INVENTORY",
+      "id": "NFR-STOCK-data-001",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
       "nfr_type": "data-integrity",
       "metric": "negative stock occurrences",
       "target": "0"
@@ -423,48 +400,63 @@
   "execution_dag": {
     "nodes": [
       {
-        "id": "N-TC-AUTH-001",
-        "test_case_ref": "TC-AUTH-001"
+        "id": "N-TC-PURCHASE-001",
+        "test_case_ref": "TC-PURCHASE-001"
       },
       {
-        "id": "N-TC-AUTH-002",
-        "test_case_ref": "TC-AUTH-002"
+        "id": "N-TC-PURCHASE-002",
+        "test_case_ref": "TC-PURCHASE-002"
       },
       {
-        "id": "N-TC-CHECKOUT-001",
-        "test_case_ref": "TC-CHECKOUT-001"
+        "id": "N-TC-PURCHASE-003",
+        "test_case_ref": "TC-PURCHASE-003"
       },
       {
-        "id": "N-TC-CHECKOUT-002",
-        "test_case_ref": "TC-CHECKOUT-002"
+        "id": "N-TC-PURCHASE-004",
+        "test_case_ref": "TC-PURCHASE-004"
       },
       {
-        "id": "N-TC-ORDER-001",
-        "test_case_ref": "TC-ORDER-001"
+        "id": "N-TC-PURCHASE-005",
+        "test_case_ref": "TC-PURCHASE-005"
       },
       {
-        "id": "N-TC-ORDER-002",
-        "test_case_ref": "TC-ORDER-002"
+        "id": "N-TC-PURCHASE-006",
+        "test_case_ref": "TC-PURCHASE-006"
       },
       {
-        "id": "N-TC-INVENTORY-001",
-        "test_case_ref": "TC-INVENTORY-001"
+        "id": "N-TC-BACKOFFICE-001",
+        "test_case_ref": "TC-BACKOFFICE-001"
       },
       {
-        "id": "N-TC-INVENTORY-002",
-        "test_case_ref": "TC-INVENTORY-002"
+        "id": "N-TC-BACKOFFICE-002",
+        "test_case_ref": "TC-BACKOFFICE-002"
       }
     ],
     "edges": [
       {
-        "from": "N-TC-AUTH-001",
-        "to": "N-TC-CHECKOUT-001",
+        "from": "N-TC-PURCHASE-001",
+        "to": "N-TC-PURCHASE-002",
         "kind": "ordering"
       },
       {
-        "from": "N-TC-INVENTORY-001",
-        "to": "N-TC-CHECKOUT-001",
-        "kind": "data"
+        "from": "N-TC-PURCHASE-001",
+        "to": "N-TC-PURCHASE-003",
+        "kind": "ordering"
+      },
+      {
+        "from": "N-TC-PURCHASE-005",
+        "to": "N-TC-PURCHASE-003",
+        "kind": "ordering"
+      },
+      {
+        "from": "N-TC-PURCHASE-003",
+        "to": "N-TC-PURCHASE-004",
+        "kind": "ordering"
+      },
+      {
+        "from": "N-TC-PURCHASE-004",
+        "to": "N-TC-PURCHASE-006",
+        "kind": "ordering"
       }
     ]
   },
@@ -523,26 +515,16 @@
     "no_blocking_ba_governance_gaps": true
   },
   "processing_metadata": {
-    "ba_brief_version": "1.6.0",
+    "ba_brief_version": "1.0.0",
     "ba_brief_idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
     "tier_decisions": [
       {
-        "target": "EPIC-AUTH",
+        "target": "EPIC-STOREFRONT-PURCHASE",
         "tier": "T2",
         "rationale": "customer-facing T2 per BA brief"
       },
       {
-        "target": "EPIC-CHECKOUT",
-        "tier": "T2",
-        "rationale": "customer-facing T2 per BA brief"
-      },
-      {
-        "target": "EPIC-ORDER",
-        "tier": "T2",
-        "rationale": "customer-facing T2 per BA brief"
-      },
-      {
-        "target": "EPIC-INVENTORY",
+        "target": "EPIC-BACKOFFICE-OPERATIONS",
         "tier": "T2",
         "rationale": "customer-facing T2 per BA brief"
       }

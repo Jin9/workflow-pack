@@ -30,7 +30,8 @@ CHECKS = [
     (f"{RUN}/S7-prod-validation/smoke-slo.json", SK % "validating-production-slo", BD % "smoke-slo"),
     # pre-existing real upstream artifacts (regression guard)
     (f"{RUN}/S1a-ba-discovery/discovery.json", SK % "researching-ba-problem-space", BD % "discovery"),
-    (f"{RUN}/S1b-ba-brief/INDEX.json", None, BD % "ba-brief"),
+    (f"{RUN}/S1b-breakdown/INDEX.json", SK % "breaking-down-ba-scope", BD % "ba-breakdown"),
+    (f"{RUN}/S1c-brief/INDEX.json", SK % "elaborating-user-stories", BD % "ba-brief"),
     (f"{RUN}/S2-tl-design/output.json", SK % "designing-tech-lead-handoff", BD % "tl-design"),
     (f"{RUN}/S2.5-plan-review/plan-review.json", SK % "red-teaming-implementation-plan", BD % "plan-review"),
 ]

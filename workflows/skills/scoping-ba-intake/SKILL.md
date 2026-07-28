@@ -1,7 +1,7 @@
 ---
 name: scoping-ba-intake
 version: 2.0.0
-description: The S0 intake stage of the delivery pipeline: ingest a raw requirement (Jira, email, meeting notes, document) and emit the run-plan artifact — a PII-redacted normalized_request string, a typed run_plan (tier floor, stage span, expected epics, human gates), and a typed Scope Sheet (business goal, explicit in-scope and out-of-scope, quantified NFRs, stable open questions, assumptions, risk flags) — ready for BA discovery. Use when the user is running the delivery pipeline and asks to "do intake", "produce the Scope Sheet", "scope this for the pipeline", or "normalize this request for the pipeline". Do NOT use outside the delivery pipeline. Do NOT use for problem-space discovery (use researching-ba-problem-space). Do NOT draft epics or stories here (use eliciting-banking-brief).
+description: The S0 intake stage of the delivery pipeline: ingest a raw requirement (Jira, email, meeting notes, document) and emit the run-plan artifact — a PII-redacted normalized_request string, a typed run_plan (tier floor, stage span, expected epics, human gates), and a typed Scope Sheet (business goal, explicit in-scope and out-of-scope, quantified NFRs, stable open questions, assumptions, risk flags) — ready for BA discovery. Use when the user is running the delivery pipeline and asks to "do intake", "produce the Scope Sheet", "scope this for the pipeline", or "normalize this request for the pipeline". Do NOT use outside the delivery pipeline. Do NOT use for problem-space discovery (use researching-ba-problem-space). Do NOT draft epics or stories here (use breaking-down-ba-scope).
 stage_type: analyze
 input_schema: schemas/input.json
 output_schema: schemas/output.json
@@ -28,7 +28,7 @@ depends only on the workflow's raw request and emits one contract. Its successor
 - Do NOT use: **outside the delivery pipeline** (this stage exists to feed it).
 - Do NOT use: for problem-space discovery — "should we build this at all" is
   `researching-ba-problem-space` (S1a, which consumes this stage's output).
-- Do NOT use: to draft epics/stories — that is `eliciting-banking-brief` (S1b).
+- Do NOT use: to draft epics/stories — that is `breaking-down-ba-scope` (S1b).
 
 ## Input contract
 

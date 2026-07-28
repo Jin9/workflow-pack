@@ -1,7 +1,7 @@
 # Assertion — BA shape drift (hydrated sidecars)
 
 `schemas/input.json` no longer inline-copies BA definitions: the hydrated
-`epics[]` / `stories[]` shapes are OWNED by `eliciting-banking-brief`
+`epics[]` / `stories[]` shapes are OWNED by `elaborating-user-stories`
 (`schemas/epic-sidecar.json`, `schemas/story-sidecar.json`) and referenced by
 bare skill name — the engine hydrates the manifest refs into those exact
 rendered objects at assembly time (engine/mapping.py `_hydrate_ba_research`).

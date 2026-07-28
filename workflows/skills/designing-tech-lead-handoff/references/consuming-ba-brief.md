@@ -1,6 +1,6 @@
 # Consuming the BA brief (step 1)
 
-The input is the `eliciting-banking-brief` output (shapes inlined in
+The input is the `elaborating-user-stories` output (shapes inlined in
 `schemas/input.json`). Map it as follows.
 
 ## Gate first
