@@ -92,7 +92,7 @@ cd workflows-ui && npm install && cd ..        # optional — Option B only
 Sanity check (token-free, seconds):
 
 ```bash
-engine/.venv/bin/python -m pytest engine/tests -q      # expect: 38 passed
+engine/.venv/bin/python -m pytest engine/tests -q      # expect: 60 passed
 ```
 
 ## Option A · Token-free replay — start here
@@ -186,7 +186,7 @@ of agent confidence.** Reversible artifact-producing stages run exception-only.
 |---|---|---|---|---|---|---|---|
 | **S0** | Intake | orchestrator + Iteration-Planner | `raw_request, requester, idempotency_key` | normalized intake + approved run plan | reversible | **Delivery Ops** | ⚠ GAP (OI-003) |
 | **S1a** | BA Discovery | `researching-ba-problem-space 1.0.0` | raw_request | `discovery` (framing · 4 product risks · regimes · recommendation) | reversible (gated decision) | **BA lead** | ✅ wired (live) |
-| **S1b** | BA Brief | `eliciting-banking-brief 1.5.0` | discovery + raw_request | `epic, stories, governance_gaps, audit_id` | reversible | **BA lead** | ✅ wired (live) |
+| **S1b** | BA Brief | `elaborating-user-stories 1.0.0` | the APPROVED breakdown pack | `epics, story_files, governance_gaps, audit_id` | reversible | **BA lead** | ✅ wired (live) |
 | **S1.5** | UX Intake | `generate-ux-pack 0.1.0` · dev-squad | epic, stories | `pack_dir, tokens, route_map, maturity, audit_id` | reversible | **Tech Lead** | ✅ wired |
 | **S2** | TL Design | `designing-tech-lead-handoff 0.1.0` · dev-squad | epic, stories, gaps, ux | `component_map, api_contracts, audit_id` | reversible (high blast) | **Tech Lead** | ✅ wired |
 | **S2.5** | **Plan-Review gate** | Plan-Reviewer (adversarial red-team) | BA + TL outputs | pass / reroute / **HardFail** | gate | **Tech Lead** | ✅ wired |
@@ -205,7 +205,7 @@ cards **S1a · BA Discovery** and **S1b · BA Brief** — wired as two pipeline 
 `workflows/delivery-pipeline.yaml` with a human gate between: `s1-discovery`
 (`researching-ba-problem-space 1.0.0` — problem framing · four product risks · regulatory regimes ·
 a `proceed`/`needs-work`/`do-not-build` recommendation; **AI drafts, a named human decides**) →
-`ba-research` (`eliciting-banking-brief 1.5.0` — the brief + a **3-level ref chain**: `INDEX.json`
+`ba-research` (`elaborating-user-stories 1.0.0` — the brief + a **3-level ref chain**: `INDEX.json`
 manifest → one `EPIC-*` file per epic → one `STORY-*` file per story; nothing inlined). Boundary
 schemas: `workflows/schemas/discovery.json`, `workflows/schemas/ba-brief.json`.
 
@@ -449,7 +449,7 @@ catalog was consolidated by actual use:** the 14 skills the live pipeline refere
 `workflows/skills/` (see `workflows/skills/README.md`); the ~100 unused skills (incl. the 13 unused
 gap-fill skills and the old `manifest.json`) were quarantined and then **deleted** — permanently, since
 this workspace has no git and the upstream `treasury/` is not present here. Two skills are **promoted + wired live**:
-`researching-ba-problem-space 1.0.0` (S1 `s1-discovery`) and `eliciting-banking-brief 1.5.0` (S1
+`researching-ba-problem-space 1.0.0` (S1 `s1-discovery`) and `elaborating-user-stories 1.0.0` (S1
 `ba-research`). Wiring the remaining draft runners into `workflows/delivery-pipeline.yaml` is a separate step.
 
 ## Human approval gate (sign-off)

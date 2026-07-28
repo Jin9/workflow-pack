@@ -20,7 +20,7 @@
       "items": {
         "type": "object"
       },
-      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (see eliciting-banking-brief schemas/epic-sidecar.json)."
+      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (see elaborating-user-stories schemas/epic-sidecar.json)."
     },
     "story_files": {
       "type": "array",
@@ -31,7 +31,7 @@
     },
     "governance_gaps": {
       "type": "array",
-      "description": "Shape: eliciting-banking-brief schemas/output.json#/properties/governance_gaps."
+      "description": "Shape: breaking-down-ba-scope schemas/output.json#/properties/governance_gaps (carried forward by elaborating-user-stories)."
     },
     "component_map": {
       "type": "object",
@@ -47,7 +47,7 @@
       "items": {
         "type": "object"
       },
-      "description": "engine-hydrated: mapping.py _hydrate_ba_research adds this key by dereferencing story_files into inline story sidecar objects (see eliciting-banking-brief schemas/story-sidecar.json)."
+      "description": "engine-hydrated: mapping.py _hydrate_ba_research adds this key by dereferencing story_files into inline story sidecar objects (see elaborating-user-stories schemas/story-sidecar.json)."
     },
     "idempotency_key": {
       "type": "string",

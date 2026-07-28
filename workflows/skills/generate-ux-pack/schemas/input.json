@@ -21,7 +21,7 @@
     "epics": {
       "type": "array",
       "minItems": 1,
-      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (see eliciting-banking-brief schemas/epic-sidecar.json).",
+      "description": "engine-hydrated: the ba-brief manifest's epic refs dereferenced into inline epic sidecar objects (see elaborating-user-stories schemas/epic-sidecar.json).",
       "items": {
         "type": "object"
       }
@@ -36,7 +36,7 @@
     "stories": {
       "type": "array",
       "minItems": 1,
-      "description": "engine-hydrated: mapping.py _hydrate_ba_research adds this key by dereferencing story_files into inline story sidecar objects (see eliciting-banking-brief schemas/story-sidecar.json). Authoritative source for which stories need UX coverage; story ids copied EXACTLY (e.g. STORY-CHECKOUT-01).",
+      "description": "engine-hydrated: mapping.py _hydrate_ba_research adds this key by dereferencing story_files into inline story sidecar objects (see elaborating-user-stories schemas/story-sidecar.json). Authoritative source for which stories need UX coverage; story ids copied EXACTLY (e.g. STORY-CHECKOUT-01).",
       "items": {
         "type": "object"
       }

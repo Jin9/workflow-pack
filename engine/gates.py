@@ -34,6 +34,16 @@ class GateApprovalError(EngineError):
     pass
 
 
+def _identity(name: str) -> str:
+    """Comparison key for 'is this the same human?'.
+
+    Case and whitespace are NOT identity: without this, one person releases a
+    three-amigos gate by signing 'Khun Pim', 'khun pim' and 'Khun  Pim'. This
+    cannot stop a determined impersonator — no software can — but the guarantee
+    must not fall to a capitalisation."""
+    return " ".join(str(name).split()).casefold()
+
+
 @dataclass
 class GateInstance:
     run_id: str
@@ -133,6 +143,7 @@ class GateBook:
                 # Read explicitly: an unknown key is silently dropped here, which
                 # would leave a quorum gate releasable by one signature.
                 required_roles=tuple(g.get("required_roles", ())),
+                release_requires_field_value=g.get("release_requires_field_value"),
             )
         missing = set(workflow.stage_by_id) - set(specs)
         if missing:
@@ -211,7 +222,7 @@ def record_verdict(
             )
         if role in gate.signed_roles:
             raise GateApprovalError(f"role {role!r} has already signed gate {gate.stage_id}")
-        if any(a["approver"] == name for a in gate.approvals):
+        if any(_identity(a["approver"]) == _identity(name) for a in gate.approvals):
             raise GateApprovalError(
                 f"{name!r} has already signed gate {gate.stage_id} for another role; a quorum "
                 "requires DISTINCT named humans"
@@ -229,6 +240,18 @@ def record_verdict(
         released = verdict == gate.spec.proceed_when
     else:
         released = verdict in RELEASE_VERDICTS or verdict in CAVEAT_VERDICTS
+
+    required_value = gate.spec.release_requires_field_value
+    if released and required_value is not None and gate.artifact_field_value != required_value:
+        # The humans may vote however they like; a blocked artifact does not
+        # become unblocked because three people approved it. Clearing the gap is
+        # a separate, named act upstream.
+        gate.status = "blocked"
+        gate.note = (
+            f"{note + ' | ' if note else ''}refused: artifact {gate.spec.on_field} is "
+            f"{gate.artifact_field_value!r}, release requires {required_value!r}"
+        )
+        return gate
 
     if gate.spec.quorum and released and gate.outstanding_roles:
         gate.status = "pending"  # quorum not yet met — keep waiting, decide nothing

@@ -1,5 +1,5 @@
 {
-  "$comment": "Source-of-truth for FM-17 Frame 4 sub-topic coverage rules. Mirrors references/hidden-requirements-frames.md lines 183-207. Loaded by scripts/render_markdown_tree.py at import time. v1.3.0+.",
+  "$comment": "Source-of-truth for FM-17 Frame 4 sub-topic coverage rules. Mirrors references/hidden-requirements-frames.md lines 183-207. Consulted during the Frame-4 sweep; drift against hidden-requirements-frames.md is caught by scripts/check_frame_rule_data_drift.py. v1.3.0+.",
   "version": "1.3.0",
   "triggers": {
     "pii_collection": [

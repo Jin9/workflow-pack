@@ -55,6 +55,10 @@ def readj(relpath):
 
 written = []
 
+# The count S0 predicts is read back from the BA pack it feeds, so the run-plan can
+# never contradict the breakdown the run actually produced.
+_EPICS_EXPECTED = len(readj("S1c-brief/INDEX.json")["epics"])
+
 # ───────────────────────── S0 · Intake (scope sheet / run plan) ─────────────────────────
 s0 = {
     "audit_id": aid("S0-intake"),
@@ -67,7 +71,7 @@ s0 = {
     "run_plan": {
         "tier_floor": "T2",
         "stage_span": "S0-S7 + T1-T12",
-        "epics_expected": 4,
+        "epics_expected": _EPICS_EXPECTED,
         "pipeline": "delivery-pipeline 3.1.0",
         "human_gates": [
             "S1a discovery recommendation (async-peer, BA lead)",
@@ -610,7 +614,7 @@ s4c = {
     "blocks_qa_execution": False,
     "audit_id": aid("S4c-qa-plan"),
     "frontmatter": {
-        "test_plan_id": "TP-shoppilot-mvp", "brief_id": "EPIC-SHOPPILOT-MVP",
+        "test_plan_id": "TP-shoppilot-mvp", "brief_id": _index["epics"][0]["id"],
         "brief_idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
         "idempotency_key": aid("S4c-qa-plan"), "workload_tier": "T2",
         "created_at": TS, "created_by": "planning-banking-tests-v1.0.0", "status": "ready-for-execution",

@@ -4,7 +4,7 @@
   "run_plan": {
     "tier_floor": "T2",
     "stage_span": "S0-S7 + T1-T12",
-    "epics_expected": 4,
+    "epics_expected": 2,
     "pipeline": "delivery-pipeline 3.1.0",
     "human_gates": [
       "S1a discovery recommendation (async-peer, BA lead)",

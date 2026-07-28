@@ -91,3 +91,30 @@ Worst-of R/A/G roll-up = **GREEN** (all PASS / promote / pass).
 - The console and all HTML are **offline** (no `https://`, `src=`, CDN) and byte-deterministic on rebuild.
 - S2 diagrams are raw draw.io XML in the house style (the external `drawio` skill) — never Mermaid.
 - Validation is **static** (jsonschema draft-07 / 2020-12 against skill + boundary schemas) — there is no live engine.
+
+## KNOWN DRIFT — the BA leg was regenerated, the design leg was not (2026-07-28)
+
+The 2026-07-28 BA reshape regrouped the four service-shaped epics (AUTH · CHECKOUT ·
+ORDER · INVENTORY) into two business-shaped ones (STOREFRONT-PURCHASE ·
+BACKOFFICE-OPERATIONS). Only the BA leg and the artifacts derived from it
+(`S0-intake/run-plan.json`, `S4c-qa-test-design/qa-plan.json`) were regenerated. This
+was a deliberate, recorded choice — re-running S2+ would re-derive the code-gen legs
+and the T-gate evidence.
+
+**So these recorded artifacts still describe a four-epic world, on purpose:**
+
+| Artifact | What it still names |
+|---|---|
+| `S1.5-ux-intake/` (`output.json`, maturity report, README) | `STORY-ORDER-02`, `STORY-INVENTORY-01/02` in `ba_stories_without_ux_coverage` |
+| `S2-tl-design/` (`architecture-overview.md`, `project-structure.md`, ADRs, `diagrams/*.spec.json`, `_deferred-detailed-design/`) | the four retired epic ids as bounded-context tags and L4 spec filenames |
+| `S4a-backend/services/{auth,checkout,order,inventory}/` | four services — these map to BOUNDED CONTEXTS, not epics, and are unaffected |
+
+They are **historical evidence of a real run**, not live references, and nothing
+resolves them at runtime: no engine hydration, validator or lint dereferences a story
+id out of S1.5 or S2. Regenerating them would mean re-running the design leg — which
+is a separate change, not a find-and-replace. Do **not** sed these ids: rewriting a
+recorded artifact to match a later decision is falsification.
+
+The one place the ids ARE load-bearing is `S1c-brief/EPIC-*.json` →
+`decoupling.merged_from`, where the retired candidates are named deliberately so the
+three-amigos session can see what was folded in and why.

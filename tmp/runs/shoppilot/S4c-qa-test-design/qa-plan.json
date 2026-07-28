@@ -4,7 +4,7 @@
   "audit_id": "305b48e1-5b34-5f73-9390-16dda9aaaf15",
   "frontmatter": {
     "test_plan_id": "TP-shoppilot-mvp",
-    "brief_id": "EPIC-SHOPPILOT-MVP",
+    "brief_id": "EPIC-STOREFRONT-PURCHASE",
     "brief_idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
     "idempotency_key": "305b48e1-5b34-5f73-9390-16dda9aaaf15",
     "workload_tier": "T2",

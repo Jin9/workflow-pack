@@ -1,7 +1,7 @@
 ---
 name: generate-ux-pack
 version: 0.2.0
-description: Produce a v1.1 UX-design intake pack from a UX team's drop (bundled prototype HTML, Frontend Spec markdown, BA brief directory). Emits a structured `ux-design-{idem8}/` tree with tokens.json (W3C design tokens + WCAG contrast), route-map.md, component-inventory.md, microcopy.json (bilingual TH/EN with tipping-off scan), screen-states.md, form-validation.md (Thai-locale rules + banking-grade carve-outs), responsive-spec.md, accessibility-spec.md (WCAG AA), flows/, and per-epic screens/. Use when a UX team submits a prototype + brand spec for TL handoff. Use when Stage 2 TL Design requires a tokens.json + route-map contract. Use when an existing UX pack needs a maturity audit (re-run produces same artifact tree with refreshed findings). Do NOT use for code generation (use implement-frontend-feature). Do NOT use for BA elicitation (use eliciting-banking-brief). Do NOT use to extract Thai strings from bundled HTML — emit `TBD-extract-from-prototype` for the UX team to fill.
+description: Produce a v1.1 UX-design intake pack from a UX team's drop (bundled prototype HTML, Frontend Spec markdown, BA brief directory). Emits a structured `ux-design-{idem8}/` tree with tokens.json (W3C design tokens + WCAG contrast), route-map.md, component-inventory.md, microcopy.json (bilingual TH/EN with tipping-off scan), screen-states.md, form-validation.md (Thai-locale rules + banking-grade carve-outs), responsive-spec.md, accessibility-spec.md (WCAG AA), flows/, and per-epic screens/. Use when a UX team submits a prototype + brand spec for TL handoff. Use when Stage 2 TL Design requires a tokens.json + route-map contract. Use when an existing UX pack needs a maturity audit (re-run produces same artifact tree with refreshed findings). Do NOT use for code generation (use implement-frontend-feature). Do NOT use for BA elicitation (use elaborating-user-stories). Do NOT use to extract Thai strings from bundled HTML — emit `TBD-extract-from-prototype` for the UX team to fill.
 stage_type: analyze
 input_schema: schemas/input.json
 output_schema: schemas/output.json
@@ -26,7 +26,7 @@ Convert a UX team's drop into a structured v1.1 UX-design intake pack consumed b
 - Use when: an existing UX pack needs a maturity audit (a re-run with the same
   idempotency key validates/updates the SAME pack with refreshed findings).
 - Do NOT use: for code generation (`implement-frontend-feature`), for BA
-  elicitation (`eliciting-banking-brief`), or to extract Thai strings from
+  elicitation (`elaborating-user-stories`), or to extract Thai strings from
   bundled HTML (emit `TBD-extract-from-prototype`).
 
 ## Input contract

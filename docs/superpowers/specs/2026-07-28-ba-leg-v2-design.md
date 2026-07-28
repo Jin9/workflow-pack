@@ -145,7 +145,7 @@ when failing · per-story `change_log` (git owns history) ·
 the S0 `scope_sheet.envelope` ceremony · the standalone `pii_inventory` table (absorbed into
 `DOMAIN.json` field rows).
 
-**Skill-fleet reduction:** 16,902 lines in one skill → **2,437 lines across two** (SKILL.md,
+**Skill-fleet reduction:** one skill of 19,533 lines (SKILL.md + references + schemas + scripts + templates + tests + audit) → **4,187 lines across two** (SKILL.md,
 schemas and new references; the reused references are copied unchanged).
 
 **A real loss fixed:** S0 builds a scope sheet — business goal, in and out of scope,
@@ -158,7 +158,7 @@ becomes `{problem, who, why_now}`, each capped at 400 characters. `workflows/sch
 accepts **both** shapes via `oneOf`, so recorded artifacts carrying the legacy string stay valid —
 simplifying a report must never invalidate provenance already on disk. The validator proves both
 directions. The BA leg's entire human-facing output is now **two short markdown files**
-(`discovery.md`, 42 lines; `breakdown.md`, 209 lines) instead of a 3,284-line HTML viewer plus a
+(`discovery.md`, 42 lines; `breakdown.md`, 207 lines) instead of a 3,284-line HTML viewer plus a
 2,191-line renderer.
 
 ## Measured result
@@ -173,9 +173,9 @@ corpus covered, so the comparison is like-for-like.
 | Business rules | 0 | **32** |
 | Domain entities / state transitions | 0 / 0 | **6 / 18** |
 | Business flows | 0 | **2** |
-| Edge-case ledger rows | 0 | **39** |
-| Total artifact lines | 6,250 | **4,923 (21% smaller)** |
-| Human report | 3,284-line HTML viewer | 209-line markdown |
+| Edge-case ledger rows | 0 | **37** |
+| Total artifact lines | 6,250 | **4,918 (21% smaller)** |
+| Human report | 3,284-line HTML viewer | 207-line markdown |
 
 More than double the acceptance criteria, plus three analytical artifacts that did not exist,
 in 21% fewer lines.

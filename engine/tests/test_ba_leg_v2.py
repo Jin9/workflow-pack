@@ -30,7 +30,8 @@ def _spec():
 
 
 def _gate():
-    return GateInstance(run_id="r", stage_id="ba-breakdown", spec=_spec(), contract_sha256="x")
+    return GateInstance(run_id="r", stage_id="ba-breakdown", spec=_spec(),
+                        contract_sha256="x", artifact_field_value="ready-for-amigos")
 
 
 # ── the gate is a real quorum ────────────────────────────────────────────────
@@ -52,11 +53,32 @@ def test_two_signatures_do_not_release_the_gate():
     assert g.status == "released" and g.outstanding_roles == []
 
 
-def test_one_human_cannot_cover_two_roles():
+@pytest.mark.parametrize("second", ["Khun Pim", "khun pim", "KHUN PIM", "Khun  Pim", " Khun Pim "])
+def test_one_human_cannot_cover_two_roles(second):
+    """Case and whitespace are not identity. Without normalisation one person
+    releases the whole gate by varying their own capitalisation."""
     g = _gate()
     record_verdict(g, "agreed", "Khun Pim", role="ba-lead")
     with pytest.raises(GateApprovalError, match="DISTINCT"):
-        record_verdict(g, "agreed", "Khun Pim", role="dev-lead")
+        record_verdict(g, "agreed", second, role="dev-lead")
+
+
+def test_no_verdict_releases_a_blocked_breakdown():
+    """The documented guarantee that no gate verdict clears a P1 governance gap,
+    enforced structurally: the artifact's own state gates the release."""
+    s = _spec()
+    assert s.release_requires_field_value == "ready-for-amigos"
+    g = GateInstance(run_id="r", stage_id="ba-breakdown", spec=s,
+                     contract_sha256="x", artifact_field_value="blocked")
+    record_verdict(g, "agreed", AMIGOS["ba-lead"], role="ba-lead")
+    assert g.status == "blocked"
+    assert "release requires" in (g.note or "")
+    # and the happy artifact still releases on a full quorum
+    ok = GateInstance(run_id="r", stage_id="ba-breakdown", spec=s,
+                      contract_sha256="x", artifact_field_value="ready-for-amigos")
+    for role in s.required_roles:
+        record_verdict(ok, "agreed", AMIGOS[role], role=role)
+    assert ok.status == "released"
 
 
 @pytest.mark.parametrize("verdict,approver,role", [

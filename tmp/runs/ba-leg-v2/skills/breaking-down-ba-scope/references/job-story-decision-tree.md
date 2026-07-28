@@ -79,7 +79,7 @@ Banking examples:
 - Authority scope drives the capability (only senior approvers can dual-sign).
 - The same capability has materially different ACs by role boundary (use C28 to split into 2 stories instead of merging).
 
-When overriding, document the decision in `ba_reasoning_trace.deviations[]` with the source quote that named the role-dominance.
+When overriding, record the decision as a P3 open question addressed to the BA with the source quote that named the role-dominance. (`ba_reasoning_trace` was cut on 2026-07-28 — the reasoning belongs where a human will act on it, not in a field nobody reads.)
 
 ## Mixed-Format Anti-Pattern
 

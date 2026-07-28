@@ -49,6 +49,9 @@ gates:
     required_roles: [ba-lead, dev-lead, qa-lead]
     on_field: state
     proceed_when: agreed
+    # Structural, not advisory: a breakdown carrying an unresolved P1 governance
+    # gap emits state: blocked, and NO combination of verdicts can release it.
+    release_requires_field_value: ready-for-amigos
     verdicts: [agreed, split-stories, descope, needs-rework]
     on_block: ba-breakdown-review
   - stage_id: ba-research

@@ -113,7 +113,7 @@
     "handoff_to_intake": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Typed advisory handoff, delivered to the brief node (eliciting-banking-brief) nested as input.discovery.handoff_to_intake via the engine NESTED_HANDOFF. Emitted ONLY when the top-level AND nested recommendation are 'proceed' (allOf). Blocked/failed discoveries (failure_state) never carry one.",
+      "description": "Typed advisory handoff, delivered to the brief node (breaking-down-ba-scope) nested as input.discovery.handoff_to_intake via the engine NESTED_HANDOFF. Emitted ONLY when the top-level AND nested recommendation are 'proceed' (allOf). Blocked/failed discoveries (failure_state) never carry one.",
       "required": [
         "audit_id",
         "recommendation"

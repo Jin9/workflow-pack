@@ -499,7 +499,7 @@ Without limits, this sweep produces 80–150 findings on a typical 700-line inpu
 - `SKILL.md` FM-15 — sweep-coverage gate (defines `complete` / `partial` / `skipped` grading and the `frames_applied ∪ frames_skipped == {1..10}` invariant).
 - `references/ambiguity-patterns.md` — Step 9, the prose-ambiguity sibling.
 - `references/anti-patterns.md` — AP-1.3 (tier inference from content), AP-5.1 (Legal absence), AP-4.1 (PII force-fill) are independently active; frame sweep does not duplicate.
-- `references/markdown-rendering-spec.md` §3.5 (cross-cutting files table) — emission of `09-hidden-requirements.md`.
+- Sweep findings are emitted into `open_questions[]` / `assumptions_made[]` on the manifest and summarised in `hidden_requirements_sweep`; the standalone markdown tree was cut on 2026-07-28.
 - `schemas/output.json` — `OpenQuestion` and `Assumption` carry optional `provenance` and `frame`; `processing_metadata.hidden_requirements_sweep` is optional.
 
 ## Provenance enum reference (intentional asymmetry)

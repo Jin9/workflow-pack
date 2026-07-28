@@ -29,7 +29,7 @@ node).
   stories.
 - Use when: asked to "do product discovery", "frame the opportunity + risks", or
   "map the regulatory regime" for an initiative.
-- Do NOT use: to structure a known requirement (`eliciting-banking-brief` /
+- Do NOT use: to structure a known requirement (`breaking-down-ba-scope` /
   `scoping-ba-intake`), to design architecture (`designing-tech-lead-handoff`), or
   to write code / enforce compliance.
 

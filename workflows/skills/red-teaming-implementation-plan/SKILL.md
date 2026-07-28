@@ -44,7 +44,7 @@ it documents the POST-adapter payload assembled at stage `plan-review`. Required
 Optional engine-injected: `upstream_artifacts` (producer stage id → artifact path
 relative to this stage's dir), `loop_back_feedback` (this skill's own prior
 findings, when tl-design re-ran after a REVISE/BLOCK). The BA fields follow the
-manifest dialect (`eliciting-banking-brief` `schemas/manifest.json` +
+manifest dialect (`breaking-down-ba-scope` `schemas/output.json` +
 `epic-sidecar.json`/`story-sidecar.json`) — the canonical BA `output.json` is NOT
 the stage handoff and must not be copied into this consumer schema.
 

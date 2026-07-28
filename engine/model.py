@@ -102,6 +102,11 @@ class GateSpec:
     # QUORUM: roles that must EACH be signed by a distinct named human before the
     # gate releases. Empty = the ordinary single-approver gate.
     required_roles: Tuple[str, ...] = ()
+    # An ARTIFACT-side precondition on release: when set, the gate can never
+    # release unless the artifact's `on_field` holds this value, whatever the
+    # humans vote. This is what makes "no verdict clears a P1 governance gap"
+    # structural rather than a promise in a comment.
+    release_requires_field_value: Optional[str] = None
 
     @property
     def named(self) -> bool:

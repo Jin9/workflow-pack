@@ -416,7 +416,10 @@ def emit_brief() -> None:
         "upstream_refs": {
             "source_artifacts": [SOURCE_DOC],
             "breakdown_audit_id": BREAKDOWN_AUDIT, "discovery_audit_id": DISCOVERY_AUDIT,
-            "amigos_approvers": ["Khun Pim (ba-lead)", "Khun Anan (dev-lead)", "Khun Ratree (qa-lead)"],
+            # NO amigos_approvers here. Who signed the gate is a HITL record in
+            # events.jsonl, written by the run that actually collected the
+            # signatures. Naming three humans in a generated artifact would be a
+            # corpus asserting a decision no run ever made.
         },
     })
 

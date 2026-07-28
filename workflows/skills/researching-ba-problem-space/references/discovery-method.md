@@ -40,7 +40,7 @@ escalates to a human governance gate; never auto-clear it.
 Produce the discovery artifact and a proceed / needs-work / do-not-build
 recommendation, but the **named human decides** at the review gate — only
 `proceed` releases the brief node (`ba-research`, skill
-`eliciting-banking-brief`), which structures the requirement. This skill does
+`breaking-down-ba-scope`), which structures the requirement. This skill does
 not write stories or architecture.
 
 ## Typed handoff to the brief node (composite S1)

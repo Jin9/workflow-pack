@@ -31,7 +31,7 @@ assert **structure and invariants**, not exact bytes:
   declare in `delivery-pipeline.yaml`.
 - `assertions/ba-def-drift.md` — the inlined BA `definitions` in
   `schemas/input.json` are byte-faithful to the live
-  `eliciting-banking-brief/schemas/output.json`.
+  `elaborating-user-stories/schemas/output.json`.
 
 ## Follow-up
 
