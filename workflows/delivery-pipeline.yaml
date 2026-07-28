@@ -19,7 +19,9 @@
 # ── HITL gate table (the gate column has no v1-schema slot, so it lives here + as per-stage comments) ──
 #   S0  intake          Delivery Ops      light / auto plan sign-off
 #   S1a s1-discovery     BA lead           ⏸ async peer (L2) — recommendation gate (proceed releases the brief node)
-#   S1b ba-research      BA lead           (intake; runs only after the S1a discovery gate clears `proceed`)
+#   S1b ba-breakdown     3 amigos          🔒 sync NAMED QUORUM (L3) — ba-lead + dev-lead + qa-lead must EACH sign
+#                                          (`agreed` releases; anything else loops the breakdown back, cap 2)
+#   S1c ba-research      BA lead           (elaboration; runs only after the three-amigos gate clears `agreed`)
 #   S1.5 ux-intake       Tech Lead         ⏸ async peer (L2)
 #   S2  tl-design        Tech Lead + gov   🔒 sync NAMED (L3)
 #   S2.5 plan-review     Tech Lead         ◆ HITL on HardFail

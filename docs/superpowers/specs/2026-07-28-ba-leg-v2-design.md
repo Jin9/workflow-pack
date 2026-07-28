@@ -1,7 +1,7 @@
 # BA leg v2 — deeper analysis, simpler reports, fewer artifacts
 
-**Date:** 2026-07-28 · **Status:** built in staging, awaiting sign-off for the phase-2 wiring pass
-**Staging:** `tmp/runs/ba-leg-v2/` (gitignored — promotion to `workflows/skills/` is a separate human step)
+**Date:** 2026-07-28 · **Status:** SHIPPED — phase 1 (skills) and phase 2 (wiring) are both complete and committed; see `.claude/history/2026-07-28-ba-leg-v2.md` for the as-built record, the four decisions taken, and the two P1 defects an adversarial review pass found and closed after the wiring landed
+**Staging:** `tmp/runs/ba-leg-v2/` (force-added to git; retained for the deterministic regenerator and its 285-check validator)
 
 ## Context
 
@@ -206,7 +206,9 @@ The live pipeline is untouched and both blocking contract lints still report **0
 > is 3.9.6 and cannot parse `check_contract_examples.py` (a `str | None` annotation). Run it
 > with `engine/.venv/bin/python`. Pre-existing, unrelated to this change.
 
-## Phase 2 — the wiring pass (not executed)
+## Phase 2 — the wiring pass (EXECUTED 2026-07-28)
+
+All seven items below shipped. Recorded here as originally planned, for comparison against the as-built record in the history entry.
 
 1. `workflows/delivery-pipeline.yaml`: 27 → 28 stages; add `ba-breakdown`; re-point
    `ba-research` at `elaborating-user-stories`; exact-pin both new skills; add the `scope`

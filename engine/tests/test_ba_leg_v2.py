@@ -141,6 +141,24 @@ def test_no_stage_is_skill_schema_exempt():
     assert SKILL_SCHEMA_EXEMPT == set()
 
 
+def test_the_quorum_survives_a_missing_gates_yaml():
+    """If gates.yaml disappears the fallback must NOT silently downgrade the
+    three-amigos gate to something one person can release."""
+    from engine.gates import _fail_closed_fallback
+    fb = _fail_closed_fallback(load_workflow())["ba-breakdown"]
+    assert fb.quorum and fb.blocking and fb.named
+    assert fb.required_roles == ("ba-lead", "dev-lead", "qa-lead")
+    assert fb.release_requires_field_value == "ready-for-amigos"
+
+
+def test_the_gate_question_names_what_is_blocking():
+    """A reviewer staring at a gate they cannot clear must be told why."""
+    s = _spec()
+    g = GateInstance(run_id="r", stage_id="ba-breakdown", spec=s,
+                     contract_sha256="x", artifact_field_value="blocked")
+    assert "BLOCKED" in g.question and "no verdict can clear this" in g.question
+
+
 # ── the loop-back that did not exist before ──────────────────────────────────
 def test_non_agreed_verdict_loops_back_instead_of_failing_the_run(tmp_path):
     """A `split-stories` verdict is an ORDINARY review outcome. Before this change

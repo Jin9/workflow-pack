@@ -73,10 +73,18 @@ class GateInstance:
     @property
     def question(self) -> str:
         if self.spec.quorum:
+            gap = ""
+            if (self.spec.release_requires_field_value is not None
+                    and self.artifact_field_value != self.spec.release_requires_field_value):
+                gap = (f"; BLOCKED: artifact {self.spec.on_field} is "
+                       f"{self.artifact_field_value!r}, release requires "
+                       f"{self.spec.release_requires_field_value!r} — no verdict can clear this")
             return (
-                f"{self.stage_id}: {'/'.join(self.spec.required_roles)} must each sign; "
+                f"{self.stage_id}: artifact {self.spec.on_field} = "
+                f"{self.artifact_field_value!r}; "
+                f"{'/'.join(self.spec.required_roles)} must each sign; "
                 f"still outstanding: {self.outstanding_roles or 'none'}; "
-                f"release requires every signature to be {self.spec.proceed_when!r}"
+                f"release requires every signature to be {self.spec.proceed_when!r}{gap}"
             )
         if self.spec.on_field:
             return (
@@ -171,6 +179,19 @@ def _fail_closed_fallback(workflow: WorkflowSpec) -> Dict[str, GateSpec]:
                 blocking=True, on_field=s.human_review.on_field,
                 proceed_when=s.human_review.proceed_when, on_block=s.human_review.on_block,
                 verdicts=("proceed", "needs-work", "do-not-build"),
+            )
+        elif s.id == "ba-breakdown":
+            # Without gates.yaml the three-amigos quorum would vanish entirely and a
+            # single approver would release the breakdown. Fail CLOSED: keep the
+            # quorum, keep the artifact precondition.
+            specs[s.id] = GateSpec(
+                stage_id=s.id, gate="sync-named", owner_role="three-amigos",
+                blocking=True, mandatory=True,
+                required_roles=("ba-lead", "dev-lead", "qa-lead"),
+                on_field="state", proceed_when="agreed",
+                release_requires_field_value="ready-for-amigos",
+                verdicts=("agreed", "split-stories", "descope", "needs-rework"),
+                on_block="ba-breakdown-review",
             )
         elif s.compensating_action is not None or s.id == "release-handoff":
             specs[s.id] = GateSpec(

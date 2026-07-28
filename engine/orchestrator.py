@@ -192,7 +192,16 @@ class Orchestrator:
         action = on_failure(spec, 1, self.loop_ledger.get(edge, 0),
                             self.binding.for_stage(stage_id, self.mode).backoff_multiplier)
         if action.kind != "loop_back":
-            return False  # cycle cap reached -> fall through to blocked/queue as designed
+            # Cycle cap reached. Honour the stage's declared after_max_loops rather
+            # than silently degrading to a bare gate-block: a breakdown the amigos
+            # could not agree on three times is a scoping problem for a named human.
+            if action.kind == "human-queue":
+                self._to_human_queue(stage_id, f"three-amigos cap reached: {gate.verdict}",
+                                     queue=action.queue)
+                self.emit("gate.loop-cap", stage_id, verdict=gate.verdict,
+                          loops=self.loop_ledger.get(edge, 0), queue=action.queue)
+                return True
+            return False  # abort -> fall through to blocked, then _derive_terminal
         self.loop_ledger[edge] = self.loop_ledger.get(edge, 0) + 1
         self.loop_feedback[action.loop_to] = {
             "from_stage": stage_id,
@@ -203,7 +212,11 @@ class Orchestrator:
                 for a in gate.approvals
             ] or [{"approver": gate.approver, "verdict": gate.verdict, "note": gate.note}],
             "findings": [a["note"] for a in gate.approvals if a.get("note")]
-            or ([gate.note] if gate.note else []),
+            or ([gate.note] if gate.note else [])
+            # A verdict with no written reason still has to say SOMETHING, or the
+            # re-run is blind — which is the failure the loop exists to prevent.
+            or [f"{gate.verdict}: returned by the review with no written reason; "
+                f"treat the whole breakdown as under question"],
             "loop_count": self.loop_ledger[edge],
         }
         cone = self.dag.downstream_cone(action.loop_to)
