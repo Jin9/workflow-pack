@@ -1,0 +1,202 @@
+{
+  "id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "A customer can buy something end to end",
+  "story_prefix": "PURCHASE",
+  "problem_statement": "A customer of this single Thai merchant cannot complete a purchase without staff mediating it by phone or chat. Buying end to end means signing in, holding a cart, seeing a total the merchant stands behind, having the stock actually held, paying, and being able to see what happened.",
+  "business_value": "Customers complete purchases unassisted on the web, which is the merchant's first direct online sales channel and the thing the adoption and funnel KPIs in gap-closed 3.1 and 3.2 measure.",
+  "why_now": "This is the merchant's first online storefront; today every order is mediated by phone or chat.",
+  "success_criteria": [
+    {
+      "metric": "registration to first purchase within 7 days",
+      "target": "measured from launch as the adoption baseline",
+      "measurement_method": "funnel instrumentation (gap-closed 3.1)"
+    },
+    {
+      "metric": "client-trusted total incidents",
+      "baseline": "not applicable - new build",
+      "target": "0",
+      "measurement_method": "every total recomputed server-side at confirm (gap-closed 4.6)"
+    },
+    {
+      "metric": "double-charge or double-reserve on a duplicate signal",
+      "target": "0",
+      "measurement_method": "idempotency-key and provider-event-id dedup (gap-closed 4.7, 17)"
+    },
+    {
+      "metric": "negative stock occurrences",
+      "target": "0",
+      "measurement_method": "stock invariant checked under concurrent confirm (gap-closed 5.4)"
+    }
+  ],
+  "decoupling": {
+    "independently_valuable": true,
+    "own_success_metric": true,
+    "sibling_dependencies": [],
+    "rationale": "A customer buying something is one indivisible business outcome. An account with nothing to buy, a cart that cannot hold stock, and a checkout with no payment step each deliver zero business value alone, so the four service-shaped candidates are one epic. It ships without the back office because gap-closed 7.8 provides seed catalogue and demo accounts.",
+    "merged_from": [
+      "candidate EPIC-AUTH - enabler; a login screen delivers no business value on its own (test 1)",
+      "candidate EPIC-CHECKOUT - cannot promise an item without the reservation candidate (test 3)",
+      "candidate EPIC-INVENTORY reservation half - exists only to make checkout honest (test 3)",
+      "candidate EPIC-ORDER customer-tracking half - the same purchase outcome seen after the fact (test 3)"
+    ],
+    "split_axis": "none"
+  },
+  "scope": {
+    "in": [
+      "sign-in and session refresh",
+      "cart and one coupon",
+      "server-computed totals",
+      "idempotent order confirm",
+      "stock reservation and release",
+      "mock payment with replay safety",
+      "own-order tracking against a frozen price snapshot"
+    ],
+    "out_explicit": [
+      "real payment provider",
+      "returns and refunds",
+      "loyalty or points",
+      "multi-currency"
+    ],
+    "out_deferred": [
+      "weight or distance based shipping",
+      "coupon stacking"
+    ]
+  },
+  "stakeholders": [
+    {
+      "role": "Product Manager",
+      "name_or_team": "Khun Pim",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Merchant Owner",
+      "name_or_team": "Khun Wirat",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Operations Lead",
+      "name_or_team": "Khun Mali",
+      "raci": "R",
+      "status": "present"
+    },
+    {
+      "role": "Marketing Lead",
+      "name_or_team": "Khun Fah",
+      "raci": "R",
+      "status": "present"
+    },
+    {
+      "role": "Legal Counsel",
+      "name_or_team": "Khun Somchai",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Data Protection Officer",
+      "name_or_team": "Khun Apinya",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Compliance Officer",
+      "name_or_team": "Khun Niran",
+      "raci": "C",
+      "status": "present"
+    },
+    {
+      "role": "Finance Lead",
+      "name_or_team": "Khun Decha",
+      "raci": "R",
+      "status": "present"
+    },
+    {
+      "role": "UX Lead",
+      "name_or_team": "Khun Ploy",
+      "raci": "C",
+      "status": "present"
+    },
+    {
+      "role": "Tech Lead",
+      "name_or_team": "Khun Anan",
+      "raci": "C",
+      "status": "present"
+    }
+  ],
+  "legal_status": "present",
+  "inferred_tier": "T2",
+  "tier_signals": [
+    "customer-facing flow carrying direct personal data (gap-closed 15)",
+    "money movement through a payment provider, though PCI scope is avoided (gap-closed 18)",
+    "no KYC, AML or sanctions regime in play, so not T1"
+  ],
+  "rule_refs": [
+    "RULE-AUTH-01",
+    "RULE-AUTH-02",
+    "RULE-AUTH-03",
+    "RULE-AUTH-04",
+    "RULE-CHECKOUT-01",
+    "RULE-CHECKOUT-02",
+    "RULE-CHECKOUT-03",
+    "RULE-CHECKOUT-04",
+    "RULE-COUPON-01",
+    "RULE-COUPON-02",
+    "RULE-COUPON-03",
+    "RULE-PAYMENT-01",
+    "RULE-PAYMENT-02",
+    "RULE-STOCK-03",
+    "RULE-ORDER-01",
+    "RULE-COPY-01",
+    "RULE-STOCK-01",
+    "RULE-STOCK-02",
+    "RULE-STOCK-04",
+    "RULE-STOCK-05",
+    "RULE-ORDER-04",
+    "RULE-ORDER-06",
+    "RULE-ORDER-07",
+    "RULE-ORDER-08",
+    "RULE-PRIVACY-01"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "story_refs": [
+    {
+      "id": "STORY-PURCHASE-01",
+      "slug": "customer-signs-in-to-their-own-account",
+      "file": "STORY-PURCHASE-01-customer-signs-in-to-their-own-account.json",
+      "title": "Customer signs in to their own account"
+    },
+    {
+      "id": "STORY-PURCHASE-02",
+      "slug": "customer-continues-a-session-without-signing-in-again",
+      "file": "STORY-PURCHASE-02-customer-continues-a-session-without-signing-in-again.json",
+      "title": "Customer continues a session without signing in again"
+    },
+    {
+      "id": "STORY-PURCHASE-03",
+      "slug": "customer-checks-out-at-a-server-computed-total",
+      "file": "STORY-PURCHASE-03-customer-checks-out-at-a-server-computed-total.json",
+      "title": "Customer checks out at a server-computed total"
+    },
+    {
+      "id": "STORY-PURCHASE-04",
+      "slug": "customer-pays-through-the-mock-provider-without-being-charged-twice",
+      "file": "STORY-PURCHASE-04-customer-pays-through-the-mock-provider-without-being-charged-twice.json",
+      "title": "Customer pays through the mock provider without being charged twice"
+    },
+    {
+      "id": "STORY-PURCHASE-05",
+      "slug": "stock-is-held-at-confirm-and-released-when-payment-does-not-complete",
+      "file": "STORY-PURCHASE-05-stock-is-held-at-confirm-and-released-when-payment-does-not-complete.json",
+      "title": "Stock is held at confirm and released when payment does not complete"
+    },
+    {
+      "id": "STORY-PURCHASE-06",
+      "slug": "customer-tracks-their-own-order-at-the-price-they-agreed",
+      "file": "STORY-PURCHASE-06-customer-tracks-their-own-order-at-the-price-they-agreed.json",
+      "title": "Customer tracks their own order at the price they agreed"
+    }
+  ]
+}

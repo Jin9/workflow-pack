@@ -1,0 +1,241 @@
+{
+  "id": "STORY-BACKOFFICE-01",
+  "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+  "title": "Admin corrects stock with a reason that survives audit",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "merchant admin",
+    "i_want": "to adjust a product's stock to match the shelf and record why",
+    "so_that": "the numbers can be reconciled later and never drop below what customers have already been promised"
+  },
+  "intent": "Stock drift becomes explainable rather than mysterious, and an adjustment can never quietly break a customer who is mid-payment.",
+  "rule_refs": [
+    "RULE-STOCK-04",
+    "RULE-STOCK-06",
+    "RULE-STOCK-07",
+    "RULE-AUDIT-01"
+  ],
+  "flow_refs": [
+    "FLOW-ADMIN-FULFILMENT"
+  ],
+  "entity_refs": [
+    "ENTITY-STOCK"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "an admin corrects stock upward with a reason",
+      "scenario_type": "happy",
+      "given": [
+        "a product showing 3 available and a physical count of 5"
+      ],
+      "when": "an admin adjusts it by plus 2 with the reason that a supplier delivery arrived",
+      "then": [
+        "available becomes 5",
+        "the adjustment records the admin, the time, the delta and the reason"
+      ],
+      "rule_ref": "RULE-STOCK-07",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "an adjustment without a reason is refused",
+      "scenario_type": "error",
+      "given": [
+        "any stock adjustment"
+      ],
+      "when": "an admin submits it with an empty reason",
+      "then": [
+        "the adjustment is refused and the stock is unchanged"
+      ],
+      "rule_ref": "RULE-STOCK-07",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "an admin cannot reduce stock below the reserved quantity",
+      "scenario_type": "boundary",
+      "given": [
+        "a product with 5 available and 3 reserved"
+      ],
+      "when": "an admin tries to set available to 2",
+      "then": [
+        "the adjustment is refused",
+        "the customers holding the 3 reserved units are unaffected"
+      ],
+      "rule_ref": "RULE-STOCK-06",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "an adjustment to exactly the reserved quantity is allowed",
+      "scenario_type": "boundary",
+      "given": [
+        "a product with 5 available and 3 reserved"
+      ],
+      "when": "an admin sets available to 3",
+      "then": [
+        "the adjustment succeeds"
+      ],
+      "rule_ref": "RULE-STOCK-06",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "an adjustment can never drive stock negative",
+      "scenario_type": "edge_case",
+      "given": [
+        "a product with 2 available and none reserved"
+      ],
+      "when": "an admin adjusts by minus 5",
+      "then": [
+        "the adjustment is refused and available stays at 2"
+      ],
+      "rule_ref": "RULE-STOCK-04",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "two admins adjusting the same product do not lose an adjustment",
+      "scenario_type": "race",
+      "given": [
+        "two admins submitting adjustments for one product at the same moment"
+      ],
+      "when": "both are processed",
+      "then": [
+        "the final quantity reflects both deltas",
+        "both adjustments appear in the audit trail"
+      ],
+      "rule_ref": "RULE-STOCK-04",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a resubmitted adjustment applies its delta once",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "an adjustment of plus 2 already accepted for this submission"
+      ],
+      "when": "the same submission arrives again after a client retry",
+      "then": [
+        "available reflects a single plus 2 and not plus 4",
+        "the audit trail shows one adjustment, not two"
+      ],
+      "rule_ref": "RULE-STOCK-07",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "every adjustment is auditable after the fact",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any completed adjustment"
+      ],
+      "when": "the audit trail is read",
+      "then": [
+        "the actor, time, signed delta and reason are all present and attributable"
+      ],
+      "rule_ref": "RULE-AUDIT-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "only an admin account may adjust stock",
+      "scenario_type": "banking_grade_authz",
+      "given": [
+        "a signed-in non-admin customer account"
+      ],
+      "when": "it calls the stock adjustment function",
+      "then": [
+        "the call is refused and no stock changes"
+      ],
+      "rule_ref": "RULE-STOCK-07",
+      "derived_from": "rule_sweep"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "the adjusting admin is an identified staff member recorded in the audit trail",
+      "fields_or_events": [
+        "admin_identity"
+      ],
+      "treatment": "retained with the audit record; not shown to customers"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "an adjustment without an attributable record is the exact failure this story prevents"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "a resubmitted adjustment must not apply its delta twice",
+      "fields_or_events": [
+        "stock_adjustment"
+      ],
+      "treatment": "adjustment identity keyed per submission"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "an incorrect adjustment is corrected by a further recorded adjustment, never by editing history",
+      "compensating_action": "a compensating adjustment with its own reason; the original record is never rewritten"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "only an admin account may adjust stock"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "the Revenue Code 5-year envelope covers the adjustment records as accounting evidence"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "adjustment reasons are internal and never customer-facing"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-STOCK-04",
+      "cases_written": [
+        "adjustment that would go negative refused",
+        "two admins adjusting concurrently"
+      ],
+      "justification": "all derivations for a constraint of this shape were written"
+    },
+    {
+      "rule_ref": "RULE-STOCK-06",
+      "cases_written": [
+        "below the reserved quantity refused",
+        "exactly at the reserved quantity allowed"
+      ],
+      "justification": "both threshold positions the rule turns on were written"
+    },
+    {
+      "rule_ref": "RULE-STOCK-07",
+      "cases_written": [
+        "happy adjustment with a reason",
+        "empty reason refused",
+        "non-admin refused",
+        "resubmitted adjustment applies once"
+      ],
+      "justification": "all derivations for a constraint of this shape were written, including the replay case its idempotency row claims"
+    },
+    {
+      "rule_ref": "RULE-AUDIT-01",
+      "cases_written": [
+        "the adjustment is attributable after the fact"
+      ],
+      "cases_not_applicable": [
+        "boundary",
+        "race"
+      ],
+      "justification": "an attribution constraint has no magnitude, and concurrency is covered under RULE-STOCK-04"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": []
+  },
+  "dor": "pass",
+  "open_questions": [],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

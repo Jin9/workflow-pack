@@ -1,0 +1,255 @@
+{
+  "id": "STORY-PURCHASE-04",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer pays through the mock provider without being charged twice",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "to pay for a confirmed order and see the result honestly",
+    "so_that": "a slow network or a repeated provider message never takes my money twice"
+  },
+  "intent": "The zero double-charge quality KPI holds even when the provider or the customer repeats a signal, which is the difference between a demo and something that can take money.",
+  "rule_refs": [
+    "RULE-PAYMENT-01",
+    "RULE-PAYMENT-02",
+    "RULE-STOCK-03",
+    "RULE-ORDER-01",
+    "RULE-COPY-01"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-PAYMENT",
+    "ENTITY-ORDER",
+    "ENTITY-STOCK"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "a captured payment moves the order to paid and the stock to sold",
+      "scenario_type": "happy",
+      "given": [
+        "an order in awaiting-payment with its lines reserved"
+      ],
+      "when": "the provider reports a successful capture",
+      "then": [
+        "the order moves to paid",
+        "the reserved units become sold"
+      ],
+      "rule_ref": "RULE-STOCK-03",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "a replayed provider callback applies once",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "a capture callback already processed for this provider event id"
+      ],
+      "when": "the provider sends the identical callback again",
+      "then": [
+        "the order stays paid with no second state change",
+        "the stock is not decremented twice and no second charge is recorded"
+      ],
+      "rule_ref": "RULE-PAYMENT-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a declined payment releases the reservation",
+      "scenario_type": "error",
+      "given": [
+        "an order in awaiting-payment with its lines reserved"
+      ],
+      "when": "the provider reports a decline",
+      "then": [
+        "the order moves to payment-failed",
+        "the reserved units return to available"
+      ],
+      "rule_ref": "RULE-STOCK-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a failed payment cannot be re-confirmed as successful",
+      "scenario_type": "illegal_transition",
+      "given": [
+        "a payment already recorded as declined"
+      ],
+      "when": "a success message arrives carrying that same payment transaction",
+      "then": [
+        "the message is refused",
+        "the order stays in payment-failed"
+      ],
+      "rule_ref": "RULE-PAYMENT-02",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "a delivered order cannot be moved back by a late callback",
+      "scenario_type": "illegal_transition",
+      "given": [
+        "an order already in delivered"
+      ],
+      "when": "a late provider callback for its original payment arrives",
+      "then": [
+        "the callback changes nothing and the order stays delivered"
+      ],
+      "rule_ref": "RULE-ORDER-01",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "the payment fails after the stock was converted",
+      "scenario_type": "partial_failure",
+      "given": [
+        "a capture that succeeded at the provider while the local stock conversion did not complete"
+      ],
+      "when": "the inconsistency is detected",
+      "then": [
+        "the order does not present as paid with unsold stock",
+        "the discrepancy is recorded for back-office resolution rather than silently reconciled"
+      ],
+      "rule_ref": "RULE-STOCK-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "failure wording never implies wrongdoing",
+      "scenario_type": "banking_grade_tipping_off",
+      "given": [
+        "any declined or timed-out payment"
+      ],
+      "when": "the customer sees the result",
+      "then": [
+        "the message reads that the payment was not completed",
+        "no wording implies fraud, risk, suspicion or any regulatory concern"
+      ],
+      "rule_ref": "RULE-COPY-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "an admin cancellation after payment compensates the capture",
+      "scenario_type": "banking_grade_reversibility",
+      "given": [
+        "a paid order that has not started packing"
+      ],
+      "when": "an admin cancels it",
+      "then": [
+        "the sold units return to available",
+        "a manual refund is recorded with an idempotency key so it cannot be paid twice"
+      ],
+      "rule_ref": "RULE-PAYMENT-03",
+      "derived_from": "state_machine"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "the payment amount is financial-class data tied to an identified customer",
+      "fields_or_events": [
+        "amount_thb"
+      ],
+      "treatment": "visible to the owning customer and the back office only"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "capture, decline and timeout are financial events"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "a replayed provider callback must not apply twice",
+      "fields_or_events": [
+        "payment_callback"
+      ],
+      "treatment": "dedup on the provider event id"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "a capture moves money and cannot be undone in the system",
+      "compensating_action": "manual refund recorded with an idempotency key, dual-approved above 3,000 THB"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "only the owning customer may pay for the order and only the provider may report its result"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "PCI-DSS v4.0 scope is avoided by never collecting card data; the Electronic Transactions Act governs the confirmation record"
+    },
+    "tipping_off": {
+      "status": "applies",
+      "justification": "customer-facing failure copy must not imply fraud, risk or wrongdoing",
+      "fields_or_events": [
+        "payment_failure_message"
+      ],
+      "treatment": "neutral wording reviewed by Legal and UX"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-PAYMENT-01",
+      "cases_written": [
+        "replayed callback"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "a provider event id is an identity, not a magnitude"
+    },
+    {
+      "rule_ref": "RULE-PAYMENT-02",
+      "cases_written": [
+        "declined then re-confirmed as successful"
+      ],
+      "cases_not_applicable": [
+        "race"
+      ],
+      "justification": "the terminal payment states are write-once, so a contending second write is the illegal-transition case already written"
+    },
+    {
+      "rule_ref": "RULE-STOCK-03",
+      "cases_written": [
+        "capture converts to sold",
+        "decline releases",
+        "capture succeeded but conversion did not"
+      ],
+      "justification": "all derivations for a state-transition rule of this shape were written"
+    },
+    {
+      "rule_ref": "RULE-ORDER-01",
+      "cases_written": [
+        "late callback against a delivered order"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "the progression is ordinal, not numeric"
+    },
+    {
+      "rule_ref": "RULE-COPY-01",
+      "cases_written": [
+        "neutral failure wording"
+      ],
+      "cases_not_applicable": [
+        "race",
+        "replay"
+      ],
+      "justification": "message wording is a rendering property with no state to contend or repeat"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-03"
+    ],
+    "blocks": [
+      "STORY-PURCHASE-06"
+    ]
+  },
+  "dor": "pass",
+  "open_questions": [],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

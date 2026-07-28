@@ -1,0 +1,327 @@
+{
+  "id": "STORY-PURCHASE-03",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer checks out at a server-computed total",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "to review my cart, address, coupon, shipping and net total before paying",
+    "so_that": "I pay exactly what the merchant computed and not a value that was altered on the way"
+  },
+  "intent": "The merchant can stand behind the number the customer pays, which is what makes the storefront a real sales channel rather than a quotation form.",
+  "rule_refs": [
+    "RULE-CHECKOUT-01",
+    "RULE-CHECKOUT-02",
+    "RULE-CHECKOUT-03",
+    "RULE-CHECKOUT-04",
+    "RULE-COUPON-01",
+    "RULE-COUPON-02",
+    "RULE-COUPON-03"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-CART",
+    "ENTITY-ORDER"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "a server-computed total with a coupon and shipping",
+      "scenario_type": "happy",
+      "given": [
+        "a cart with a pre-discount subtotal of 1200 THB",
+        "an active coupon worth 100 THB and an address belonging to the customer"
+      ],
+      "when": "the customer confirms the order",
+      "then": [
+        "the server computes 1200 minus 100 plus 60 shipping, a total of 1160 THB",
+        "an order is created in awaiting-payment with its stock reserved"
+      ],
+      "rule_ref": "RULE-CHECKOUT-01",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "shipping is free exactly at the threshold",
+      "scenario_type": "boundary",
+      "given": [
+        "a cart with a pre-discount subtotal of exactly 1500 THB"
+      ],
+      "when": "the customer confirms the order",
+      "then": [
+        "shipping is 0 THB"
+      ],
+      "rule_ref": "RULE-CHECKOUT-02",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "shipping is charged just below the threshold",
+      "scenario_type": "boundary",
+      "given": [
+        "a cart with a pre-discount subtotal of 1499 THB"
+      ],
+      "when": "the customer confirms the order",
+      "then": [
+        "shipping is 60 THB"
+      ],
+      "rule_ref": "RULE-CHECKOUT-02",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "the threshold is read before the discount, not after",
+      "scenario_type": "boundary",
+      "given": [
+        "a cart with a pre-discount subtotal of 1600 THB and a 200 THB coupon"
+      ],
+      "when": "the customer confirms the order",
+      "then": [
+        "shipping is 0 THB because 1600 is at or above the threshold",
+        "the total is 1400 THB and not 1460 THB"
+      ],
+      "rule_ref": "RULE-CHECKOUT-02",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a discount larger than the goods total floors at zero",
+      "scenario_type": "boundary",
+      "given": [
+        "a cart with a subtotal of 80 THB and a coupon worth 100 THB"
+      ],
+      "when": "the customer confirms the order",
+      "then": [
+        "the goods component is 0 THB and never negative",
+        "no money is returned to the customer"
+      ],
+      "rule_ref": "RULE-COUPON-02",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a second coupon is refused",
+      "scenario_type": "error",
+      "given": [
+        "an order that already has one coupon applied"
+      ],
+      "when": "the customer enters a second coupon code",
+      "then": [
+        "the second coupon is refused with a neutral message",
+        "the first coupon stays applied"
+      ],
+      "rule_ref": "RULE-COUPON-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a coupon that expired while the customer browsed is caught at confirm",
+      "scenario_type": "error",
+      "given": [
+        "a coupon that was valid when the checkout page rendered and expired before confirm"
+      ],
+      "when": "the customer confirms",
+      "then": [
+        "the confirm is refused with the neutral message that the coupon is no longer valid",
+        "no order is created and no stock is reserved"
+      ],
+      "rule_ref": "RULE-COUPON-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a coupon at its per-customer quota is refused",
+      "scenario_type": "boundary",
+      "given": [
+        "a customer who has already used this coupon its permitted number of times"
+      ],
+      "when": "the customer applies it again and confirms",
+      "then": [
+        "the confirm is refused and the quota is not exceeded"
+      ],
+      "rule_ref": "RULE-COUPON-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "an address belonging to another customer is refused",
+      "scenario_type": "wrong_actor",
+      "given": [
+        "an address id that belongs to a different customer"
+      ],
+      "when": "the customer confirms the order against it",
+      "then": [
+        "the confirm is refused",
+        "no field of the other customer's address appears in the response"
+      ],
+      "rule_ref": "RULE-CHECKOUT-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "an empty cart cannot be confirmed",
+      "scenario_type": "edge_case",
+      "given": [
+        "a cart with no line items"
+      ],
+      "when": "the customer confirms",
+      "then": [
+        "the confirm is refused and no order is created"
+      ],
+      "rule_ref": "RULE-CHECKOUT-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a double-clicked confirm yields exactly one order",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "a confirm already accepted for this idempotency key"
+      ],
+      "when": "the customer confirms again with the same key",
+      "then": [
+        "the original order is returned unchanged",
+        "no second order, reservation or charge exists"
+      ],
+      "rule_ref": "RULE-CHECKOUT-04",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "order creation is audited",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any confirm that creates an order"
+      ],
+      "when": "it resolves",
+      "then": [
+        "an audit event records the event, actor, time, order id, total and audit id"
+      ],
+      "rule_ref": "RULE-CHECKOUT-01",
+      "derived_from": "rule_sweep"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "the chosen shipping address is a direct identifier snapshotted onto the order",
+      "fields_or_events": [
+        "shipping_address"
+      ],
+      "treatment": "snapshotted into the order; redacted in non-order logs"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "order creation is a financial event"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "a double-clicked confirm must not create a second order, reservation or charge",
+      "fields_or_events": [
+        "order_confirm"
+      ],
+      "treatment": "client idempotency key dedup"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "a confirm that fails downstream must release the stock it reserved",
+      "compensating_action": "release the stock reserved by this confirm"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "the cart and the chosen address must both belong to the confirming customer"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "the Consumer Protection Act and the Electronic Transactions Act require the total be shown before payment"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no suspicious-activity or sanctions context in retail checkout"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-CHECKOUT-01",
+      "cases_written": [
+        "server-computed happy path",
+        "audit emission"
+      ],
+      "justification": "all derivations for a constraint of this shape were written"
+    },
+    {
+      "rule_ref": "RULE-CHECKOUT-02",
+      "cases_written": [
+        "at 1500",
+        "just below at 1499",
+        "pre-discount reading at 1600 with a coupon"
+      ],
+      "justification": "the three threshold positions plus the ordering case the rule's wording turns on"
+    },
+    {
+      "rule_ref": "RULE-CHECKOUT-03",
+      "cases_written": [
+        "wrong-owner address",
+        "empty cart"
+      ],
+      "cases_not_applicable": [
+        "race"
+      ],
+      "justification": "the eligibility checks read state the confirm itself then locks, so the race lives in RULE-STOCK-05 where it is covered"
+    },
+    {
+      "rule_ref": "RULE-CHECKOUT-04",
+      "cases_written": [
+        "double-clicked confirm"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "an idempotency key is an identity, not a magnitude, so it has no boundary"
+    },
+    {
+      "rule_ref": "RULE-COUPON-01",
+      "cases_written": [
+        "a second coupon refused"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "the limit of one is the rule itself; zero and one are the happy and refused cases already written"
+    },
+    {
+      "rule_ref": "RULE-COUPON-02",
+      "cases_written": [
+        "discount exceeding the goods total, floored at zero"
+      ],
+      "cases_not_applicable": [
+        "race"
+      ],
+      "justification": "the calculation is evaluated inside the single confirm transaction"
+    },
+    {
+      "rule_ref": "RULE-COUPON-03",
+      "cases_written": [
+        "expiry between render and confirm",
+        "per-customer quota exhausted"
+      ],
+      "cases_not_applicable": [
+        "partial_failure"
+      ],
+      "justification": "re-validation reads one store and commits with the order"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-01",
+      "STORY-PURCHASE-05"
+    ],
+    "blocks": [
+      "STORY-PURCHASE-04"
+    ]
+  },
+  "dor": "pass",
+  "open_questions": [
+    "OQ-1"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

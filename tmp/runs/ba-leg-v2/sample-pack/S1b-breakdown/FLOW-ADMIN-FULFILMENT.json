@@ -1,0 +1,127 @@
+{
+  "id": "FLOW-ADMIN-FULFILMENT",
+  "name": "Back-office fulfilment journey",
+  "actor": "Merchant admin",
+  "trigger": "A paid order appears in the back-office queue.",
+  "steps": [
+    {
+      "seq": 1,
+      "actor": "admin",
+      "action": "reviews the paid order and confirms the goods are on hand",
+      "entity_refs": [
+        "ENTITY-ORDER",
+        "ENTITY-STOCK"
+      ],
+      "rule_refs": [
+        "RULE-ORDER-01"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ]
+    },
+    {
+      "seq": 2,
+      "actor": "admin",
+      "action": "adjusts stock to match a physical count, recording a reason",
+      "entity_refs": [
+        "ENTITY-STOCK"
+      ],
+      "rule_refs": [
+        "RULE-STOCK-06",
+        "RULE-STOCK-07"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-01"
+      ]
+    },
+    {
+      "seq": 3,
+      "actor": "admin",
+      "action": "moves the order to packing",
+      "entity_refs": [
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-ORDER-01"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ]
+    },
+    {
+      "seq": 4,
+      "actor": "admin",
+      "action": "dispatches with a tracking number and moves the order to shipped",
+      "entity_refs": [
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-ORDER-03"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ]
+    },
+    {
+      "seq": 5,
+      "actor": "admin",
+      "action": "records delivery",
+      "entity_refs": [
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-ORDER-01",
+        "RULE-ORDER-02"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ]
+    }
+  ],
+  "decision_points": [
+    {
+      "at_step": 3,
+      "question": "Has the customer asked to cancel before packing starts?",
+      "rule_refs": [
+        "RULE-ORDER-05",
+        "RULE-PAYMENT-03"
+      ],
+      "branches": [
+        {
+          "condition": "no cancellation requested",
+          "goes_to": "4"
+        },
+        {
+          "condition": "cancellation requested and packing has not started",
+          "goes_to": "outcome: cancelled before packing"
+        },
+        {
+          "condition": "cancellation requested after packing started",
+          "goes_to": "4"
+        }
+      ]
+    }
+  ],
+  "outcomes": [
+    {
+      "name": "order delivered",
+      "kind": "success",
+      "entity_state": "delivered",
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ]
+    },
+    {
+      "name": "cancelled before packing",
+      "kind": "escalation",
+      "entity_state": "cancelled",
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ]
+    }
+  ],
+  "story_refs": [
+    "STORY-BACKOFFICE-01",
+    "STORY-BACKOFFICE-02"
+  ]
+}

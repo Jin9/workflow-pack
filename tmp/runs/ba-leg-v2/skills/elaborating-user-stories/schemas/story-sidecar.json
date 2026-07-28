@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/elaborating-user-stories/schemas/story-sidecar.json",
+  "title": "elaborated story sidecar (STORY-PREFIX-NN-slug.json)",
+  "description": "One elaborated story: the breakdown skeleton plus the acceptance criteria and the forced banking-grade rows. The REQUIRED set is unchanged from the predecessor skill's story sidecar, so every downstream consumer contract keeps validating. What changed: each acceptance criterion may cite the RULE it verifies, an edge_case_ledger records the rule-anchored sweep, and the all-true dor_checklist and change_log are gone - Definition of Ready is now a verdict plus its failures, and git owns history.",
+  "type": "object",
+  "required": ["id", "epic_id", "title", "format", "card", "acceptance_criteria", "banking_grade_concerns", "priority"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "pattern": "^STORY-[A-Z0-9-]+-\\d+$" },
+    "epic_id": { "type": "string", "pattern": "^EPIC-[A-Z0-9-]+$" },
+    "title": { "type": "string", "minLength": 1 },
+    "format": { "type": "string", "enum": ["classic_user_story", "job_story", "spike"] },
+    "card": {
+      "type": "object",
+      "required": ["as_a", "i_want", "so_that"],
+      "additionalProperties": true,
+      "properties": {
+        "as_a": { "type": "string", "minLength": 1 },
+        "i_want": { "type": "string", "minLength": 1 },
+        "so_that": { "type": "string", "minLength": 12 }
+      }
+    },
+    "intent": { "type": "string", "description": "Carried forward verbatim from the skeleton. Elaboration never rewrites it - a changed intent means the breakdown changed and the gate has to see it again." },
+    "context": { "type": "string" },
+    "rule_refs": { "type": "array", "items": { "type": "string", "pattern": "^RULE-[A-Z0-9-]+-\\d+$" } },
+    "flow_refs": { "type": "array", "items": { "type": "string", "pattern": "^FLOW-[A-Z0-9-]+$" } },
+    "entity_refs": { "type": "array", "items": { "type": "string", "pattern": "^ENTITY-[A-Z0-9-]+$" } },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 3,
+      "description": "At least three: one happy, one error or edge, one banking-grade. Enforced in the skill's assembly gates as well as here.",
+      "items": {
+        "type": "object",
+        "required": ["scenario_name", "scenario_type", "given", "when", "then"],
+        "additionalProperties": true,
+        "properties": {
+          "scenario_name": { "type": "string", "minLength": 1 },
+          "scenario_type": {
+            "type": "string",
+            "enum": [
+              "happy",
+              "error",
+              "edge_case",
+              "boundary",
+              "replay",
+              "race",
+              "partial_failure",
+              "illegal_transition",
+              "wrong_actor",
+              "banking_grade_idempotency",
+              "banking_grade_audit",
+              "banking_grade_reversibility",
+              "banking_grade_authz",
+              "banking_grade_tipping_off"
+            ]
+          },
+          "given": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "when": { "type": "string", "minLength": 1, "description": "A SINGLE trigger. An 'and' chain is two scenarios (AP-8.2)." },
+          "then": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "rule_ref": {
+            "type": "string",
+            "pattern": "^RULE-[A-Z0-9-]+-\\d+$",
+            "description": "The rule this scenario verifies. Present on every scenario derived by the rule-anchored sweep; absent on scenarios that verify a story-local behaviour no catalogued rule governs."
+          },
+          "derived_from": {
+            "type": "string",
+            "enum": ["source_prose", "rule_sweep", "state_machine", "hidden_frame", "amigos_condition"],
+            "description": "Provenance of the scenario - which analysis produced it. Makes the sweep auditable."
+          }
+        }
+      }
+    },
+    "banking_grade_concerns": {
+      "type": "object",
+      "description": "All seven rows force-evaluated. An empty or missing row is a hard schema failure - this is the depth that does NOT get trimmed.",
+      "required": ["pii_fields", "audit_events", "idempotency", "reversibility", "authn_authz", "regulatory", "tipping_off"],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "justification"],
+        "additionalProperties": true,
+        "properties": {
+          "status": { "type": "string", "enum": ["applies", "not_applicable", "unknown"] },
+          "justification": { "type": "string", "minLength": 10 },
+          "fields_or_events": { "type": "array", "items": { "type": "string" } },
+          "treatment": { "type": "string" },
+          "compensating_action": { "type": "string" }
+        }
+      }
+    },
+    "edge_case_ledger": {
+      "type": "array",
+      "description": "One row per rule this story references, recording which derived case types were written and which were judged not applicable and why. This is what turns 'we thought about edge cases' into a countable claim.",
+      "items": {
+        "type": "object",
+        "required": ["rule_ref", "cases_written"],
+        "additionalProperties": true,
+        "properties": {
+          "rule_ref": { "type": "string", "pattern": "^RULE-[A-Z0-9-]+-\\d+$" },
+          "cases_written": { "type": "array", "items": { "type": "string" } },
+          "cases_not_applicable": { "type": "array", "items": { "type": "string" } },
+          "justification": { "type": "string" }
+        }
+      }
+    },
+    "priority": { "type": "string", "enum": ["Must", "Should", "Could", "Won't"] },
+    "sizing": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "story_points": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+        "complexity": { "type": "string" },
+        "split_required": { "type": "boolean" }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "depends_on": { "type": "array", "items": { "type": "string" } },
+        "blocks": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "dor": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Replaces the eight all-true booleans of the old dor_checklist. A pass says nothing more than the booleans did; a fail is the only informative case, and it carries its reasons."
+    },
+    "dor_failures": {
+      "type": "array",
+      "description": "Required when dor is fail; must be absent or empty when dor is pass.",
+      "items": { "type": "string" }
+    },
+    "open_questions": { "type": "array", "items": { "type": "string", "pattern": "^OQ-\\d+$" } },
+    "requirement_refs": { "type": "array", "items": { "type": "string" } },
+    "scope_ref": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "dor": { "const": "fail" } }, "required": ["dor"] },
+      "then": { "required": ["dor_failures"], "properties": { "dor_failures": { "minItems": 1 } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "banking_grade_concerns": {
+            "properties": { "idempotency": { "properties": { "status": { "const": "applies" } }, "required": ["status"] } },
+            "required": ["idempotency"]
+          }
+        },
+        "required": ["banking_grade_concerns"]
+      },
+      "then": {
+        "properties": {
+          "acceptance_criteria": {
+            "contains": { "properties": { "scenario_type": { "const": "banking_grade_idempotency" } }, "required": ["scenario_type"] }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "format": { "not": { "const": "spike" } } }, "required": ["format"] },
+      "then": { "required": ["rule_refs", "edge_case_ledger"], "properties": { "rule_refs": { "minItems": 1 } } }
+    }
+  ]
+}

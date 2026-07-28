@@ -1,0 +1,37 @@
+{
+  "id": "STORY-BACKOFFICE-01",
+  "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+  "title": "Admin corrects stock with a reason that survives audit",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "merchant admin",
+    "i_want": "to adjust a product's stock to match the shelf and record why",
+    "so_that": "the numbers can be reconciled later and never drop below what customers have already been promised"
+  },
+  "intent": "Stock drift becomes explainable rather than mysterious, and an adjustment can never quietly break a customer who is mid-payment.",
+  "rule_refs": [
+    "RULE-STOCK-04",
+    "RULE-STOCK-06",
+    "RULE-STOCK-07",
+    "RULE-AUDIT-01"
+  ],
+  "flow_refs": [
+    "FLOW-ADMIN-FULFILMENT"
+  ],
+  "entity_refs": [
+    "ENTITY-STOCK"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": []
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "id": "STORY-PURCHASE-06",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer tracks their own order at the price they agreed",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "to see my order's status timeline and the prices I actually agreed to",
+    "so_that": "I know where my order is and a later catalogue change never rewrites what I paid"
+  },
+  "intent": "Customers self-serve the question staff answer most often, and the merchant has an evidential record of what was agreed.",
+  "rule_refs": [
+    "RULE-ORDER-04",
+    "RULE-ORDER-06",
+    "RULE-ORDER-07",
+    "RULE-ORDER-08",
+    "RULE-PRIVACY-01"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-ORDER"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "a customer sees their own order with its frozen prices",
+      "scenario_type": "happy",
+      "given": [
+        "an order placed when the product cost 1290 THB",
+        "a later catalogue edit changing that product to 999 THB"
+      ],
+      "when": "the customer opens the order",
+      "then": [
+        "the order still shows 1290 THB",
+        "the product name and shipping address are the ones captured at purchase"
+      ],
+      "rule_ref": "RULE-ORDER-06",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "one customer cannot read another's order",
+      "scenario_type": "wrong_actor",
+      "given": [
+        "customer A signed in and an order belonging to customer B"
+      ],
+      "when": "customer A requests customer B's order by its number",
+      "then": [
+        "the request is refused",
+        "no field of customer B's order or personal data appears in the response"
+      ],
+      "rule_ref": "RULE-ORDER-08",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "order numbers are unique and not trivially predictable",
+      "scenario_type": "edge_case",
+      "given": [
+        "any two orders created in sequence"
+      ],
+      "when": "their numbers are compared",
+      "then": [
+        "the numbers differ across the whole system",
+        "the next number cannot be derived from the previous one by adding one"
+      ],
+      "rule_ref": "RULE-ORDER-07",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a customer cancels only while awaiting payment",
+      "scenario_type": "happy",
+      "given": [
+        "the customer's own order in awaiting-payment"
+      ],
+      "when": "the customer cancels it",
+      "then": [
+        "the order moves to cancelled and its reserved stock is released"
+      ],
+      "rule_ref": "RULE-ORDER-04",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "a customer cannot cancel an order that is already paid",
+      "scenario_type": "illegal_transition",
+      "given": [
+        "the customer's own order in paid"
+      ],
+      "when": "the customer attempts to cancel it",
+      "then": [
+        "the cancellation is refused and the order stays paid",
+        "the customer is directed to contact the merchant"
+      ],
+      "rule_ref": "RULE-ORDER-04",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "a customer cannot cancel another customer's order",
+      "scenario_type": "wrong_actor",
+      "given": [
+        "an order in awaiting-payment belonging to customer B"
+      ],
+      "when": "customer A attempts to cancel it",
+      "then": [
+        "the attempt is refused and the order is unchanged"
+      ],
+      "rule_ref": "RULE-ORDER-04",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "the order view leaks no other customer's personal data",
+      "scenario_type": "banking_grade_authz",
+      "given": [
+        "any order detail view"
+      ],
+      "when": "it renders",
+      "then": [
+        "only the owning customer's name, address and contact appear",
+        "no other customer's personal data is present in the response or in the logs it writes"
+      ],
+      "rule_ref": "RULE-PRIVACY-01",
+      "derived_from": "rule_sweep"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "the order view renders the customer name and the snapshotted shipping address",
+      "fields_or_events": [
+        "customer_name",
+        "shipping_address"
+      ],
+      "treatment": "own-data-only rendering; redacted in non-order logs"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "access to an order carrying personal data is itself audit-logged"
+    },
+    "idempotency": {
+      "status": "not_applicable",
+      "justification": "reading an order changes no state a repeat could duplicate"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "the customer cancellation this story exposes releases reserved stock",
+      "compensating_action": "release the stock reserved by the cancelled order"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "own-data-only isolation is the whole point of this story"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "PDPA B.E. 2562 s24 governs the personal data shown and the 5-year order retention envelope"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no financial-crime context in order tracking"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-ORDER-04",
+      "cases_written": [
+        "cancel while awaiting payment",
+        "cancel a paid order refused",
+        "cancel another customer's order refused"
+      ],
+      "justification": "all derivations for an authorization rule of this shape were written"
+    },
+    {
+      "rule_ref": "RULE-ORDER-06",
+      "cases_written": [
+        "price frozen against a later catalogue edit"
+      ],
+      "cases_not_applicable": [
+        "race"
+      ],
+      "justification": "the snapshot is written once at order creation and never updated"
+    },
+    {
+      "rule_ref": "RULE-ORDER-07",
+      "cases_written": [
+        "uniqueness and non-predictability across two orders"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "the rule constrains properties, not a magnitude"
+    },
+    {
+      "rule_ref": "RULE-ORDER-08",
+      "cases_written": [
+        "reading another customer's order refused"
+      ],
+      "cases_not_applicable": [
+        "replay"
+      ],
+      "justification": "a repeated read changes nothing"
+    },
+    {
+      "rule_ref": "RULE-PRIVACY-01",
+      "cases_written": [
+        "no other customer's data in the view or its logs"
+      ],
+      "cases_not_applicable": [
+        "boundary",
+        "race"
+      ],
+      "justification": "a leakage constraint has no numeric boundary and no contended write"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-04"
+    ],
+    "blocks": []
+  },
+  "dor": "pass",
+  "open_questions": [
+    "OQ-5"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

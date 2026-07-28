@@ -1,0 +1,173 @@
+{
+  "id": "STORY-PURCHASE-02",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer continues a session without signing in again",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "my session to refresh itself while I shop",
+    "so_that": "a long browse does not throw away my cart at the checkout step"
+  },
+  "intent": "A customer can take their time choosing without being logged out mid-purchase, which is where carts are abandoned for no business reason.",
+  "rule_refs": [
+    "RULE-AUTH-01",
+    "RULE-AUTH-04"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-SESSION"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "an expired session is refreshed and the refresh token rotates",
+      "scenario_type": "happy",
+      "given": [
+        "a customer whose access token has expired and whose refresh token is 3 days old"
+      ],
+      "when": "the customer presents the refresh token",
+      "then": [
+        "a new access token and a NEW refresh token are issued",
+        "the presented refresh token is no longer usable"
+      ],
+      "rule_ref": "RULE-AUTH-04",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "a refresh token at exactly 14 days is refused",
+      "scenario_type": "boundary",
+      "given": [
+        "a refresh token issued exactly 14 days ago"
+      ],
+      "when": "the customer presents it",
+      "then": [
+        "the refresh is refused and a fresh sign-in is required"
+      ],
+      "rule_ref": "RULE-AUTH-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "replaying an already-rotated refresh token invalidates the family",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "a refresh token that was already exchanged once"
+      ],
+      "when": "the same token is presented a second time",
+      "then": [
+        "the refresh is refused and no second live session is minted",
+        "every session descended from that token is revoked and a fresh sign-in is required"
+      ],
+      "rule_ref": "RULE-AUTH-04",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a revoked session cannot be refreshed back to active",
+      "scenario_type": "illegal_transition",
+      "given": [
+        "a session in the revoked state after a logout"
+      ],
+      "when": "a refresh token from that session is presented",
+      "then": [
+        "the refresh is refused and the session stays revoked"
+      ],
+      "rule_ref": "RULE-AUTH-04",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "session activity is recorded without exposing the token",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any refresh attempt"
+      ],
+      "when": "it resolves",
+      "then": [
+        "an audit event records the actor, the time and the outcome",
+        "no token value appears in the event"
+      ],
+      "rule_ref": "RULE-AUTH-04",
+      "derived_from": "rule_sweep"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "session tokens are credential-class data that must never be logged",
+      "fields_or_events": [
+        "session_tokens"
+      ],
+      "treatment": "hashed or opaque; never logged or displayed"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "refresh and revocation are security events that must be attributable"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "a replayed refresh token must not mint a second live session",
+      "fields_or_events": [
+        "refresh_exchange"
+      ],
+      "treatment": "single-use rotation with family invalidation on replay"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "rotation is irreversible for the presented token",
+      "compensating_action": "invalidate the session family and require a fresh sign-in"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "refresh extends an authenticated identity and is the obvious lateral-movement target"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "PDPA B.E. 2562 s24 account security governs session credentials"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no financial-crime context in session management"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-AUTH-01",
+      "cases_written": [
+        "at the 14-day refresh boundary"
+      ],
+      "cases_not_applicable": [
+        "race"
+      ],
+      "justification": "refresh is serialised per session family by the rotation itself"
+    },
+    {
+      "rule_ref": "RULE-AUTH-04",
+      "cases_written": [
+        "rotation happy path",
+        "replay of a rotated token",
+        "illegal refresh from revoked"
+      ],
+      "cases_not_applicable": [
+        "partial_failure"
+      ],
+      "justification": "rotation writes one record in one store, so there is no half-written outcome"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-01"
+    ],
+    "blocks": []
+  },
+  "dor": "pass",
+  "open_questions": [],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

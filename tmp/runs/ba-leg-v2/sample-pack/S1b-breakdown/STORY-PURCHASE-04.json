@@ -1,0 +1,44 @@
+{
+  "id": "STORY-PURCHASE-04",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer pays through the mock provider without being charged twice",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "to pay for a confirmed order and see the result honestly",
+    "so_that": "a slow network or a repeated provider message never takes my money twice"
+  },
+  "intent": "The zero double-charge quality KPI holds even when the provider or the customer repeats a signal, which is the difference between a demo and something that can take money.",
+  "rule_refs": [
+    "RULE-PAYMENT-01",
+    "RULE-PAYMENT-02",
+    "RULE-STOCK-03",
+    "RULE-ORDER-01",
+    "RULE-COPY-01"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-PAYMENT",
+    "ENTITY-ORDER",
+    "ENTITY-STOCK"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-03"
+    ],
+    "blocks": [
+      "STORY-PURCHASE-06"
+    ]
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

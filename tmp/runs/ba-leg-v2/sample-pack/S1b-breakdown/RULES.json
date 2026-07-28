@@ -1,0 +1,466 @@
+{
+  "audit_id": "8659756a-2c96-5816-967b-395f99790c77",
+  "rules": [
+    {
+      "id": "RULE-AUTH-01",
+      "statement": "An access token is valid for 15 minutes and a refresh token for 14 days; using a refresh token rotates it.",
+      "type": "threshold",
+      "source_ref": "gap-closed 19 (numeric policy parameters)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-SESSION"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-01",
+        "STORY-PURCHASE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-AUTH-02",
+      "statement": "Failed authentication returns one identical message whether the email is unknown or the password is wrong.",
+      "type": "constraint",
+      "source_ref": "gap-closed 8.1 (security) and the recorded epic metric account-enumeration leakage = 0",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-CUSTOMER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-01"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-AUTH-03",
+      "statement": "A password is stored only as a one-way hash and never appears in a log or an API response.",
+      "type": "constraint",
+      "source_ref": "gap-closed 6.7 (data privacy)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-CUSTOMER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-01"
+      ],
+      "regulatory_tie": "PDPA B.E. 2562 s24",
+      "open": false
+    },
+    {
+      "id": "RULE-AUTH-04",
+      "statement": "A rotated refresh token is single-use: replaying a already-rotated refresh token is refused and the session family is invalidated.",
+      "type": "state-transition",
+      "source_ref": "gap-closed 4.2 (signing up and logging in) plus 19 refresh-token lifetime",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-SESSION"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-CHECKOUT-01",
+      "statement": "The payable total is computed server-side at confirm; a client-supplied total is never trusted.",
+      "type": "constraint",
+      "source_ref": "gap-closed 4.6 (checkout)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ],
+      "regulatory_tie": "Consumer Protection Act; Electronic Transactions Act",
+      "open": false
+    },
+    {
+      "id": "RULE-CHECKOUT-02",
+      "statement": "Shipping is free when the pre-discount subtotal is 1,500 THB or more, and a flat 60 THB below that.",
+      "type": "threshold",
+      "source_ref": "gap-closed 6.3 (shipping fee) and 19 (approved by Merchant Owner)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-CHECKOUT-03",
+      "statement": "Confirm is refused unless the cart holds at least one item, every item is on sale and in stock, any coupon still validates, and the chosen address belongs to the confirming customer.",
+      "type": "eligibility",
+      "source_ref": "gap-closed 4.6 (final checks before confirm)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER",
+        "ENTITY-CART"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-CHECKOUT-04",
+      "statement": "Order confirm is idempotent on the client idempotency key: a repeat returns the original order and creates no second order, reservation or charge.",
+      "type": "constraint",
+      "source_ref": "gap-closed 4.7 (avoiding double-charges) and 17 (idempotency)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-COUPON-01",
+      "statement": "At most one coupon applies to an order; coupons do not stack.",
+      "type": "constraint",
+      "source_ref": "gap-closed 4.5 and 6.4 (coupon stacking)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-COUPON-02",
+      "statement": "A coupon discount floors the payable total at 0 THB; a discount larger than the goods total never returns money to the customer.",
+      "type": "calculation",
+      "source_ref": "gap-closed 4.5 and 6.4 (coupon stacking)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-COUPON-03",
+      "statement": "A coupon is re-validated at confirm against its active window and its total and per-customer quotas; the value shown on screen is never trusted.",
+      "type": "eligibility",
+      "source_ref": "gap-closed 4.5 (applying coupons) and 6.4",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-STOCK-01",
+      "statement": "Adding an item to a cart reserves nothing; stock is reserved for the ordered quantity at order confirm.",
+      "type": "state-transition",
+      "source_ref": "gap-closed 5.5 (stock reservation lifecycle)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-05"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-STOCK-02",
+      "statement": "A stock reservation expires 30 minutes after creation and its units return to available.",
+      "type": "threshold",
+      "source_ref": "gap-closed 5.5 and 19 (TTL approved by Operations Lead)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-05"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-STOCK-03",
+      "statement": "A successful payment converts reserved units to sold; a failed, timed-out or cancelled-before-payment order releases them back to available.",
+      "type": "state-transition",
+      "source_ref": "gap-closed 5.5 (stock reservation lifecycle)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-04",
+        "STORY-PURCHASE-05"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-STOCK-04",
+      "statement": "Available stock for a product never becomes negative, whether from concurrent confirms or from an admin adjustment.",
+      "type": "constraint",
+      "source_ref": "gap-closed 5.4 (managing inventory)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-05",
+        "STORY-BACKOFFICE-01"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-STOCK-05",
+      "statement": "When two confirms race for the last unit exactly one succeeds; the loser is refused at confirm with an out-of-stock error.",
+      "type": "constraint",
+      "source_ref": "gap-closed 5.5 (last-item race) and 20 (reliability)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-05"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-STOCK-06",
+      "statement": "An admin may not reduce a product's stock below the quantity currently reserved.",
+      "type": "constraint",
+      "source_ref": "gap-closed 5.5 (admin adjustment while reserved)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-01"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-STOCK-07",
+      "statement": "Every admin stock adjustment records the actor, the time, the signed delta and a mandatory reason.",
+      "type": "constraint",
+      "source_ref": "gap-closed 5.4 (managing inventory) and 6.6 (audit trail intent)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-01"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-01",
+      "statement": "An order advances awaiting-payment to paid to packing to shipped to delivered, and the sequence never runs backwards.",
+      "type": "state-transition",
+      "source_ref": "gap-closed 4.9 (tracking the order) and 5.7 (fulfilling orders)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-04",
+        "STORY-BACKOFFICE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-02",
+      "statement": "A delivered order can never be cancelled or moved to any other state.",
+      "type": "state-transition",
+      "source_ref": "gap-closed 4.9 and 5.7",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-03",
+      "statement": "Marking an order shipped requires a non-empty tracking number.",
+      "type": "constraint",
+      "source_ref": "gap-closed 5.7 (fulfilling orders, step 2)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-04",
+      "statement": "A customer may cancel only their own order and only while it is awaiting-payment.",
+      "type": "authorization",
+      "source_ref": "gap-closed 4.10 (cancelling an order)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-06"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-05",
+      "statement": "An admin may cancel a paid order only before packing has started, and must record a reason.",
+      "type": "authorization",
+      "source_ref": "gap-closed 4.10 and 5.7; approver named in 17 (Operations Lead)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-06",
+      "statement": "Price, product name and shipping address are snapshotted onto the order at creation; later catalogue edits never change an existing order.",
+      "type": "constraint",
+      "source_ref": "gap-closed 4.9 (price snapshot) and 6.8 (pricing snapshot principle)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-06"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-07",
+      "statement": "An order number is unique system-wide, human-readable, and not trivially predictable from the previous one.",
+      "type": "constraint",
+      "source_ref": "gap-closed 4.9 (order number)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-06"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-ORDER-08",
+      "statement": "A customer can read only their own orders.",
+      "type": "authorization",
+      "source_ref": "gap-closed 6.7 (data privacy) and 20 (own-data-only isolation)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-06"
+      ],
+      "regulatory_tie": "PDPA B.E. 2562 s24",
+      "open": false
+    },
+    {
+      "id": "RULE-PAYMENT-01",
+      "statement": "Payment callbacks are idempotent on the provider event id; a replayed callback never applies twice.",
+      "type": "constraint",
+      "source_ref": "gap-closed 4.7 and 17 (provider replay)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-PAYMENT"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-04"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-PAYMENT-02",
+      "statement": "A failed or timed-out payment can never later be confirmed as successful using the same payment transaction.",
+      "type": "state-transition",
+      "source_ref": "gap-closed 4.9 (rules to watch)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-PAYMENT"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-04"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-PAYMENT-03",
+      "statement": "A refund above 3,000 THB requires dual approval by Finance and the Merchant Owner; refunds are manual and recorded with an idempotency key.",
+      "type": "authorization",
+      "source_ref": "gap-closed 17 (manual-refund SOP) and 19 (dual-approval threshold)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-PAYMENT"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-COPY-01",
+      "statement": "Payment-failure and out-of-stock messages use neutral wording and never imply fraud, risk or wrongdoing.",
+      "type": "constraint",
+      "source_ref": "gap-closed 18 (customer-facing copy, UX and Legal reviewed)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-04"
+      ],
+      "regulatory_tie": "Consumer Protection Act",
+      "open": false
+    },
+    {
+      "id": "RULE-AUDIT-01",
+      "statement": "Every order status change and every stock adjustment records who acted, when, and what changed.",
+      "type": "constraint",
+      "source_ref": "gap-closed 6.6 (audit trail intent)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-ORDER",
+        "ENTITY-STOCK"
+      ],
+      "story_refs": [
+        "STORY-BACKOFFICE-01",
+        "STORY-BACKOFFICE-02"
+      ],
+      "open": false
+    },
+    {
+      "id": "RULE-PRIVACY-01",
+      "statement": "Personal data never appears in a log that does not need it, and no customer-facing screen shows another customer's personal data.",
+      "type": "constraint",
+      "source_ref": "gap-closed 6.7 (data privacy)",
+      "tier": "T2",
+      "applies_to_entities": [
+        "ENTITY-CUSTOMER",
+        "ENTITY-ORDER"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-06"
+      ],
+      "regulatory_tie": "PDPA B.E. 2562 s24",
+      "open": false
+    }
+  ]
+}

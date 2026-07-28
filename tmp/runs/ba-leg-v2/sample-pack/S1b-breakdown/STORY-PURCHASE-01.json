@@ -1,0 +1,39 @@
+{
+  "id": "STORY-PURCHASE-01",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer signs in to their own account",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "registered customer",
+    "i_want": "to sign in with my email and password and receive a session",
+    "so_that": "I can reach my own cart, addresses and orders and nobody else's"
+  },
+  "intent": "Customers stop depending on staff to identify them, and every later own-data-only check has an identity to enforce against.",
+  "rule_refs": [
+    "RULE-AUTH-01",
+    "RULE-AUTH-02",
+    "RULE-AUTH-03"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-CUSTOMER",
+    "ENTITY-SESSION"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": [
+      "STORY-PURCHASE-03"
+    ]
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

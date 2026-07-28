@@ -1,0 +1,259 @@
+{
+  "audit_id": "0ea85758-34a6-5c3e-ae73-493bb940109a",
+  "stage": "ba-research",
+  "state": "ready-for-tl",
+  "produced_by": "elaborating-user-stories 1.0.0",
+  "idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
+  "epics": [
+    {
+      "id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE/EPIC-STOREFRONT-PURCHASE.json",
+      "title": "A customer can buy something end to end",
+      "story_ids": [
+        "STORY-PURCHASE-01",
+        "STORY-PURCHASE-02",
+        "STORY-PURCHASE-03",
+        "STORY-PURCHASE-04",
+        "STORY-PURCHASE-05",
+        "STORY-PURCHASE-06"
+      ]
+    },
+    {
+      "id": "EPIC-BACKOFFICE-OPERATIONS",
+      "file": "EPIC-BACKOFFICE-OPERATIONS/EPIC-BACKOFFICE-OPERATIONS.json",
+      "title": "Staff run stock and fulfilment from one console",
+      "story_ids": [
+        "STORY-BACKOFFICE-01",
+        "STORY-BACKOFFICE-02"
+      ]
+    }
+  ],
+  "story_files": [
+    {
+      "id": "STORY-PURCHASE-01",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE/STORY-PURCHASE-01-customer-signs-in-to-their-own-account.json",
+      "title": "Customer signs in to their own account",
+      "slug": "customer-signs-in-to-their-own-account",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-02",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE/STORY-PURCHASE-02-customer-continues-a-session-without-signing-in-again.json",
+      "title": "Customer continues a session without signing in again",
+      "slug": "customer-continues-a-session-without-signing-in-again",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-03",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE/STORY-PURCHASE-03-customer-checks-out-at-a-server-computed-total.json",
+      "title": "Customer checks out at a server-computed total",
+      "slug": "customer-checks-out-at-a-server-computed-total",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-04",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE/STORY-PURCHASE-04-customer-pays-through-the-mock-provider-without-being-charged-twice.json",
+      "title": "Customer pays through the mock provider without being charged twice",
+      "slug": "customer-pays-through-the-mock-provider-without-being-charged-twice",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-05",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE/STORY-PURCHASE-05-stock-is-held-at-confirm-and-released-when-payment-does-not-complete.json",
+      "title": "Stock is held at confirm and released when payment does not complete",
+      "slug": "stock-is-held-at-confirm-and-released-when-payment-does-not-complete",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-06",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE/STORY-PURCHASE-06-customer-tracks-their-own-order-at-the-price-they-agreed.json",
+      "title": "Customer tracks their own order at the price they agreed",
+      "slug": "customer-tracks-their-own-order-at-the-price-they-agreed",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-BACKOFFICE-01",
+      "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+      "file": "EPIC-BACKOFFICE-OPERATIONS/STORY-BACKOFFICE-01-admin-corrects-stock-with-a-reason-that-survives-audit.json",
+      "title": "Admin corrects stock with a reason that survives audit",
+      "slug": "admin-corrects-stock-with-a-reason-that-survives-audit",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-BACKOFFICE-02",
+      "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+      "file": "EPIC-BACKOFFICE-OPERATIONS/STORY-BACKOFFICE-02-admin-advances-an-order-through-fulfilment-without-going-backwards.json",
+      "title": "Admin advances an order through fulfilment without going backwards",
+      "slug": "admin-advances-an-order-through-fulfilment-without-going-backwards",
+      "priority": "Must"
+    }
+  ],
+  "rules_file": "../S1b-breakdown/RULES.json",
+  "domain_file": "../S1b-breakdown/DOMAIN.json",
+  "flows": [
+    {
+      "id": "FLOW-CUSTOMER-PURCHASE",
+      "file": "../S1b-breakdown/FLOW-CUSTOMER-PURCHASE.json",
+      "name": "Customer purchase journey"
+    },
+    {
+      "id": "FLOW-ADMIN-FULFILMENT",
+      "file": "../S1b-breakdown/FLOW-ADMIN-FULFILMENT.json",
+      "name": "Back-office fulfilment journey"
+    }
+  ],
+  "governance_gaps": [],
+  "open_questions": [
+    {
+      "id": "OQ-1",
+      "severity": "P2",
+      "question": "When a coupon fails re-validation at confirm, does the order reprice without the coupon or is the confirm refused outright?",
+      "for": "dev",
+      "why_matters": "The two behaviours differ in observable outcome and in how many round trips the customer sees; RULE-COUPON-03 states the re-check but not the branch.",
+      "related_story_ids": [
+        "STORY-PURCHASE-03"
+      ],
+      "related_rule_ids": [
+        "RULE-COUPON-03"
+      ]
+    },
+    {
+      "id": "OQ-2",
+      "severity": "P2",
+      "question": "For the last-item race, is the winner the first confirm to reach the stock decrement, or the first to have opened checkout?",
+      "for": "dev",
+      "why_matters": "RULE-STOCK-05 fixes that exactly one wins but not the tie-break; the answer decides whether an ordering guarantee has to be built.",
+      "related_story_ids": [
+        "STORY-PURCHASE-05"
+      ],
+      "related_rule_ids": [
+        "RULE-STOCK-05"
+      ]
+    },
+    {
+      "id": "OQ-3",
+      "severity": "P2",
+      "question": "How is a 30-minute reservation expiry observed in test - is there a way to advance the clock, or must a test wait?",
+      "for": "tester",
+      "why_matters": "RULE-STOCK-02 is untestable in a pipeline gate without an injectable clock; deciding late forces either a 30-minute test or an untested rule.",
+      "related_story_ids": [
+        "STORY-PURCHASE-05"
+      ],
+      "related_rule_ids": [
+        "RULE-STOCK-02"
+      ]
+    },
+    {
+      "id": "OQ-4",
+      "severity": "P2",
+      "question": "Which admin actions must be provably rejected for a non-admin account, and how is that asserted in the fulfilment tests?",
+      "for": "tester",
+      "why_matters": "RULE-ORDER-05 names the authority but the negative-path coverage is a test-design decision that changes the story's acceptance criteria.",
+      "related_story_ids": [
+        "STORY-BACKOFFICE-02"
+      ],
+      "related_rule_ids": [
+        "RULE-ORDER-05"
+      ]
+    },
+    {
+      "id": "OQ-5",
+      "severity": "P3",
+      "question": "Does the order number have a stated format beyond being readable and not trivially predictable?",
+      "for": "PM",
+      "why_matters": "RULE-ORDER-07 constrains the properties, not the shape; customers quote this number to support.",
+      "related_story_ids": [
+        "STORY-PURCHASE-06"
+      ],
+      "related_rule_ids": [
+        "RULE-ORDER-07"
+      ]
+    }
+  ],
+  "assumptions_made": [
+    {
+      "assumption": "The last-item race is resolved at the stock decrement rather than at checkout entry.",
+      "why_made": "gap-closed 5.5 fixes that exactly one confirm wins but does not name the tie-break; deciding at the decrement is the only point where the invariant in RULE-STOCK-04 is enforceable.",
+      "provenance": "prose_ambiguity",
+      "default_revisit_trigger": "the three-amigos answer to OQ-2, or the first reported double-success in staging"
+    },
+    {
+      "assumption": "The 30-minute reservation clock is injectable so a pipeline gate can observe expiry without waiting.",
+      "why_made": "gap-closed 19 fixes the TTL but says nothing about observability; an un-injectable clock makes RULE-STOCK-02 untestable in CI.",
+      "provenance": "hidden_frame_sweep",
+      "frame": 6,
+      "default_revisit_trigger": "the three-amigos answer to OQ-3, before the first reservation test is written"
+    },
+    {
+      "assumption": "Order-confirm throughput at MVP stays within the quantified p95 of 1,200 ms without a queue in front of the reservation.",
+      "why_made": "gap-closed 20 states the latency target and gap-closed 7.1 bounds the build to one sprint; no volume figure is stated, so the simplest design is assumed until one is.",
+      "provenance": "hidden_frame_sweep",
+      "frame": 1,
+      "default_revisit_trigger": "the first month of measured confirm volume after launch"
+    }
+  ],
+  "rule_coverage": {
+    "rules_total": 32,
+    "rules_covered": 32,
+    "uncovered_rule_ids": [],
+    "transitions_total": 18,
+    "illegal_transition_cases": 7,
+    "open_rule_ids": []
+  },
+  "hidden_requirements_sweep": {
+    "frames_applied": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      9,
+      10
+    ],
+    "frames_skipped": [
+      3,
+      7,
+      8
+    ],
+    "frames_skipped_reasons": {
+      "3": "money and economics: every monetary policy parameter is already fixed and owner-approved in gap-closed 19, leaving no economic gap to elicit",
+      "7": "integration and dependencies: the payment and shipping providers are mocked in MVP scope (gap-closed 7.4, 7.5) so no external system is in play",
+      "8": "localization and culture: single market, single currency and single language are explicit constraints (gap-closed 6.1, 6.2, 7.3)"
+    },
+    "findings_per_frame": {
+      "1": 1,
+      "2": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "9": 1,
+      "10": 1
+    },
+    "total_findings": 7,
+    "coverage_score": "complete"
+  },
+  "count_check": {
+    "epics": 2,
+    "stories": 8,
+    "acceptance_criteria": 65,
+    "open_questions": 5
+  },
+  "upstream_refs": {
+    "source_artifacts": [
+      "ecommerce_mvp_business_only.gap-closed.md"
+    ],
+    "breakdown_audit_id": "8659756a-2c96-5816-967b-395f99790c77",
+    "discovery_audit_id": "9ddddd53-aaf6-597f-831e-2c1e3ca2afe6",
+    "amigos_approvers": [
+      "Khun Pim (ba-lead)",
+      "Khun Anan (dev-lead)",
+      "Khun Ratree (qa-lead)"
+    ]
+  }
+}

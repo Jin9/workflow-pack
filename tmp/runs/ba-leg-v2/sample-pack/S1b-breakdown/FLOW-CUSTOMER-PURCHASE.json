@@ -1,0 +1,239 @@
+{
+  "id": "FLOW-CUSTOMER-PURCHASE",
+  "name": "Customer purchase journey",
+  "actor": "Registered customer",
+  "trigger": "A logged-in customer has items in the cart and opens checkout.",
+  "steps": [
+    {
+      "seq": 1,
+      "actor": "customer",
+      "action": "signs in and receives an access and a refresh token",
+      "entity_refs": [
+        "ENTITY-SESSION"
+      ],
+      "rule_refs": [
+        "RULE-AUTH-01",
+        "RULE-AUTH-02"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-01"
+      ]
+    },
+    {
+      "seq": 2,
+      "actor": "customer",
+      "action": "opens checkout, chooses a stored address and optionally enters one coupon",
+      "entity_refs": [
+        "ENTITY-CART"
+      ],
+      "rule_refs": [
+        "RULE-COUPON-01",
+        "RULE-COUPON-03"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ]
+    },
+    {
+      "seq": 3,
+      "actor": "system",
+      "action": "computes subtotal, discount, shipping and net total server-side",
+      "entity_refs": [
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-CHECKOUT-01",
+        "RULE-CHECKOUT-02",
+        "RULE-COUPON-02"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ]
+    },
+    {
+      "seq": 4,
+      "actor": "customer",
+      "action": "confirms the order",
+      "entity_refs": [
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-CHECKOUT-03",
+        "RULE-CHECKOUT-04"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ]
+    },
+    {
+      "seq": 5,
+      "actor": "system",
+      "action": "reserves stock for every line and creates the order in awaiting-payment",
+      "entity_refs": [
+        "ENTITY-STOCK",
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-STOCK-01",
+        "RULE-STOCK-05"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-05"
+      ]
+    },
+    {
+      "seq": 6,
+      "actor": "customer",
+      "action": "pays through the mock provider",
+      "entity_refs": [
+        "ENTITY-PAYMENT"
+      ],
+      "rule_refs": [
+        "RULE-PAYMENT-01"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-04"
+      ]
+    },
+    {
+      "seq": 7,
+      "actor": "system",
+      "action": "converts the reservation to sold and moves the order to paid",
+      "entity_refs": [
+        "ENTITY-STOCK",
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-STOCK-03",
+        "RULE-ORDER-01"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-04"
+      ]
+    },
+    {
+      "seq": 8,
+      "actor": "customer",
+      "action": "tracks the order against its frozen price snapshot",
+      "entity_refs": [
+        "ENTITY-ORDER"
+      ],
+      "rule_refs": [
+        "RULE-ORDER-06",
+        "RULE-ORDER-08"
+      ],
+      "story_refs": [
+        "STORY-PURCHASE-06"
+      ]
+    }
+  ],
+  "decision_points": [
+    {
+      "at_step": 4,
+      "question": "Does the coupon still validate at confirm time?",
+      "rule_refs": [
+        "RULE-COUPON-03"
+      ],
+      "branches": [
+        {
+          "condition": "the coupon is active and within both quotas",
+          "goes_to": "5"
+        },
+        {
+          "condition": "the coupon expired or hit a quota while the customer browsed",
+          "goes_to": "outcome: confirm refused"
+        }
+      ]
+    },
+    {
+      "at_step": 5,
+      "question": "Is every ordered line still in stock at confirm?",
+      "rule_refs": [
+        "RULE-STOCK-05",
+        "RULE-CHECKOUT-03"
+      ],
+      "branches": [
+        {
+          "condition": "every line has enough available units",
+          "goes_to": "6"
+        },
+        {
+          "condition": "another confirm won the last unit first",
+          "goes_to": "outcome: out of stock at confirm"
+        }
+      ]
+    },
+    {
+      "at_step": 7,
+      "question": "Did the mock provider capture the payment?",
+      "rule_refs": [
+        "RULE-PAYMENT-01",
+        "RULE-PAYMENT-02"
+      ],
+      "branches": [
+        {
+          "condition": "captured",
+          "goes_to": "8"
+        },
+        {
+          "condition": "declined",
+          "goes_to": "outcome: payment not completed"
+        },
+        {
+          "condition": "no result before the reservation expires",
+          "goes_to": "outcome: reservation expired"
+        }
+      ]
+    }
+  ],
+  "outcomes": [
+    {
+      "name": "order placed and paid",
+      "kind": "success",
+      "entity_state": "paid",
+      "story_refs": [
+        "STORY-PURCHASE-04"
+      ]
+    },
+    {
+      "name": "confirm refused",
+      "kind": "failure",
+      "entity_state": "awaiting-payment",
+      "story_refs": [
+        "STORY-PURCHASE-03"
+      ]
+    },
+    {
+      "name": "out of stock at confirm",
+      "kind": "failure",
+      "entity_state": "awaiting-payment",
+      "story_refs": [
+        "STORY-PURCHASE-05"
+      ]
+    },
+    {
+      "name": "payment not completed",
+      "kind": "failure",
+      "entity_state": "payment-failed",
+      "story_refs": [
+        "STORY-PURCHASE-04"
+      ]
+    },
+    {
+      "name": "reservation expired",
+      "kind": "abandon",
+      "entity_state": "payment-timeout",
+      "story_refs": [
+        "STORY-PURCHASE-05"
+      ]
+    }
+  ],
+  "story_refs": [
+    "STORY-PURCHASE-01",
+    "STORY-PURCHASE-02",
+    "STORY-PURCHASE-03",
+    "STORY-PURCHASE-04",
+    "STORY-PURCHASE-05",
+    "STORY-PURCHASE-06"
+  ]
+}

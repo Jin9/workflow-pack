@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/elaborating-user-stories/schemas/input.json",
+  "title": "elaborating-user-stories stage input (POST-adapter payload at stage ba-research)",
+  "description": "The real payload the engine assembles for the elaboration stage: workflow input picks, the intake normalized_request, and the APPROVED breakdown pack nested under `breakdown` with its ref-chain already hydrated (epics, stories, rules, domain, flows dereferenced inline). ENFORCED fail-closed before the stage runs.",
+  "type": "object",
+  "required": ["raw_request", "requester", "normalized_request", "breakdown", "idempotency_key"],
+  "additionalProperties": true,
+  "properties": {
+    "raw_request": { "type": "string", "minLength": 1 },
+    "requester": { "type": "string", "minLength": 1 },
+    "normalized_request": { "type": "string", "minLength": 1 },
+    "idempotency_key": { "type": "string", "minLength": 1 },
+    "breakdown": {
+      "type": "object",
+      "description": "The ba-breakdown pack, hydrated. This is the AUTHORITATIVE shape of the work: elaboration adds detail to these stories and never re-groups the epics, invents a story, or restates a rule.",
+      "required": ["audit_id", "state", "epics", "stories", "rules", "domain", "flows"],
+      "additionalProperties": true,
+      "properties": {
+        "audit_id": { "type": "string", "description": "The breakdown's provenance id; recorded in upstream_refs, never reused as this stage's audit_id." },
+        "state": {
+          "type": "string",
+          "enum": ["ready-for-amigos", "blocked", "needs-clarification"],
+          "description": "Only ready-for-amigos may be elaborated. The engine gate enforces this; the skill re-checks it fail-closed."
+        },
+        "blocks_elaboration": { "type": "boolean" },
+        "epics": { "type": "array", "minItems": 1, "items": { "type": "object" } },
+        "stories": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Hydrated story SKELETONS: card, intent, rule_refs, flow_refs, entity_refs, priority, sizing, dependencies. No acceptance criteria - this stage writes them.",
+          "items": { "type": "object" }
+        },
+        "rules": {
+          "type": "object",
+          "required": ["rules"],
+          "additionalProperties": true,
+          "properties": { "rules": { "type": "array", "items": { "type": "object" } } }
+        },
+        "domain": {
+          "type": "object",
+          "required": ["entities"],
+          "additionalProperties": true,
+          "properties": { "entities": { "type": "array", "items": { "type": "object" } } }
+        },
+        "flows": { "type": "array", "minItems": 1, "items": { "type": "object" } },
+        "governance_gaps": { "type": "array", "items": { "type": "object" } },
+        "open_questions": { "type": "array", "items": { "type": "object" } },
+        "stakeholders": { "type": "array", "items": { "type": "object" } },
+        "legal_status": { "type": "string" }
+      }
+    },
+    "amigos_verdict": {
+      "type": "object",
+      "description": "The recorded three-amigos gate decision. Only `agreed` reaches this stage; the block is carried for provenance and to thread any conditions the reviewers attached.",
+      "additionalProperties": true,
+      "properties": {
+        "verdict": { "type": "string", "enum": ["agreed", "split-stories", "descope", "needs-rework"] },
+        "approvers": {
+          "type": "array",
+          "description": "Named humans, one per required role (ba-lead, dev-lead, qa-lead).",
+          "items": {
+            "type": "object",
+            "required": ["role", "name"],
+            "additionalProperties": true,
+            "properties": { "role": { "type": "string" }, "name": { "type": "string" } }
+          }
+        },
+        "conditions": { "type": "array", "items": { "type": "string" } },
+        "resolved_open_questions": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "upstream_artifacts": { "type": "object" },
+    "loop_back_feedback": { "type": "object" }
+  }
+}

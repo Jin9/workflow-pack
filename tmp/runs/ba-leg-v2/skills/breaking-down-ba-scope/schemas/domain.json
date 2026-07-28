@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/breaking-down-ba-scope/schemas/domain.json",
+  "title": "ba-breakdown domain model (DOMAIN.json)",
+  "description": "Entities, their state machines and their fields - plus the glossary. The per-field pii_class ABSORBS the old standalone pii_inventory table: a PII field is declared where the field is defined, once, instead of being re-listed per story. AP-4.1 becomes: an entity holding customer data with no field carrying a pii_class must justify it.",
+  "type": "object",
+  "required": ["audit_id", "entities"],
+  "additionalProperties": true,
+  "properties": {
+    "audit_id": { "type": "string", "format": "uuid" },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "owner", "key_fields"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^ENTITY-[A-Z0-9-]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 10 },
+          "owner": { "type": "string", "minLength": 1, "description": "The business role accountable for this entity's data." },
+          "retention": { "type": "string", "description": "Retention rule with its source. Absent on an entity holding personal or financial data raises retention_policy_unstated." },
+          "residency": { "type": "string" },
+          "key_fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["name", "pii_class"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "type": { "type": "string" },
+                "pii_class": {
+                  "type": "string",
+                  "enum": ["none", "direct", "indirect", "financial", "regulatory-confidential", "biometric"],
+                  "description": "Forced per field. 'none' is a decision that must survive review, not a default."
+                },
+                "lawful_basis": { "type": "string" },
+                "masking": { "type": "string" },
+                "notes": { "type": "string" }
+              },
+              "allOf": [
+                {
+                  "if": { "properties": { "pii_class": { "not": { "const": "none" } } }, "required": ["pii_class"] },
+                  "then": { "required": ["lawful_basis", "masking"] }
+                }
+              ]
+            }
+          },
+          "states": {
+            "type": "array",
+            "description": "Named lifecycle states. Present only for entities that HAVE a lifecycle; a lookup table has none.",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["from", "to", "trigger"],
+              "additionalProperties": false,
+              "properties": {
+                "from": { "type": "string" },
+                "to": { "type": "string" },
+                "trigger": { "type": "string", "minLength": 1 },
+                "guard": { "type": "string", "description": "The RULE id that gates this transition, when one does." },
+                "reversible": { "type": "boolean" },
+                "compensating_action": { "type": "string", "description": "Required when reversible is false and the transition moves money or external state." }
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "states": { "minItems": 1 } }, "required": ["states"] },
+            "then": { "required": ["transitions"], "properties": { "transitions": { "minItems": 1 } } }
+          }
+        ]
+      }
+    },
+    "glossary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["term", "definition"],
+        "additionalProperties": false,
+        "properties": {
+          "term": { "type": "string" },
+          "canonical_form": { "type": "string" },
+          "surface_form": { "type": "array", "items": { "type": "string" } },
+          "definition": { "type": "string", "minLength": 10 },
+          "regulatory_tie": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "id": "STORY-PURCHASE-03",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer checks out at a server-computed total",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "to review my cart, address, coupon, shipping and net total before paying",
+    "so_that": "I pay exactly what the merchant computed and not a value that was altered on the way"
+  },
+  "intent": "The merchant can stand behind the number the customer pays, which is what makes the storefront a real sales channel rather than a quotation form.",
+  "rule_refs": [
+    "RULE-CHECKOUT-01",
+    "RULE-CHECKOUT-02",
+    "RULE-CHECKOUT-03",
+    "RULE-CHECKOUT-04",
+    "RULE-COUPON-01",
+    "RULE-COUPON-02",
+    "RULE-COUPON-03"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-CART",
+    "ENTITY-ORDER"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-01",
+      "STORY-PURCHASE-05"
+    ],
+    "blocks": [
+      "STORY-PURCHASE-04"
+    ]
+  },
+  "open_question_refs": [
+    "OQ-1"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

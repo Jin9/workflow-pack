@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/breaking-down-ba-scope/schemas/input.json",
+  "title": "breaking-down-ba-scope stage input (POST-adapter payload at stage ba-breakdown)",
+  "description": "The real payload the engine assembles for the S1b ba-breakdown stage: workflow input picks (raw_request, requester), the intake pick (normalized_request, scope), the nested advisory discovery handoff, and the engine-injected idempotency_key. ENFORCED fail-closed before the stage runs.",
+  "type": "object",
+  "required": ["raw_request", "requester", "normalized_request", "idempotency_key"],
+  "additionalProperties": true,
+  "properties": {
+    "raw_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The raw BA input (Jira, Slack, meeting notes, email, mixed prose or a structured requirement doc). Ground-truth stripped and PII-redacted at preflight."
+    },
+    "requester": { "type": "string", "minLength": 1, "description": "Named human who raised the request; provenance." },
+    "normalized_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The PII-redacted normalized-request STRING produced by scoping-ba-intake (S0)."
+    },
+    "idempotency_key": { "type": "string", "minLength": 1, "description": "Engine-injected; the whole workflow shares one key." },
+    "scope": {
+      "type": "object",
+      "description": "The trimmed S0 scope contract. Advisory bounding context: it may narrow what is in play, never invent a rule or discharge a detector. Absent scope is byte-identical to scope-absent behaviour.",
+      "additionalProperties": true,
+      "properties": {
+        "business_goal": { "type": "string" },
+        "in_scope": { "type": "array", "items": { "type": "string" } },
+        "out_of_scope": { "type": "array", "items": { "type": "string" } },
+        "nfrs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "target"],
+            "additionalProperties": true,
+            "properties": { "kind": { "type": "string" }, "target": { "type": "string" } }
+          }
+        },
+        "open_questions": { "type": "array", "items": { "type": "object" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "risk_flags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "description": "Optional engine-nested handoff from s1-discovery, delivered AFTER its human gate. ADVISORY ONLY: it may raise a tier floor, seed absent-stakeholder rows and seed pending regulatory-citation rows. It can NEVER suppress a detector, lower a tier, satisfy a citation, or replace raw_request. Absent discovery is byte-identical.",
+      "additionalProperties": true,
+      "properties": {
+        "problem_framing": { "type": "object" },
+        "regulatory_regimes": { "type": "array", "items": { "type": "string" } },
+        "recommendation": { "type": "string", "enum": ["proceed", "needs-work", "do-not-build"] },
+        "audit_id": { "type": "string" },
+        "handoff_to_intake": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "tier_signal": { "type": "string", "enum": ["T1", "T2", "T3"] },
+            "stakeholder_hints": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "upstream_artifacts": { "type": "object", "description": "Engine-injected; optional." },
+    "loop_back_feedback": {
+      "type": "object",
+      "description": "Engine-injected on a three-amigos loop_back: the reviewers' findings threaded into the re-run.",
+      "additionalProperties": true,
+      "properties": {
+        "verdict": { "type": "string", "enum": ["split-stories", "descope", "needs-rework"] },
+        "findings": { "type": "array", "items": { "type": "object" } },
+        "reviewers": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

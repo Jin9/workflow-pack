@@ -1,0 +1,183 @@
+{
+  "id": "STORY-PURCHASE-01",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer signs in to their own account",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "registered customer",
+    "i_want": "to sign in with my email and password and receive a session",
+    "so_that": "I can reach my own cart, addresses and orders and nobody else's"
+  },
+  "intent": "Customers stop depending on staff to identify them, and every later own-data-only check has an identity to enforce against.",
+  "rule_refs": [
+    "RULE-AUTH-01",
+    "RULE-AUTH-02",
+    "RULE-AUTH-03"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-CUSTOMER",
+    "ENTITY-SESSION"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "customer signs in with valid credentials",
+      "scenario_type": "happy",
+      "given": [
+        "a registered customer with a verified email and the correct password"
+      ],
+      "when": "the customer submits the sign-in form",
+      "then": [
+        "an access token valid for 15 minutes and a refresh token valid for 14 days are issued",
+        "the customer reaches their own cart and order list"
+      ],
+      "rule_ref": "RULE-AUTH-01",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "an unknown email and a wrong password are indistinguishable",
+      "scenario_type": "error",
+      "given": [
+        "one sign-in attempt for an email that has no account",
+        "one sign-in attempt for a real account with the wrong password"
+      ],
+      "when": "the customer submits each attempt",
+      "then": [
+        "both responses carry the identical message and the identical status",
+        "neither response reveals whether the email exists"
+      ],
+      "rule_ref": "RULE-AUTH-02",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "the access token expires exactly at its lifetime",
+      "scenario_type": "boundary",
+      "given": [
+        "an access token issued 15 minutes ago"
+      ],
+      "when": "the customer calls an authenticated endpoint",
+      "then": [
+        "the request is refused as expired",
+        "the same call one minute earlier would have succeeded"
+      ],
+      "rule_ref": "RULE-AUTH-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a password never appears in any output",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any sign-in attempt, successful or failed"
+      ],
+      "when": "the attempt resolves",
+      "then": [
+        "no log line, response body or error trace contains the submitted password",
+        "the stored value is a one-way hash that cannot be reversed"
+      ],
+      "rule_ref": "RULE-AUTH-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "only the owning customer's data is reachable with the issued token",
+      "scenario_type": "banking_grade_authz",
+      "given": [
+        "customer A signed in and holding a valid access token"
+      ],
+      "when": "customer A requests customer B's cart",
+      "then": [
+        "the request is refused",
+        "no field of customer B's data appears in the response"
+      ],
+      "rule_ref": "RULE-AUTH-02",
+      "derived_from": "rule_sweep"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "the sign-in identifier is the customer email, a direct identifier",
+      "fields_or_events": [
+        "customer_email"
+      ],
+      "treatment": "redacted in logs; domain only in admin lists"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "authentication outcomes are security events that must be attributable"
+    },
+    "idempotency": {
+      "status": "not_applicable",
+      "justification": "sign-in is a read-shaped authentication with no state a repeat could duplicate"
+    },
+    "reversibility": {
+      "status": "not_applicable",
+      "justification": "issuing a session moves no money and writes no external state"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "this story IS the authentication boundary every later own-data check depends on"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "PDPA B.E. 2562 s24 governs the credential and the email as contract-basis personal data"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "no financial-crime context; the identical-message rule is anti-enumeration, not anti-tipping-off"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-AUTH-01",
+      "cases_written": [
+        "at the 15-minute boundary"
+      ],
+      "cases_not_applicable": [
+        "race",
+        "partial_failure"
+      ],
+      "justification": "token expiry is evaluated per request against a single clock, so no two actors contend and no second system of record is written"
+    },
+    {
+      "rule_ref": "RULE-AUTH-02",
+      "cases_written": [
+        "the identical-message pair",
+        "wrong actor reading another cart"
+      ],
+      "cases_not_applicable": [
+        "replay"
+      ],
+      "justification": "a repeated failed sign-in produces the same refusal with no state to duplicate"
+    },
+    {
+      "rule_ref": "RULE-AUTH-03",
+      "cases_written": [
+        "the no-echo audit case"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "a one-way hash has no numeric boundary to sit at"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": [
+      "STORY-PURCHASE-03"
+    ]
+  },
+  "dor": "pass",
+  "open_questions": [],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

@@ -1,0 +1,370 @@
+{
+  "audit_id": "8659756a-2c96-5816-967b-395f99790c77",
+  "entities": [
+    {
+      "id": "ENTITY-CUSTOMER",
+      "name": "Customer",
+      "description": "A person with an account who can place and track their own orders.",
+      "owner": "Data Protection Officer (Khun Apinya)",
+      "retention": "5 years after last order activity, then deleted or anonymised (gap-closed 16, Revenue Code envelope)",
+      "residency": "Thailand / Singapore (ap-southeast) only (gap-closed 16)",
+      "key_fields": [
+        {
+          "name": "customer_email",
+          "type": "string",
+          "pii_class": "direct",
+          "lawful_basis": "PDPA s24 contract; s19 consent for marketing",
+          "masking": "domain only in admin lists; redacted in logs"
+        },
+        {
+          "name": "customer_phone",
+          "type": "string",
+          "pii_class": "direct",
+          "lawful_basis": "PDPA s24 contract",
+          "masking": "last 4 digits in admin lists; redacted in logs"
+        },
+        {
+          "name": "customer_name",
+          "type": "string",
+          "pii_class": "direct",
+          "lawful_basis": "PDPA s24 contract",
+          "masking": "none in order context; redacted in non-order logs"
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "pii_class": "regulatory-confidential",
+          "lawful_basis": "PDPA s24 account security",
+          "masking": "one-way hash only; never displayed, logged or returned"
+        }
+      ]
+    },
+    {
+      "id": "ENTITY-SESSION",
+      "name": "Session",
+      "description": "An authenticated session represented by a short-lived access token and a rotating refresh token.",
+      "owner": "Tech Lead (Khun Anan)",
+      "retention": "session tokens purged after 90 days (gap-closed 16)",
+      "residency": "Thailand / Singapore (ap-southeast) only",
+      "key_fields": [
+        {
+          "name": "session_tokens",
+          "type": "opaque",
+          "pii_class": "regulatory-confidential",
+          "lawful_basis": "PDPA s24 account security",
+          "masking": "hashed or opaque; never logged or displayed"
+        }
+      ],
+      "states": [
+        "active",
+        "expired",
+        "rotated",
+        "revoked"
+      ],
+      "transitions": [
+        {
+          "from": "active",
+          "to": "expired",
+          "trigger": "the access token passes its 15-minute lifetime",
+          "guard": "RULE-AUTH-01",
+          "reversible": true
+        },
+        {
+          "from": "expired",
+          "to": "active",
+          "trigger": "the customer presents a valid refresh token",
+          "guard": "RULE-AUTH-01",
+          "reversible": true
+        },
+        {
+          "from": "active",
+          "to": "rotated",
+          "trigger": "a refresh token is exchanged",
+          "guard": "RULE-AUTH-04",
+          "reversible": false,
+          "compensating_action": "invalidate the whole session family and require a fresh login"
+        },
+        {
+          "from": "active",
+          "to": "revoked",
+          "trigger": "the customer logs out or a replayed refresh token is detected",
+          "guard": "RULE-AUTH-04",
+          "reversible": false,
+          "compensating_action": "none required - revocation is the safe terminal state"
+        }
+      ]
+    },
+    {
+      "id": "ENTITY-CART",
+      "name": "Cart",
+      "description": "A customer's working basket before checkout. Holds no stock.",
+      "owner": "Product Manager (Khun Pim)",
+      "retention": "purged after 30 days of inactivity (gap-closed 16)",
+      "residency": "Thailand / Singapore (ap-southeast) only",
+      "key_fields": [
+        {
+          "name": "cart_id",
+          "type": "string",
+          "pii_class": "none"
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "pii_class": "none"
+        }
+      ]
+    },
+    {
+      "id": "ENTITY-STOCK",
+      "name": "Stock",
+      "description": "Per-product inventory tracked as three quantities: available, reserved and sold.",
+      "owner": "Operations Lead (Khun Mali)",
+      "retention": "stock adjustment history retained 5 years with the audit record (gap-closed 16)",
+      "residency": "Thailand / Singapore (ap-southeast) only",
+      "key_fields": [
+        {
+          "name": "available",
+          "type": "integer",
+          "pii_class": "none"
+        },
+        {
+          "name": "reserved",
+          "type": "integer",
+          "pii_class": "none"
+        },
+        {
+          "name": "sold",
+          "type": "integer",
+          "pii_class": "none"
+        }
+      ],
+      "states": [
+        "available",
+        "reserved",
+        "sold"
+      ],
+      "transitions": [
+        {
+          "from": "available",
+          "to": "reserved",
+          "trigger": "a customer confirms an order for the quantity",
+          "guard": "RULE-STOCK-01",
+          "reversible": true
+        },
+        {
+          "from": "reserved",
+          "to": "available",
+          "trigger": "the 30-minute reservation expires, or payment fails, or the order is cancelled before payment",
+          "guard": "RULE-STOCK-03",
+          "reversible": true
+        },
+        {
+          "from": "reserved",
+          "to": "sold",
+          "trigger": "payment is captured successfully",
+          "guard": "RULE-STOCK-03",
+          "reversible": false,
+          "compensating_action": "an admin cancellation before packing returns the units to available and opens a manual refund under RULE-PAYMENT-03"
+        }
+      ]
+    },
+    {
+      "id": "ENTITY-ORDER",
+      "name": "Order",
+      "description": "A confirmed purchase with a frozen price snapshot, a status timeline and a human-readable order number.",
+      "owner": "Merchant Owner (Khun Wirat)",
+      "retention": "5 years (financial and dispute evidence, gap-closed 16, Revenue Code)",
+      "residency": "Thailand / Singapore (ap-southeast) only",
+      "key_fields": [
+        {
+          "name": "order_number",
+          "type": "string",
+          "pii_class": "none"
+        },
+        {
+          "name": "shipping_address",
+          "type": "object",
+          "pii_class": "direct",
+          "lawful_basis": "PDPA s24 contract and delivery",
+          "masking": "snapshotted into the order; redacted in non-order logs"
+        },
+        {
+          "name": "price_snapshot",
+          "type": "object",
+          "pii_class": "none"
+        },
+        {
+          "name": "tracking_number",
+          "type": "string",
+          "pii_class": "none"
+        }
+      ],
+      "states": [
+        "awaiting-payment",
+        "paid",
+        "packing",
+        "shipped",
+        "delivered",
+        "cancelled",
+        "payment-failed",
+        "payment-timeout"
+      ],
+      "transitions": [
+        {
+          "from": "awaiting-payment",
+          "to": "paid",
+          "trigger": "payment capture succeeds",
+          "guard": "RULE-PAYMENT-01",
+          "reversible": false,
+          "compensating_action": "an admin cancellation before packing releases the stock and opens a manual refund under RULE-PAYMENT-03"
+        },
+        {
+          "from": "awaiting-payment",
+          "to": "payment-failed",
+          "trigger": "the provider reports a declined payment",
+          "guard": "RULE-PAYMENT-02",
+          "reversible": false,
+          "compensating_action": "release the reserved stock under RULE-STOCK-03"
+        },
+        {
+          "from": "awaiting-payment",
+          "to": "payment-timeout",
+          "trigger": "no payment result arrives before the reservation expires",
+          "guard": "RULE-STOCK-02",
+          "reversible": false,
+          "compensating_action": "release the reserved stock under RULE-STOCK-03"
+        },
+        {
+          "from": "awaiting-payment",
+          "to": "cancelled",
+          "trigger": "the owning customer cancels",
+          "guard": "RULE-ORDER-04",
+          "reversible": false,
+          "compensating_action": "release the reserved stock under RULE-STOCK-03"
+        },
+        {
+          "from": "paid",
+          "to": "packing",
+          "trigger": "an admin starts picking the goods",
+          "guard": "RULE-ORDER-01",
+          "reversible": false,
+          "compensating_action": "none - the transition is internal and carries no external effect"
+        },
+        {
+          "from": "paid",
+          "to": "cancelled",
+          "trigger": "an admin cancels before packing, with a reason",
+          "guard": "RULE-ORDER-05",
+          "reversible": false,
+          "compensating_action": "release the sold stock to available and record a manual refund under RULE-PAYMENT-03"
+        },
+        {
+          "from": "packing",
+          "to": "shipped",
+          "trigger": "an admin dispatches with a tracking number",
+          "guard": "RULE-ORDER-03",
+          "reversible": false,
+          "compensating_action": "no in-MVP compensation - returns are out of scope (gap-closed 6.5)"
+        },
+        {
+          "from": "shipped",
+          "to": "delivered",
+          "trigger": "the goods reach the customer",
+          "guard": "RULE-ORDER-01",
+          "reversible": false,
+          "compensating_action": "no in-MVP compensation - returns are out of scope (gap-closed 6.5)"
+        }
+      ]
+    },
+    {
+      "id": "ENTITY-PAYMENT",
+      "name": "Payment",
+      "description": "A mock-provider payment attempt against one order, identified by a provider event id.",
+      "owner": "Finance Lead (Khun Decha)",
+      "retention": "5 years with the order record (gap-closed 16)",
+      "residency": "Thailand / Singapore (ap-southeast) only",
+      "key_fields": [
+        {
+          "name": "provider_event_id",
+          "type": "string",
+          "pii_class": "none"
+        },
+        {
+          "name": "amount_thb",
+          "type": "integer",
+          "pii_class": "financial",
+          "lawful_basis": "PDPA s24 contract",
+          "masking": "shown to the owning customer and to the back office only"
+        }
+      ],
+      "states": [
+        "initiated",
+        "captured",
+        "declined",
+        "timed-out"
+      ],
+      "transitions": [
+        {
+          "from": "initiated",
+          "to": "captured",
+          "trigger": "the provider reports success",
+          "guard": "RULE-PAYMENT-01",
+          "reversible": false,
+          "compensating_action": "manual refund recorded with an idempotency key under RULE-PAYMENT-03"
+        },
+        {
+          "from": "initiated",
+          "to": "declined",
+          "trigger": "the provider reports failure",
+          "guard": "RULE-PAYMENT-02",
+          "reversible": false,
+          "compensating_action": "none - no money moved"
+        },
+        {
+          "from": "initiated",
+          "to": "timed-out",
+          "trigger": "no provider result arrives in time",
+          "guard": "RULE-PAYMENT-02",
+          "reversible": false,
+          "compensating_action": "none - no money moved"
+        }
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "reservation",
+      "canonical_form": "stock reservation",
+      "surface_form": [
+        "กันสต๊อก",
+        "hold"
+      ],
+      "definition": "Units moved from available to reserved at order confirm, released after 30 minutes if payment does not complete."
+    },
+    {
+      "term": "price snapshot",
+      "canonical_form": "price snapshot",
+      "surface_form": [
+        "ราคา ณ เวลาที่สั่งซื้อ"
+      ],
+      "definition": "The price, product name and address frozen onto an order at creation so later catalogue edits cannot change it."
+    },
+    {
+      "term": "provider replay",
+      "canonical_form": "provider callback replay",
+      "surface_form": [
+        "callback ซ้ำ"
+      ],
+      "definition": "The mock payment provider re-sending a callback with an event id already processed; must not apply twice."
+    },
+    {
+      "term": "own-data-only",
+      "canonical_form": "own-data-only isolation",
+      "surface_form": [
+        "ดูได้เฉพาะของตัวเอง"
+      ],
+      "definition": "A customer may read only records they own; enforced on every customer-facing read.",
+      "regulatory_tie": "PDPA B.E. 2562 s24"
+    }
+  ]
+}

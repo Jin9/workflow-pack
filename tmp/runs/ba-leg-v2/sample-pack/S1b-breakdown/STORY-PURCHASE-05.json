@@ -1,0 +1,44 @@
+{
+  "id": "STORY-PURCHASE-05",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Stock is held at confirm and released when payment does not complete",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "merchant",
+    "i_want": "stock to be held the moment an order is confirmed and released if payment does not follow",
+    "so_that": "no customer ever pays for something the shelf does not have"
+  },
+  "intent": "The merchant can promise availability at the moment of purchase, which is the zero-overselling quality KPI and the reason customers trust the channel.",
+  "rule_refs": [
+    "RULE-STOCK-01",
+    "RULE-STOCK-02",
+    "RULE-STOCK-03",
+    "RULE-STOCK-04",
+    "RULE-STOCK-05"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-STOCK"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 13,
+    "complexity": "high",
+    "split_required": true
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": [
+      "STORY-PURCHASE-03"
+    ]
+  },
+  "open_question_refs": [
+    "OQ-2",
+    "OQ-3"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

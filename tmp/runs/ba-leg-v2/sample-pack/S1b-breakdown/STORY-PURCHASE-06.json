@@ -1,0 +1,43 @@
+{
+  "id": "STORY-PURCHASE-06",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer tracks their own order at the price they agreed",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "to see my order's status timeline and the prices I actually agreed to",
+    "so_that": "I know where my order is and a later catalogue change never rewrites what I paid"
+  },
+  "intent": "Customers self-serve the question staff answer most often, and the merchant has an evidential record of what was agreed.",
+  "rule_refs": [
+    "RULE-ORDER-04",
+    "RULE-ORDER-06",
+    "RULE-ORDER-07",
+    "RULE-ORDER-08",
+    "RULE-PRIVACY-01"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-ORDER"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-04"
+    ],
+    "blocks": []
+  },
+  "open_question_refs": [
+    "OQ-5"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

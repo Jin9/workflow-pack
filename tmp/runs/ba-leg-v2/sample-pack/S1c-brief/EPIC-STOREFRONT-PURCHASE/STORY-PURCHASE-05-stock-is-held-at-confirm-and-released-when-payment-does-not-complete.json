@@ -1,0 +1,248 @@
+{
+  "id": "STORY-PURCHASE-05",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Stock is held at confirm and released when payment does not complete",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "merchant",
+    "i_want": "stock to be held the moment an order is confirmed and released if payment does not follow",
+    "so_that": "no customer ever pays for something the shelf does not have"
+  },
+  "intent": "The merchant can promise availability at the moment of purchase, which is the zero-overselling quality KPI and the reason customers trust the channel.",
+  "rule_refs": [
+    "RULE-STOCK-01",
+    "RULE-STOCK-02",
+    "RULE-STOCK-03",
+    "RULE-STOCK-04",
+    "RULE-STOCK-05"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-STOCK"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "stock is reserved at confirm and not at add-to-cart",
+      "scenario_type": "happy",
+      "given": [
+        "a product with 5 units available and a customer holding one in a cart"
+      ],
+      "when": "the customer confirms an order for 1 unit",
+      "then": [
+        "available becomes 4 and reserved becomes 1",
+        "before the confirm the availability was unchanged at 5"
+      ],
+      "rule_ref": "RULE-STOCK-01",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "an expired reservation returns its units",
+      "scenario_type": "replay",
+      "given": [
+        "a reservation created 30 minutes ago with no payment result"
+      ],
+      "when": "the reservation expires",
+      "then": [
+        "the reserved units return to available",
+        "the order moves to payment-timeout"
+      ],
+      "rule_ref": "RULE-STOCK-02",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a reservation just short of the expiry still holds",
+      "scenario_type": "boundary",
+      "given": [
+        "a reservation created 29 minutes ago"
+      ],
+      "when": "the customer pays",
+      "then": [
+        "the payment succeeds and the units convert to sold"
+      ],
+      "rule_ref": "RULE-STOCK-02",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "two confirms for the last unit produce exactly one winner",
+      "scenario_type": "race",
+      "given": [
+        "a product with exactly 1 unit available",
+        "two customers confirming for that unit at the same moment"
+      ],
+      "when": "both confirms are processed",
+      "then": [
+        "exactly one order is created and reserved",
+        "the other customer is refused at confirm with the neutral out-of-stock message",
+        "available never becomes negative"
+      ],
+      "rule_ref": "RULE-STOCK-05",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "stock never goes negative under concurrent confirms",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "any number of concurrent confirms against one product"
+      ],
+      "when": "they are all processed",
+      "then": [
+        "available is never negative at any observable point",
+        "the sum of available, reserved and sold equals the physical count"
+      ],
+      "rule_ref": "RULE-STOCK-04",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a cancelled-before-payment order releases its hold",
+      "scenario_type": "edge_case",
+      "given": [
+        "an order in awaiting-payment with reserved units"
+      ],
+      "when": "the owning customer cancels it",
+      "then": [
+        "the reserved units return to available and the order moves to cancelled"
+      ],
+      "rule_ref": "RULE-STOCK-03",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "sold units cannot be released by an expiry",
+      "scenario_type": "illegal_transition",
+      "given": [
+        "units already converted to sold by a successful payment"
+      ],
+      "when": "a stale reservation-expiry job fires for that order",
+      "then": [
+        "the sold units are not returned to available",
+        "the order stays paid"
+      ],
+      "rule_ref": "RULE-STOCK-03",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "every stock movement is audited",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any reserve, release or conversion"
+      ],
+      "when": "it resolves",
+      "then": [
+        "an audit event records the product, the signed delta, the cause and the time"
+      ],
+      "rule_ref": "RULE-STOCK-04",
+      "derived_from": "rule_sweep"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "not_applicable",
+      "justification": "stock quantities are per product and identify no person"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "every reserve, release and conversion must be reconstructable when counts drift"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "a repeated reserve or a stale expiry must not double-move units",
+      "fields_or_events": [
+        "stock_reserve",
+        "stock_release"
+      ],
+      "treatment": "reservation identity keyed to the order line"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "a reservation is released on failure, timeout or cancellation",
+      "compensating_action": "return the reserved units to available"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "only a confirm by the owning customer may reserve against their order"
+    },
+    "regulatory": {
+      "status": "not_applicable",
+      "justification": "inventory holding is not itself a regulated activity in this scope"
+    },
+    "tipping_off": {
+      "status": "applies",
+      "justification": "the out-of-stock message a losing customer sees is customer-facing copy",
+      "fields_or_events": [
+        "out_of_stock_message"
+      ],
+      "treatment": "neutral wording reviewed by Legal and UX"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-STOCK-01",
+      "cases_written": [
+        "reserve at confirm and not at add-to-cart"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "the rule fixes when a hold is taken, not a quantity boundary"
+    },
+    {
+      "rule_ref": "RULE-STOCK-02",
+      "cases_written": [
+        "expiry at 30 minutes",
+        "just short at 29 minutes"
+      ],
+      "cases_not_applicable": [
+        "wrong_actor"
+      ],
+      "justification": "expiry is a system action with no actor to get wrong"
+    },
+    {
+      "rule_ref": "RULE-STOCK-03",
+      "cases_written": [
+        "cancel-before-payment release",
+        "stale expiry against sold units"
+      ],
+      "justification": "all derivations for a state-transition rule of this shape were written"
+    },
+    {
+      "rule_ref": "RULE-STOCK-04",
+      "cases_written": [
+        "never negative under concurrency",
+        "audit on every movement"
+      ],
+      "justification": "all derivations for a constraint of this shape were written"
+    },
+    {
+      "rule_ref": "RULE-STOCK-05",
+      "cases_written": [
+        "two confirms for the last unit"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "the rule is about contention resolution, and its quantity boundary is covered by RULE-STOCK-04"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 13,
+    "complexity": "high",
+    "split_required": true
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": [
+      "STORY-PURCHASE-03"
+    ]
+  },
+  "dor": "pass",
+  "open_questions": [
+    "OQ-2",
+    "OQ-3"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

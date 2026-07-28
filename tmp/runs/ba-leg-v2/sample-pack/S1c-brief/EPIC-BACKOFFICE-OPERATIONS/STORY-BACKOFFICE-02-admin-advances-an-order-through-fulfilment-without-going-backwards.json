@@ -1,0 +1,294 @@
+{
+  "id": "STORY-BACKOFFICE-02",
+  "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+  "title": "Admin advances an order through fulfilment without going backwards",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "merchant admin",
+    "i_want": "to move a paid order through packing, dispatch and delivery, and cancel it only before packing",
+    "so_that": "the customer-visible status is always true and a delivered order can never be rewritten"
+  },
+  "intent": "The status a customer sees becomes trustworthy, and the merchant gets an audit trail that stands up in a dispute.",
+  "rule_refs": [
+    "RULE-ORDER-01",
+    "RULE-ORDER-02",
+    "RULE-ORDER-03",
+    "RULE-ORDER-05",
+    "RULE-PAYMENT-03",
+    "RULE-AUDIT-01"
+  ],
+  "flow_refs": [
+    "FLOW-ADMIN-FULFILMENT"
+  ],
+  "entity_refs": [
+    "ENTITY-ORDER"
+  ],
+  "acceptance_criteria": [
+    {
+      "scenario_name": "an admin advances a paid order to delivered",
+      "scenario_type": "happy",
+      "given": [
+        "an order in paid"
+      ],
+      "when": "an admin moves it to packing, then to shipped with a tracking number, then to delivered",
+      "then": [
+        "each transition is accepted in order",
+        "the customer-visible timeline shows all three with their times"
+      ],
+      "rule_ref": "RULE-ORDER-01",
+      "derived_from": "source_prose"
+    },
+    {
+      "scenario_name": "dispatch without a tracking number is refused",
+      "scenario_type": "error",
+      "given": [
+        "an order in packing"
+      ],
+      "when": "an admin marks it shipped with an empty tracking number",
+      "then": [
+        "the transition is refused and the order stays in packing"
+      ],
+      "rule_ref": "RULE-ORDER-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "an order cannot move backwards from shipped",
+      "scenario_type": "illegal_transition",
+      "given": [
+        "an order in shipped"
+      ],
+      "when": "an admin attempts to move it back to packing",
+      "then": [
+        "the transition is refused and the order stays shipped"
+      ],
+      "rule_ref": "RULE-ORDER-01",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "a delivered order cannot be cancelled",
+      "scenario_type": "illegal_transition",
+      "given": [
+        "an order in delivered"
+      ],
+      "when": "an admin attempts to cancel it",
+      "then": [
+        "the cancellation is refused and the order stays delivered"
+      ],
+      "rule_ref": "RULE-ORDER-02",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "an admin cancels a paid order before packing with a reason",
+      "scenario_type": "happy",
+      "given": [
+        "an order in paid that has not started packing"
+      ],
+      "when": "an admin cancels it with a reason",
+      "then": [
+        "the order moves to cancelled and its stock returns to available",
+        "the reason is recorded in the audit trail"
+      ],
+      "rule_ref": "RULE-ORDER-05",
+      "derived_from": "state_machine"
+    },
+    {
+      "scenario_name": "cancellation after packing has started is refused",
+      "scenario_type": "boundary",
+      "given": [
+        "an order already in packing"
+      ],
+      "when": "an admin attempts a pre-packing cancellation",
+      "then": [
+        "the cancellation is refused and the order stays in packing"
+      ],
+      "rule_ref": "RULE-ORDER-05",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a refund above the dual-approval threshold needs two approvers",
+      "scenario_type": "banking_grade_reversibility",
+      "given": [
+        "a cancelled paid order whose refund is 3500 THB"
+      ],
+      "when": "the refund is recorded",
+      "then": [
+        "it is held until both Finance and the Merchant Owner have approved",
+        "it carries an idempotency key so it cannot be paid twice"
+      ],
+      "rule_ref": "RULE-PAYMENT-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a refund at exactly the threshold does not need dual approval",
+      "scenario_type": "boundary",
+      "given": [
+        "a cancelled paid order whose refund is exactly 3000 THB"
+      ],
+      "when": "the refund is recorded",
+      "then": [
+        "a single Finance approval is sufficient"
+      ],
+      "rule_ref": "RULE-PAYMENT-03",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "only an admin may advance an order",
+      "scenario_type": "banking_grade_authz",
+      "given": [
+        "a signed-in non-admin customer account"
+      ],
+      "when": "it attempts to move an order to shipped",
+      "then": [
+        "the attempt is refused and the order is unchanged"
+      ],
+      "rule_ref": "RULE-ORDER-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "a resubmitted transition does not append a second timeline entry",
+      "scenario_type": "banking_grade_idempotency",
+      "given": [
+        "an order already moved from paid to packing"
+      ],
+      "when": "the same paid-to-packing transition is submitted again after a client retry",
+      "then": [
+        "the order stays in packing with no second state change",
+        "the customer-visible timeline shows one packing entry"
+      ],
+      "rule_ref": "RULE-ORDER-01",
+      "derived_from": "rule_sweep"
+    },
+    {
+      "scenario_name": "every status change is attributable",
+      "scenario_type": "banking_grade_audit",
+      "given": [
+        "any accepted or refused status change"
+      ],
+      "when": "the audit trail is read",
+      "then": [
+        "the actor, the time, the from-state, the to-state and any reason are present"
+      ],
+      "rule_ref": "RULE-AUDIT-01",
+      "derived_from": "rule_sweep"
+    }
+  ],
+  "banking_grade_concerns": {
+    "pii_fields": {
+      "status": "applies",
+      "justification": "the fulfilment view renders the customer name and shipping address to staff",
+      "fields_or_events": [
+        "customer_name",
+        "shipping_address"
+      ],
+      "treatment": "shown to the back office only; redacted in non-order logs"
+    },
+    "audit_events": {
+      "status": "applies",
+      "justification": "every status change must record who, when and from which state"
+    },
+    "idempotency": {
+      "status": "applies",
+      "justification": "a resubmitted transition must not append a second timeline entry",
+      "fields_or_events": [
+        "order_status_change"
+      ],
+      "treatment": "transition keyed to the from-state so a repeat is a no-op"
+    },
+    "reversibility": {
+      "status": "applies",
+      "justification": "a pre-packing cancellation of a paid order returns stock and opens a manual refund",
+      "compensating_action": "release the sold units and record a manual refund, dual-approved above 3,000 THB"
+    },
+    "authn_authz": {
+      "status": "applies",
+      "justification": "only an admin may advance an order; the pre-packing cancellation is approved by the Operations Lead"
+    },
+    "regulatory": {
+      "status": "applies",
+      "justification": "the Revenue Code 5-year envelope covers the order and audit records; refunds follow the Finance-owned manual SOP"
+    },
+    "tipping_off": {
+      "status": "not_applicable",
+      "justification": "cancellation reasons are internal; no customer-facing wording implies wrongdoing"
+    }
+  },
+  "edge_case_ledger": [
+    {
+      "rule_ref": "RULE-ORDER-01",
+      "cases_written": [
+        "full progression to delivered",
+        "backwards from shipped refused",
+        "non-admin refused",
+        "resubmitted transition is a no-op"
+      ],
+      "justification": "all derivations for a state-transition rule of this shape were written, including the replay case its idempotency row claims"
+    },
+    {
+      "rule_ref": "RULE-ORDER-02",
+      "cases_written": [
+        "cancelling a delivered order refused"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "a terminal state has no magnitude"
+    },
+    {
+      "rule_ref": "RULE-ORDER-03",
+      "cases_written": [
+        "dispatch with an empty tracking number refused"
+      ],
+      "cases_not_applicable": [
+        "race"
+      ],
+      "justification": "the transition is performed by one admin against one order"
+    },
+    {
+      "rule_ref": "RULE-ORDER-05",
+      "cases_written": [
+        "cancel before packing with a reason",
+        "cancel after packing refused"
+      ],
+      "justification": "both sides of the packing boundary were written"
+    },
+    {
+      "rule_ref": "RULE-PAYMENT-03",
+      "cases_written": [
+        "above the 3000 THB threshold needs two approvers",
+        "exactly at 3000 THB needs one"
+      ],
+      "cases_not_applicable": [
+        "replay"
+      ],
+      "justification": "the refund carries an idempotency key whose replay case is covered under RULE-PAYMENT-01"
+    },
+    {
+      "rule_ref": "RULE-AUDIT-01",
+      "cases_written": [
+        "every status change is attributable"
+      ],
+      "cases_not_applicable": [
+        "boundary"
+      ],
+      "justification": "an attribution constraint has no magnitude"
+    }
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": []
+  },
+  "dor": "pass",
+  "open_questions": [
+    "OQ-4"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ],
+  "scope_ref": "../INDEX.json"
+}

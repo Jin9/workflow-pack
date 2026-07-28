@@ -1,0 +1,37 @@
+{
+  "id": "STORY-PURCHASE-02",
+  "epic_id": "EPIC-STOREFRONT-PURCHASE",
+  "title": "Customer continues a session without signing in again",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "signed-in customer",
+    "i_want": "my session to refresh itself while I shop",
+    "so_that": "a long browse does not throw away my cart at the checkout step"
+  },
+  "intent": "A customer can take their time choosing without being logged out mid-purchase, which is where carts are abandoned for no business reason.",
+  "rule_refs": [
+    "RULE-AUTH-01",
+    "RULE-AUTH-04"
+  ],
+  "flow_refs": [
+    "FLOW-CUSTOMER-PURCHASE"
+  ],
+  "entity_refs": [
+    "ENTITY-SESSION"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 5,
+    "complexity": "medium",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [
+      "STORY-PURCHASE-01"
+    ],
+    "blocks": []
+  },
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "STORY-BACKOFFICE-02",
+  "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+  "title": "Admin advances an order through fulfilment without going backwards",
+  "format": "classic_user_story",
+  "card": {
+    "as_a": "merchant admin",
+    "i_want": "to move a paid order through packing, dispatch and delivery, and cancel it only before packing",
+    "so_that": "the customer-visible status is always true and a delivered order can never be rewritten"
+  },
+  "intent": "The status a customer sees becomes trustworthy, and the merchant gets an audit trail that stands up in a dispute.",
+  "rule_refs": [
+    "RULE-ORDER-01",
+    "RULE-ORDER-02",
+    "RULE-ORDER-03",
+    "RULE-ORDER-05",
+    "RULE-PAYMENT-03",
+    "RULE-AUDIT-01"
+  ],
+  "flow_refs": [
+    "FLOW-ADMIN-FULFILMENT"
+  ],
+  "entity_refs": [
+    "ENTITY-ORDER"
+  ],
+  "priority": "Must",
+  "sizing": {
+    "story_points": 8,
+    "complexity": "high",
+    "split_required": false
+  },
+  "dependencies": {
+    "depends_on": [],
+    "blocks": []
+  },
+  "open_question_refs": [
+    "OQ-4"
+  ],
+  "requirement_refs": [
+    "shoppilot-mvp"
+  ]
+}

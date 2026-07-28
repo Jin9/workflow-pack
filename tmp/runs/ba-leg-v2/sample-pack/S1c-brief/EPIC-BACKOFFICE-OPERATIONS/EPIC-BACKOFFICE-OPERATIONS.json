@@ -1,0 +1,149 @@
+{
+  "id": "EPIC-BACKOFFICE-OPERATIONS",
+  "title": "Staff run stock and fulfilment from one console",
+  "story_prefix": "BACKOFFICE",
+  "problem_statement": "Merchant staff have no single place to keep stock honest and move paid orders to the customer. Stock drift and fulfilment lag are handled by memory and message threads.",
+  "business_value": "Staff keep inventory accurate and move paid orders through packing and dispatch from one console, which is the operational handling time and same-day fulfilment KPI in gap-closed 3.3.",
+  "why_now": "Without it the storefront's stock numbers drift from the shelf within days of launch.",
+  "success_criteria": [
+    {
+      "metric": "orders whose status an admin advances on the day the customer paid",
+      "target": "measured from launch as the operational baseline",
+      "measurement_method": "status-change timestamps in the audit trail (gap-closed 3.3)"
+    },
+    {
+      "metric": "illegal backward status transitions accepted",
+      "target": "0",
+      "measurement_method": "state-machine guard on every transition (gap-closed 5.7)"
+    },
+    {
+      "metric": "stock adjustments recorded without an actor and a reason",
+      "target": "0",
+      "measurement_method": "audit-trail completeness check (gap-closed 5.4, 6.6)"
+    }
+  ],
+  "decoupling": {
+    "independently_valuable": true,
+    "own_success_metric": true,
+    "sibling_dependencies": [],
+    "rationale": "Keeping stock accurate and auditable is value staff receive whether or not a single order exists, and it carries its own operational KPI. The fulfilment half does consume orders the purchase epic produces, but that is a sequencing dependency inside a delivery plan, not the business dependency test 3 asks about: this epic's value proposition does not require the other to have shipped.",
+    "merged_from": [
+      "candidate EPIC-INVENTORY admin half - the same console, the same operational value (test 3)",
+      "candidate EPIC-ORDER admin-fulfilment half - the same console, the same operational value (test 3)"
+    ],
+    "split_axis": "role-boundary"
+  },
+  "scope": {
+    "in": [
+      "stock adjustment with a mandatory reason",
+      "the reserved-quantity floor on adjustments",
+      "the paid to packing to shipped to delivered progression",
+      "pre-packing cancellation with a reason",
+      "an audit record on every change"
+    ],
+    "out_explicit": [
+      "automated refunds",
+      "returns processing",
+      "review moderation"
+    ],
+    "out_deferred": [
+      "catalogue and coupon administration - present in the source requirement but outside this sample's scope"
+    ]
+  },
+  "stakeholders": [
+    {
+      "role": "Product Manager",
+      "name_or_team": "Khun Pim",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Merchant Owner",
+      "name_or_team": "Khun Wirat",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Operations Lead",
+      "name_or_team": "Khun Mali",
+      "raci": "R",
+      "status": "present"
+    },
+    {
+      "role": "Marketing Lead",
+      "name_or_team": "Khun Fah",
+      "raci": "R",
+      "status": "present"
+    },
+    {
+      "role": "Legal Counsel",
+      "name_or_team": "Khun Somchai",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Data Protection Officer",
+      "name_or_team": "Khun Apinya",
+      "raci": "A",
+      "status": "present"
+    },
+    {
+      "role": "Compliance Officer",
+      "name_or_team": "Khun Niran",
+      "raci": "C",
+      "status": "present"
+    },
+    {
+      "role": "Finance Lead",
+      "name_or_team": "Khun Decha",
+      "raci": "R",
+      "status": "present"
+    },
+    {
+      "role": "UX Lead",
+      "name_or_team": "Khun Ploy",
+      "raci": "C",
+      "status": "present"
+    },
+    {
+      "role": "Tech Lead",
+      "name_or_team": "Khun Anan",
+      "raci": "C",
+      "status": "present"
+    }
+  ],
+  "legal_status": "present",
+  "inferred_tier": "T2",
+  "tier_signals": [
+    "back-office actor acting on orders that carry direct personal data (gap-closed 15)",
+    "dual-approval money policy above 3,000 THB (gap-closed 19)"
+  ],
+  "rule_refs": [
+    "RULE-STOCK-04",
+    "RULE-STOCK-06",
+    "RULE-STOCK-07",
+    "RULE-AUDIT-01",
+    "RULE-ORDER-01",
+    "RULE-ORDER-02",
+    "RULE-ORDER-03",
+    "RULE-ORDER-05",
+    "RULE-PAYMENT-03"
+  ],
+  "flow_refs": [
+    "FLOW-ADMIN-FULFILMENT"
+  ],
+  "story_refs": [
+    {
+      "id": "STORY-BACKOFFICE-01",
+      "slug": "admin-corrects-stock-with-a-reason-that-survives-audit",
+      "file": "STORY-BACKOFFICE-01-admin-corrects-stock-with-a-reason-that-survives-audit.json",
+      "title": "Admin corrects stock with a reason that survives audit"
+    },
+    {
+      "id": "STORY-BACKOFFICE-02",
+      "slug": "admin-advances-an-order-through-fulfilment-without-going-backwards",
+      "file": "STORY-BACKOFFICE-02-admin-advances-an-order-through-fulfilment-without-going-backwards.json",
+      "title": "Admin advances an order through fulfilment without going backwards"
+    }
+  ]
+}

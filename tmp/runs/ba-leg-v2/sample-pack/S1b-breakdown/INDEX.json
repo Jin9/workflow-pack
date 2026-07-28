@@ -1,0 +1,273 @@
+{
+  "audit_id": "8659756a-2c96-5816-967b-395f99790c77",
+  "stage": "ba-breakdown",
+  "state": "ready-for-amigos",
+  "produced_by": "breaking-down-ba-scope 1.0.0",
+  "idempotency_key": "3f6c0b2e-7a41-4d9b-9c2a-8e5b1f0a4d22",
+  "scope_kind": "multi-epic",
+  "epics": [
+    {
+      "id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "EPIC-STOREFRONT-PURCHASE.json",
+      "title": "A customer can buy something end to end",
+      "story_prefix": "PURCHASE",
+      "story_ids": [
+        "STORY-PURCHASE-01",
+        "STORY-PURCHASE-02",
+        "STORY-PURCHASE-03",
+        "STORY-PURCHASE-04",
+        "STORY-PURCHASE-05",
+        "STORY-PURCHASE-06"
+      ]
+    },
+    {
+      "id": "EPIC-BACKOFFICE-OPERATIONS",
+      "file": "EPIC-BACKOFFICE-OPERATIONS.json",
+      "title": "Staff run stock and fulfilment from one console",
+      "story_prefix": "BACKOFFICE",
+      "story_ids": [
+        "STORY-BACKOFFICE-01",
+        "STORY-BACKOFFICE-02"
+      ]
+    }
+  ],
+  "story_files": [
+    {
+      "id": "STORY-PURCHASE-01",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "STORY-PURCHASE-01.json",
+      "title": "Customer signs in to their own account",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-02",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "STORY-PURCHASE-02.json",
+      "title": "Customer continues a session without signing in again",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-03",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "STORY-PURCHASE-03.json",
+      "title": "Customer checks out at a server-computed total",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-04",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "STORY-PURCHASE-04.json",
+      "title": "Customer pays through the mock provider without being charged twice",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-05",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "STORY-PURCHASE-05.json",
+      "title": "Stock is held at confirm and released when payment does not complete",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-PURCHASE-06",
+      "epic_id": "EPIC-STOREFRONT-PURCHASE",
+      "file": "STORY-PURCHASE-06.json",
+      "title": "Customer tracks their own order at the price they agreed",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-BACKOFFICE-01",
+      "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+      "file": "STORY-BACKOFFICE-01.json",
+      "title": "Admin corrects stock with a reason that survives audit",
+      "priority": "Must"
+    },
+    {
+      "id": "STORY-BACKOFFICE-02",
+      "epic_id": "EPIC-BACKOFFICE-OPERATIONS",
+      "file": "STORY-BACKOFFICE-02.json",
+      "title": "Admin advances an order through fulfilment without going backwards",
+      "priority": "Must"
+    }
+  ],
+  "flows": [
+    {
+      "id": "FLOW-CUSTOMER-PURCHASE",
+      "file": "FLOW-CUSTOMER-PURCHASE.json",
+      "name": "Customer purchase journey"
+    },
+    {
+      "id": "FLOW-ADMIN-FULFILMENT",
+      "file": "FLOW-ADMIN-FULFILMENT.json",
+      "name": "Back-office fulfilment journey"
+    }
+  ],
+  "rules_file": "RULES.json",
+  "domain_file": "DOMAIN.json",
+  "stakeholders": [
+    {
+      "role": "Product Manager",
+      "name_or_team": "Khun Pim",
+      "raci": "A",
+      "status": "present",
+      "authority_mode": "rule",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Merchant Owner",
+      "name_or_team": "Khun Wirat",
+      "raci": "A",
+      "status": "present",
+      "authority_mode": "rule",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Operations Lead",
+      "name_or_team": "Khun Mali",
+      "raci": "R",
+      "status": "present",
+      "authority_mode": "rule",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Marketing Lead",
+      "name_or_team": "Khun Fah",
+      "raci": "R",
+      "status": "present",
+      "authority_mode": "proposal",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Legal Counsel",
+      "name_or_team": "Khun Somchai",
+      "raci": "A",
+      "status": "present",
+      "authority_mode": "rule",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Data Protection Officer",
+      "name_or_team": "Khun Apinya",
+      "raci": "A",
+      "status": "present",
+      "authority_mode": "rule",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Compliance Officer",
+      "name_or_team": "Khun Niran",
+      "raci": "C",
+      "status": "present",
+      "authority_mode": "rule",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Finance Lead",
+      "name_or_team": "Khun Decha",
+      "raci": "R",
+      "status": "present",
+      "authority_mode": "rule",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "UX Lead",
+      "name_or_team": "Khun Ploy",
+      "raci": "C",
+      "status": "present",
+      "authority_mode": "preference",
+      "attribution_confidence": "named"
+    },
+    {
+      "role": "Tech Lead",
+      "name_or_team": "Khun Anan",
+      "raci": "C",
+      "status": "present",
+      "authority_mode": "estimate",
+      "attribution_confidence": "named"
+    }
+  ],
+  "legal_status": "present",
+  "governance_gaps": [],
+  "open_questions": [
+    {
+      "id": "OQ-1",
+      "severity": "P2",
+      "question": "When a coupon fails re-validation at confirm, does the order reprice without the coupon or is the confirm refused outright?",
+      "for": "dev",
+      "why_matters": "The two behaviours differ in observable outcome and in how many round trips the customer sees; RULE-COUPON-03 states the re-check but not the branch.",
+      "related_story_ids": [
+        "STORY-PURCHASE-03"
+      ],
+      "related_rule_ids": [
+        "RULE-COUPON-03"
+      ]
+    },
+    {
+      "id": "OQ-2",
+      "severity": "P2",
+      "question": "For the last-item race, is the winner the first confirm to reach the stock decrement, or the first to have opened checkout?",
+      "for": "dev",
+      "why_matters": "RULE-STOCK-05 fixes that exactly one wins but not the tie-break; the answer decides whether an ordering guarantee has to be built.",
+      "related_story_ids": [
+        "STORY-PURCHASE-05"
+      ],
+      "related_rule_ids": [
+        "RULE-STOCK-05"
+      ]
+    },
+    {
+      "id": "OQ-3",
+      "severity": "P2",
+      "question": "How is a 30-minute reservation expiry observed in test - is there a way to advance the clock, or must a test wait?",
+      "for": "tester",
+      "why_matters": "RULE-STOCK-02 is untestable in a pipeline gate without an injectable clock; deciding late forces either a 30-minute test or an untested rule.",
+      "related_story_ids": [
+        "STORY-PURCHASE-05"
+      ],
+      "related_rule_ids": [
+        "RULE-STOCK-02"
+      ]
+    },
+    {
+      "id": "OQ-4",
+      "severity": "P2",
+      "question": "Which admin actions must be provably rejected for a non-admin account, and how is that asserted in the fulfilment tests?",
+      "for": "tester",
+      "why_matters": "RULE-ORDER-05 names the authority but the negative-path coverage is a test-design decision that changes the story's acceptance criteria.",
+      "related_story_ids": [
+        "STORY-BACKOFFICE-02"
+      ],
+      "related_rule_ids": [
+        "RULE-ORDER-05"
+      ]
+    },
+    {
+      "id": "OQ-5",
+      "severity": "P3",
+      "question": "Does the order number have a stated format beyond being readable and not trivially predictable?",
+      "for": "PM",
+      "why_matters": "RULE-ORDER-07 constrains the properties, not the shape; customers quote this number to support.",
+      "related_story_ids": [
+        "STORY-PURCHASE-06"
+      ],
+      "related_rule_ids": [
+        "RULE-ORDER-07"
+      ]
+    }
+  ],
+  "blocks_elaboration": false,
+  "count_check": {
+    "epics": 2,
+    "stories": 8,
+    "rules": 32,
+    "entities": 6,
+    "flows": 2,
+    "open_questions": 5
+  },
+  "human_report": "breakdown.md",
+  "upstream_refs": {
+    "source_artifacts": [
+      "ecommerce_mvp_business_only.gap-closed.md"
+    ],
+    "discovery_audit_id": "9ddddd53-aaf6-597f-831e-2c1e3ca2afe6"
+  }
+}
