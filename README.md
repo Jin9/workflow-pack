@@ -185,8 +185,9 @@ of agent confidence.** Reversible artifact-producing stages run exception-only.
 | # | Stage | Agent / skill (ver) | Input | Output (artifact) | Reversibility | Human owner | Status |
 |---|---|---|---|---|---|---|---|
 | **S0** | Intake | orchestrator + Iteration-Planner | `raw_request, requester, idempotency_key` | normalized intake + approved run plan | reversible | **Delivery Ops** | ⚠ GAP (OI-003) |
-| **S1a** | BA Discovery | `researching-ba-problem-space 1.0.0` | raw_request | `discovery` (framing · 4 product risks · regimes · recommendation) | reversible (gated decision) | **BA lead** | ✅ wired (live) |
-| **S1b** | BA Brief | `elaborating-user-stories 1.0.0` | the APPROVED breakdown pack | `epics, story_files, governance_gaps, audit_id` | reversible | **BA lead** | ✅ wired (live) |
+| **S1a** | BA Discovery | `researching-ba-problem-space 2.1.0` | raw_request | `discovery` (framing · 4 product risks · regimes · recommendation) | reversible (gated decision) | **BA lead** | ✅ wired (live) |
+| **S1b** | BA Breakdown | `breaking-down-ba-scope 1.0.0` | discovery + normalized request | breakdown pack (`epics, story_files, flows, rules_file, domain_file`) — skeletons, **no acceptance criteria** | reversible (gated shape) | **three amigos** | ✅ wired (live) |
+| **S1c** | BA Brief | `elaborating-user-stories 1.1.0` | the APPROVED breakdown pack | `epics, story_files, governance_gaps, audit_id` | reversible (gated content) | **BA lead** | ✅ wired (live) |
 | **S1.5** | UX Intake | `generate-ux-pack 0.1.0` · dev-squad | epic, stories | `pack_dir, tokens, route_map, maturity, audit_id` | reversible | **Tech Lead** | ✅ wired |
 | **S2** | TL Design | `designing-tech-lead-handoff 0.1.0` · dev-squad | epic, stories, gaps, ux | `component_map, api_contracts, audit_id` | reversible (high blast) | **Tech Lead** | ✅ wired |
 | **S2.5** | **Plan-Review gate** | Plan-Reviewer (adversarial red-team) | BA + TL outputs | pass / reroute / **HardFail** | gate | **Tech Lead** | ✅ wired |
@@ -200,14 +201,28 @@ of agent confidence.** Reversible artifact-producing stages run exception-only.
 | **S6** | **Deploy** | `handoff-to-deploy 0.1.0` → release runner | signoff_criteria | `receipt_id, audit_id` + **live release** | **IRREVERSIBLE / control-plane** | **Release Manager** | ✅ wired (OI-002 closed) |
 | **S7** | **Prod Validation** | ops + observability | live release | smoke/SLO verdict + rollback decision | **production-touching** | **On-call / Release Mgr** | ⚠ GAP (OI-003) |
 
-**S1 BA Research is a discovery→brief composite** — shown above (and on the dashboard) as the two
-cards **S1a · BA Discovery** and **S1b · BA Brief** — wired as two pipeline nodes in
-`workflows/delivery-pipeline.yaml` with a human gate between: `s1-discovery`
-(`researching-ba-problem-space 1.0.0` — problem framing · four product risks · regulatory regimes ·
-a `proceed`/`needs-work`/`do-not-build` recommendation; **AI drafts, a named human decides**) →
-`ba-research` (`elaborating-user-stories 1.0.0` — the brief + a **3-level ref chain**: `INDEX.json`
-manifest → one `EPIC-*` file per epic → one `STORY-*` file per story; nothing inlined). Boundary
-schemas: `workflows/schemas/discovery.json`, `workflows/schemas/ba-brief.json`.
+**S1 BA Research is a THREE-NODE chain with three human gates** — shown above (and on the
+dashboard) as **S1a · BA Discovery**, **S1b · BA Breakdown** and **S1c · BA Brief**, wired as three
+pipeline nodes in `workflows/delivery-pipeline.yaml`:
+
+1. `s1-discovery` (`researching-ba-problem-space 2.1.0`) — problem framing · four product risks ·
+   regulatory regimes · a `proceed`/`needs-work`/`do-not-build` recommendation. **AI drafts, a
+   named human decides**; only `proceed` releases the breakdown.
+2. `ba-breakdown` (`breaking-down-ba-scope 1.0.0`) — epics grouped by **business dependency**, story
+   skeletons **with no acceptance criteria**, and the `RULES`/`DOMAIN`/`FLOW-*` catalogues stated
+   once and referenced by id. → **THREE-AMIGOS QUORUM**: a distinct named ba-lead, dev-lead and
+   qa-lead must each sign. Withholding the acceptance criteria until after this gate is what makes
+   it load-bearing — three people can read a two-page agenda, nobody honestly reviews a 4,900-line
+   brief.
+3. `ba-research` (`elaborating-user-stories 1.1.0`) — id retained so the five downstream refs are
+   untouched. Writes the rule-anchored Gherkin, the seven banking-grade rows and the edge-case
+   sweep, plus a **3-level ref chain**: `INDEX.json` manifest → one `EPIC-*` file per epic → one
+   `STORY-*` file per story; nothing inlined. → **BA-lead gate**: the amigos signed the shape, this
+   signs the flesh, and a brief whose own `state` is not `ready-for-tl` cannot be released whatever
+   is signed.
+
+Boundary schemas: `workflows/schemas/discovery.json`, `workflows/schemas/ba-breakdown.json`,
+`workflows/schemas/ba-brief.json`.
 
 **S4 internal fan-out** (deterministic orchestrator): per component →
 `Tech-Designer → Dev → {QA-L1 ‖ Reviewer-L1}`; then a single **Layer-2 barrier** →
@@ -236,7 +251,8 @@ with a concrete review document.
 |---|---|---|---|
 | S0 Intake | Delivery Ops | light (plan sign-off) | Run plan |
 | S1a BA Discovery | BA lead | HITL on the `proceed`/`needs-work`/`do-not-build` recommendation | Discovery review doc (problem-space layer) |
-| S1b BA Brief | BA lead | async peer (L2) | Four-layer pack · one unified HTML viewer |
+| S1b BA Breakdown | **three amigos** (ba-lead + dev-lead + qa-lead) | **sync NAMED QUORUM (L3)** — a distinct named human per role; `agreed` releases, anything else loops the breakdown back (cap 2) | `breakdown.md` — a two-page session agenda |
+| S1c BA Brief | BA lead | async peer (L2), blocking — releases only on `approve` **and** `state: ready-for-tl` | The run-level delivery-review console |
 | S1.5 UX Intake | Tech Lead | async peer (L2) | UX pack maturity report |
 | **S2 TL Design** | Tech Lead + governance | **sync named (L3)** | TL Design doc + ADRs |
 | S2.5 Plan-Review | Tech Lead | HITL on HardFail | Plan-review findings |

@@ -66,7 +66,7 @@
     {
       "id": "S1c",
       "name": "BA Brief",
-      "skill": "elaborating-user-stories 1.0.0",
+      "skill": "elaborating-user-stories 1.1.0",
       "owner": "BA lead",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -77,10 +77,10 @@
       "json": "manifest",
       "verify": true,
       "reviewDoc": "none — the run-level delivery-review console renders the pack",
-      "caps": "retry 2 → human-queue (delivery-failures)",
+      "caps": "retry 2 → human-queue (delivery-failures); gate: approve + state ready-for-tl",
       "schema": "ba-brief.json (manifest → epic refs → STORY-* files)",
-      "fail": "uncovered or still-open rule → needs-work; governance P1 → human",
-      "tip": "<b>S1c · Story ELABORATION (YAML node <code>ba-research</code>; id preserved so the five downstream refs are untouched).</b> Runs only after the three-amigos gate agrees the shape. Writes <b>rule-anchored Gherkin</b> — each scenario cites the <code>RULE-*</code> it verifies — plus the seven force-evaluated <b>banking-grade rows</b>, and a <b>systematic edge-case sweep</b> derived from each rule's type (at / below / above a threshold, rounding, wrong actor, replay, race, partial failure) and from each entity's state machine (the illegal-transition case). Two coverage ledgers make the depth <b>countable</b>: a rule with no derived scenario is a visible gap, not a silence."
+      "fail": "uncovered or still-open rule → needs-work (the gate refuses to release it); governance P1 → human",
+      "tip": "<b>S1c · Story ELABORATION (YAML node <code>ba-research</code>; id preserved so the five downstream refs are untouched).</b> Runs only after the three-amigos gate agrees the shape. Writes <b>rule-anchored Gherkin</b> — each scenario cites the <code>RULE-*</code> it verifies — plus the seven force-evaluated <b>banking-grade rows</b>, and a <b>systematic edge-case sweep</b> derived from each rule's type (at / below / above a threshold, rounding, wrong actor, replay, race, partial failure) and from each entity's state machine (the illegal-transition case). Two coverage ledgers make the depth <b>countable</b>: a rule with no derived scenario is a visible gap, not a silence. <b>The brief is gated:</b> the BA lead signs it, and a brief whose own <code>state</code> is not <code>ready-for-tl</code> cannot be released whatever is signed — the amigos signed the shape, this signs the flesh."
     },
     {
       "id": "S1.5",
