@@ -21,7 +21,8 @@ SHOPPILOT = WORKSPACE / "tmp" / "runs" / "shoppilot"
 ARTIFACT_RELPATHS: Dict[str, str] = {
     "intake": "S0-intake/run-plan.json",
     "s1-discovery": "S1a-ba-discovery/discovery.json",
-    "ba-research": "S1b-ba-brief/INDEX.json",
+    "ba-breakdown": "S1b-breakdown/INDEX.json",
+    "ba-research": "S1c-brief/INDEX.json",
     "ux-intake": "S1.5-ux-intake/output.json",
     "tl-design": "S2-tl-design/output.json",
     "plan-review": "S2.5-plan-review/plan-review.json",

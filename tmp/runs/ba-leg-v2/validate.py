@@ -113,14 +113,22 @@ val(Draft7Validator(load(REPO / "workflows/schemas/ba-brief.json")), el_index,
 for key in ("epics", "story_files", "governance_gaps", "state", "audit_id"):
     check(key in el_index, f"boundary required field present: {key}")
 
-disc = load(PACK / "S1a-discovery" / "discovery.json")
-disc_errs = list(Draft7Validator(load(REPO / "workflows/schemas/discovery.json")).iter_errors(disc))
-NOTES.append(
-    "S1a discovery.json vs the LIVE workflows/schemas/discovery.json: "
-    + ("validates unchanged" if not disc_errs else
-       f"{len(disc_errs)} expected break(s) - problem_framing is now an object "
-       f"({{problem, who, why_now}}) instead of one long string. This is the report simplification; "
-       "the boundary schema is updated in the phase-2 wiring pass."))
+disc = load(PACK / "S1a-ba-discovery" / "discovery.json")
+v_disc = Draft7Validator(load(REPO / "workflows/schemas/discovery.json"))
+val(v_disc, disc, "S1a discovery vs the LIVE workflows/schemas/discovery.json")
+# The boundary now accepts BOTH shapes of problem_framing: the legacy narrative string that
+# recorded artifacts carry, and the structured triple that replaced it. Prove both directions,
+# so simplifying the report cannot invalidate provenance already on disk.
+val(v_disc, load(REPO / "tmp/runs/shoppilot/S1a-ba-discovery/discovery.json"),
+    "the RECORDED corpus discovery (string problem_framing) still validates")
+check(isinstance(disc["problem_framing"], dict), "new discovery uses the structured problem_framing")
+check(all(len(disc["problem_framing"][k]) <= 400 for k in ("problem", "who", "why_now")),
+      "each problem_framing part stays under the 400-character report cap")
+h = disc["handoff_to_intake"]
+check(h["audit_id"] == disc["audit_id"] and h["recommendation"] == "proceed",
+      "handoff_to_intake carries its audit_id and proceed recommendation")
+check(all(isinstance(x, dict) and "role" in x for x in h["stakeholder_hints"]),
+      "stakeholder_hints are typed objects, matching the boundary contract")
 
 # -------------------------------------------------- 5. ref-chain and FM-14 counts
 print("5. ref-chain integrity and count consistency")
@@ -221,7 +229,7 @@ for banned in ("ba_reasoning_trace", "ba_compliance_checklist", "dor_checklist",
     hits = [p.name for p in PACK.rglob("*.json") if banned in p.read_text(encoding="utf-8")]
     check(not hits, f"cut field absent: {banned}", str(hits))
 
-new_lines = lines([p for p in PACK.rglob("*") if p.is_file() and p.parent.name != "S1a-discovery"])
+new_lines = lines([p for p in PACK.rglob("*") if p.is_file() and p.parent.name != "S1a-ba-discovery"])
 old_lines = lines([p for p in CORPUS.rglob("*") if p.is_file()])
 check(new_lines < old_lines, "the new breakdown plus brief is smaller than the brief it replaces",
       f"{new_lines} vs {old_lines}")

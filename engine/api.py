@@ -43,6 +43,9 @@ class Verdict(BaseModel):
     verdict: str
     approver: str
     note: Optional[str] = None
+    # Quorum gates only: the role this named human is signing for. The engine
+    # refuses a quorum verdict without it, so the console must send it.
+    role: Optional[str] = None
 
 
 class Resolution(BaseModel):
@@ -133,7 +136,8 @@ def create_app(hub: Optional[Hub] = None) -> FastAPI:
     async def post_verdict(run_id: str, stage_id: str, body: Verdict):
         orch = _orch(run_id)
         try:
-            gate = orch.post_verdict(stage_id, body.verdict, body.approver, body.note)
+            gate = orch.post_verdict(stage_id, body.verdict, body.approver, body.note,
+                                     role=body.role)
         except GateApprovalError as e:
             raise HTTPException(422, str(e))
         except EngineError as e:

@@ -14,7 +14,39 @@
   "additionalProperties": true,
   "properties": {
     "problem_framing": {
-      "type": "string"
+      "description": "Either the legacy single narrative string (recorded artifacts predating 2026-07-28 use this and stay valid) or the structured triple that replaced it. The structured form exists because one ~2,000-character paragraph is not a report a human reads; each part is capped so the discovery document stays one page.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "required": [
+            "problem",
+            "who",
+            "why_now"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "problem": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            },
+            "who": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            },
+            "why_now": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            }
+          }
+        }
+      ]
     },
     "opportunities": {
       "type": "array",

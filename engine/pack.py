@@ -13,7 +13,7 @@ PACK_VERSION = "live-1"
 
 STAGE_BAND: Dict[str, str] = {
     "intake": "intake",
-    "s1-discovery": "ba", "ba-research": "ba",
+    "s1-discovery": "ba", "ba-breakdown": "ba", "ba-research": "ba",
     "ux-intake": "ux",
     "tl-design": "design", "plan-review": "design",
     "contract-design": "contracts",

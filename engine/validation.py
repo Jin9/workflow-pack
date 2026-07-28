@@ -21,11 +21,16 @@ from engine.model import StageSpec, ValidationFailed
 
 WORKFLOWS_DIR = WORKSPACE / "workflows"
 
-# Stages whose artifact is a MANIFEST, not the skill's full output shape — the
-# oracle (_sim/validate.py CHECKS) validates these against the boundary schema
-# only (skill schema entry = None): ba-research emits INDEX.json (ref chain,
-# nothing inlined), intake's run-plan predates a skill output schema.
-SKILL_SCHEMA_EXEMPT = {"ba-research"}
+# Stages exempt from SKILL-schema validation (boundary schema only). EMPTY since
+# 2026-07-28: every stage is now dual-schema validated.
+#
+# ba-research was exempt because eliciting-banking-brief's output schema described
+# the inline brief document (output_type / blocks_tl_handoff / frontmatter /
+# processing_metadata) while the stage actually emitted an INDEX manifest — the
+# schema could not describe its own artifact. elaborating-user-stories' output
+# schema IS the manifest schema, so the exemption is no longer needed and keeping
+# it would silently forfeit a real check.
+SKILL_SCHEMA_EXEMPT: set = set()
 
 _schema_cache: dict = {}
 

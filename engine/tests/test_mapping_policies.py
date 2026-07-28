@@ -10,7 +10,7 @@ from engine.policies import (
 def test_assemble_basic_and_nested_discovery(mini_workflow):
     from engine.loader import load_workflow  # real workflow for the nested rule
     wf = load_workflow()
-    ba = wf.stage_by_id["ba-research"]
+    ba = wf.stage_by_id["ba-breakdown"]
     payload, warnings = assemble_input(
         ba,
         {"raw_request": "r", "requester": "u"},

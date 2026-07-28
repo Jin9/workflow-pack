@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/breaking-down-ba-scope/schemas/output.json",
+  "title": "ba-breakdown INDEX manifest (stage artifact of ba-breakdown)",
+  "description": "The thin INDEX of the breakdown pack: refs to one file per epic, per story skeleton and per business flow, plus the two catalogue files (RULES.json, DOMAIN.json) and the governance roll-up the three-amigos gate reads. Nothing is inlined that has its own file. Consumers hydrate epics[].file / story_files[].file / flows[].file exactly as the ba-brief ref-chain is hydrated.",
+  "type": "object",
+  "required": [
+    "audit_id",
+    "stage",
+    "state",
+    "produced_by",
+    "scope_kind",
+    "epics",
+    "story_files",
+    "flows",
+    "rules_file",
+    "domain_file",
+    "stakeholders",
+    "legal_status",
+    "governance_gaps",
+    "blocks_elaboration",
+    "count_check"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id: UUIDv5(HOUSE_NS, 'ba-breakdown:{idempotency_key}') with HOUSE_NS = uuid5(NAMESPACE_URL, 'https://squad-delivery/audit'). Independent of the optional discovery and scope inputs. Distinct from the engine's per-attempt execution audit id."
+    },
+    "stage": { "type": "string", "const": "ba-breakdown" },
+    "state": {
+      "type": "string",
+      "enum": ["ready-for-amigos", "blocked", "needs-clarification"],
+      "description": "Gate readiness signal. ready-for-amigos releases the three-amigos gate; blocked carries at least one P1 governance gap; needs-clarification means the input could not be broken down at all."
+    },
+    "produced_by": { "type": "string", "minLength": 1 },
+    "idempotency_key": { "type": "string" },
+    "scope_kind": {
+      "type": "string",
+      "enum": ["single-epic", "multi-epic", "ambiguous"],
+      "description": "single-epic and multi-epic only; story-level scope_kinds are gone — the breakdown always produces at least one epic or it is needs-clarification."
+    },
+    "epics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "file", "title", "story_prefix", "story_ids"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "pattern": "^EPIC-[A-Z0-9-]+$" },
+          "file": { "type": "string", "description": "INDEX-relative POSIX ref to the epic file." },
+          "title": { "type": "string", "minLength": 1 },
+          "story_prefix": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]+$",
+            "description": "The short token used in this epic's story ids (STORY-{story_prefix}-NN). Keeps ids readable when an epic id is long after a business-dependency merge."
+          },
+          "story_ids": { "type": "array", "items": { "type": "string", "pattern": "^STORY-[A-Z0-9-]+-\\d+$" } }
+        }
+      }
+    },
+    "story_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "epic_id", "file", "title", "priority"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "pattern": "^STORY-[A-Z0-9-]+-\\d+$" },
+          "epic_id": { "type": "string", "pattern": "^EPIC-[A-Z0-9-]+$" },
+          "file": { "type": "string" },
+          "title": { "type": "string", "minLength": 1 },
+          "priority": { "type": "string", "enum": ["Must", "Should", "Could", "Won't"] }
+        }
+      }
+    },
+    "flows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "file", "name"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "pattern": "^FLOW-[A-Z0-9-]+$" },
+          "file": { "type": "string" },
+          "name": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "rules_file": { "type": "string", "description": "INDEX-relative ref to the business-rule catalogue." },
+    "domain_file": { "type": "string", "description": "INDEX-relative ref to the domain model (entities, state machines, per-field PII, glossary)." },
+    "stakeholders": {
+      "type": "array",
+      "description": "Full enumeration INCLUDING absent-but-implied roles. Never collapse roles; an absent row is the audit trail for the governance gap that names it.",
+      "items": {
+        "type": "object",
+        "required": ["role", "status"],
+        "additionalProperties": true,
+        "properties": {
+          "role": { "type": "string", "minLength": 1 },
+          "name_or_team": { "type": "string" },
+          "raci": { "type": "string" },
+          "status": { "type": "string", "enum": ["present", "scheduled", "mentioned_only", "absent", "handing-off"] },
+          "authority_mode": { "type": "string", "enum": ["rule", "proposal", "preference", "estimate", "pain"] },
+          "attribution_confidence": { "type": "string", "enum": ["named", "paraphrase", "anonymous", "group"] },
+          "engagement_required_for": { "type": "string" }
+        }
+      }
+    },
+    "legal_status": {
+      "type": "string",
+      "enum": ["present", "scheduled", "mentioned_only", "absent"],
+      "description": "ALWAYS emitted. Anything other than present on regulatory scope raises the P1 legal_absent_on_regulatory gap."
+    },
+    "governance_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "severity", "detail"],
+        "additionalProperties": true,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "legal_absent_on_regulatory",
+              "tipping_off_violation",
+              "pii_class_missing",
+              "regulatory_citation_unresolved",
+              "dual_approval_named_owner_missing",
+              "compensating_action_missing",
+              "retention_policy_unstated"
+            ]
+          },
+          "severity": { "type": "string", "enum": ["P1", "P2", "P3"] },
+          "detail": { "type": "string", "minLength": 10 },
+          "owner": { "type": "string" },
+          "blocks": { "type": "boolean" }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "description": "Ambiguities carried into the three-amigos session. `for` names who answers - dev and tester are first-class here because the session exists to answer them.",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "question", "for"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "pattern": "^OQ-\\d+$" },
+          "severity": { "type": "string", "enum": ["P1", "P2", "P3"] },
+          "question": { "type": "string", "minLength": 10 },
+          "for": { "type": "string", "enum": ["dev", "tester", "BA", "PM", "SME", "Legal", "Compliance", "DPO"] },
+          "why_matters": { "type": "string" },
+          "related_story_ids": { "type": "array", "items": { "type": "string" } },
+          "related_rule_ids": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "blocks_elaboration": {
+      "type": "boolean",
+      "description": "True when any governance gap has blocks: true. The three-amigos gate may still convene, but elaboration never starts on a blocked breakdown - a named human clears the gap first."
+    },
+    "count_check": {
+      "type": "object",
+      "required": ["epics", "stories", "rules", "entities", "flows"],
+      "additionalProperties": true,
+      "properties": {
+        "epics": { "type": "integer", "minimum": 1 },
+        "stories": { "type": "integer", "minimum": 1 },
+        "rules": { "type": "integer", "minimum": 0 },
+        "entities": { "type": "integer", "minimum": 0 },
+        "flows": { "type": "integer", "minimum": 1 },
+        "open_questions": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "human_report": { "type": "string", "description": "Ref to the one short markdown report (breakdown.md) that IS the three-amigos agenda." },
+    "upstream_refs": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "source_artifacts": { "type": "array", "items": { "type": "string" } },
+        "discovery_audit_id": { "type": "string", "description": "Provenance only - proves the discovery to breakdown chain without altering content." },
+        "intake_audit_id": { "type": "string" }
+      }
+    },
+    "failure_state": {
+      "type": "object",
+      "description": "Present only on state: needs-clarification or blocked.",
+      "required": ["failure_code", "reason"],
+      "additionalProperties": true,
+      "properties": {
+        "failure_code": {
+          "type": "string",
+          "enum": ["empty_or_minimal_input", "preprocessing_failure", "pii_echo_blocked", "governance_p1_unresolved", "undecidable_epic_grouping"]
+        },
+        "reason": { "type": "string", "minLength": 10 },
+        "blocking_items": { "type": "array", "items": { "type": "string" } },
+        "suggested_next_action": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "state": { "const": "ready-for-amigos" } }, "required": ["state"] },
+      "then": { "properties": { "blocks_elaboration": { "const": false } } }
+    },
+    {
+      "if": { "properties": { "state": { "const": "blocked" } }, "required": ["state"] },
+      "then": { "required": ["failure_state"], "properties": { "blocks_elaboration": { "const": true } } }
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/schemas/ba-breakdown.json",
+  "title": "S1b ba-breakdown boundary manifest (breaking-down-ba-scope)",
+  "description": "Boundary manifest for the ba-breakdown stage: the thin INDEX of the breakdown pack (INDEX -> EPIC-* files, STORY-* skeleton files, FLOW-* files, plus the RULES.json and DOMAIN.json catalogues). Permissive (additionalProperties:true) so the same artifact can also carry the governance roll-up the three-amigos gate reads. HYDRATION: the elaboration consumer does not receive this manifest raw - engine/mapping.py _hydrate_ba_breakdown dereferences epics[].file / story_files[].file / flows[].file and loads rules_file + domain_file, nesting the result under the `breakdown` key (shapes: breaking-down-ba-scope schemas/epic.json, schemas/story-skeleton.json, schemas/flow.json, schemas/rules.json, schemas/domain.json). required mirrors the YAML required_fields.",
+  "type": "object",
+  "required": [
+    "epics",
+    "story_files",
+    "flows",
+    "rules_file",
+    "domain_file",
+    "governance_gaps",
+    "state",
+    "audit_id"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "audit_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Producer-stamped deterministic provenance id (house formula ba-breakdown:{idempotency_key}); the same value appears in RULES.json and DOMAIN.json. Independent of the optional scope and discovery inputs."
+    },
+    "stage": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "ready-for-amigos",
+        "blocked",
+        "needs-clarification"
+      ],
+      "description": "Three-amigos gate readiness signal; only ready-for-amigos releases the gate."
+    },
+    "produced_by": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "scope_kind": {
+      "type": "string",
+      "enum": [
+        "single-epic",
+        "multi-epic",
+        "ambiguous"
+      ]
+    },
+    "epics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "file",
+          "title",
+          "story_prefix",
+          "story_ids"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^EPIC-[A-Z0-9-]+$"
+          },
+          "file": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "story_prefix": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]+$"
+          },
+          "story_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^STORY-[A-Z0-9-]+-\\d+$"
+            }
+          }
+        }
+      }
+    },
+    "story_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "epic_id",
+          "file",
+          "title",
+          "priority"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^STORY-[A-Z0-9-]+-\\d+$"
+          },
+          "epic_id": {
+            "type": "string",
+            "pattern": "^EPIC-[A-Z0-9-]+$"
+          },
+          "file": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Must",
+              "Should",
+              "Could",
+              "Won't"
+            ]
+          }
+        }
+      }
+    },
+    "flows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "file",
+          "name"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^FLOW-[A-Z0-9-]+$"
+          },
+          "file": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rules_file": {
+      "type": "string",
+      "description": "INDEX-relative ref to the business-rule catalogue; hydrated inline as breakdown.rules."
+    },
+    "domain_file": {
+      "type": "string",
+      "description": "INDEX-relative ref to the domain model; hydrated inline as breakdown.domain."
+    },
+    "stakeholders": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "legal_status": {
+      "type": "string",
+      "enum": [
+        "present",
+        "scheduled",
+        "mentioned_only",
+        "absent"
+      ]
+    },
+    "governance_gaps": {
+      "type": "array"
+    },
+    "open_questions": {
+      "type": "array"
+    },
+    "blocks_elaboration": {
+      "type": "boolean",
+      "description": "True when any governance gap blocks. No gate verdict may clear it - a named human does."
+    },
+    "count_check": {
+      "type": "object"
+    },
+    "human_report": {
+      "type": "string"
+    },
+    "upstream_refs": {
+      "type": "object"
+    },
+    "failure_state": {
+      "type": "object"
+    },
+    "human_view": {
+      "type": "object",
+      "description": "Additive render-policy hint for the human-review layer; absence == default.",
+      "additionalProperties": true,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "render": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "native",
+            "fold",
+            "split",
+            "gate-summary"
+          ]
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

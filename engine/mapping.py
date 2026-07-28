@@ -36,14 +36,31 @@ from engine.model import SpecError, StageSpec
 
 # (consumer stage id, producer stage id) -> input key the producer's fields nest under
 NESTED_HANDOFF = {
-    ("ba-research", "s1-discovery"): "discovery",
+    # the advisory discovery handoff now feeds the BREAKDOWN node (S1b), which is
+    # where stakeholder seeding and the tier floor are actually consumed
+    ("ba-breakdown", "s1-discovery"): "discovery",
+    # the approved breakdown pack feeds elaboration, hydrated in place
+    ("ba-research", "ba-breakdown"): "breakdown",
     # qa-plan reads BOTH review verdicts; flat-merge would silently keep only the
     # last writer (frontend) — nest each producer under its own key instead.
     ("qa-plan", "backend-review"): "backend_review",
     ("qa-plan", "frontend-review"): "frontend_review",
 }
 
-REF_CHAIN_PRODUCER = "ba-research"  # the manifest-emitting stage whose refs hydrate
+
+def _safe_path(producer_dir: Path, rel: str, warnings: List[str], what: str) -> Optional[Path]:
+    """Resolve a ref against the producer's stage dir and refuse to leave the run.
+
+    A `..` is NORMAL here — the S1c manifest legitimately points at
+    `../S1b-breakdown/RULES.json` — so the containment boundary is the RUN dir, not
+    the stage dir. In live mode these strings are model-authored, which is exactly
+    why the boundary is checked rather than assumed."""
+    root = producer_dir.parent.resolve()
+    path = (producer_dir / rel).resolve()
+    if root not in path.parents and path != root:
+        warnings.append(f"hydration: {what} ref {rel!r} escapes the run directory; refused")
+        return None
+    return path
 
 
 def _load_ref(producer_dir: Path, ref, warnings: List[str], what: str):
@@ -51,12 +68,29 @@ def _load_ref(producer_dir: Path, ref, warnings: List[str], what: str):
     Returns the loaded object, or the ref unchanged (with a warning) on any miss."""
     if not isinstance(ref, dict) or "file" not in ref:
         return ref
-    path = producer_dir / ref["file"]
+    path = _safe_path(producer_dir, ref["file"], warnings, what)
+    if path is None:
+        return ref
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
         warnings.append(f"hydration: {what} ref {ref.get('id', ref['file'])} unreadable ({e})")
         return ref
+
+
+def _load_path_ref(producer_dir: Path, rel, warnings: List[str], what: str):
+    """Some refs are BARE relative-path strings (`rules_file: "RULES.json"`) rather
+    than {id, file} dicts. _load_ref returns those untouched, so they need this."""
+    if not isinstance(rel, str) or not rel:
+        return rel
+    path = _safe_path(producer_dir, rel, warnings, what)
+    if path is None:
+        return rel
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        warnings.append(f"hydration: {what} ref {rel!r} unreadable ({e})")
+        return rel
 
 
 def _hydrate_ba_research(payload: Dict, producer_dir: Path, warnings: List[str]) -> None:
@@ -66,6 +100,28 @@ def _hydrate_ba_research(payload: Dict, producer_dir: Path, warnings: List[str])
         payload["stories"] = [
             _load_ref(producer_dir, r, warnings, "story") for r in payload["story_files"]
         ]
+
+
+def _hydrate_ba_breakdown(payload: Dict, producer_dir: Path, warnings: List[str]) -> None:
+    """The breakdown pack has FIVE ref kinds, two of them bare path strings. The
+    consumer contract names the hydrated forms `stories` / `rules` / `domain`, so
+    the *_file refs are retained alongside for provenance and the loaded objects
+    are added under the names the input schema requires."""
+    _hydrate_ba_research(payload, producer_dir, warnings)  # epics[] and story_files[] -> stories
+    if isinstance(payload.get("flows"), list):
+        payload["flows"] = [_load_ref(producer_dir, r, warnings, "flow") for r in payload["flows"]]
+    if "rules_file" in payload:
+        payload["rules"] = _load_path_ref(producer_dir, payload["rules_file"], warnings, "rules")
+    if "domain_file" in payload:
+        payload["domain"] = _load_path_ref(producer_dir, payload["domain_file"], warnings, "domain")
+
+
+# producer stage id -> the hydrator that dereferences its ref-chain
+REF_CHAIN_HYDRATORS = {
+    "ba-research": _hydrate_ba_research,
+    "ba-breakdown": _hydrate_ba_breakdown,
+}
+REF_CHAIN_PRODUCER = "ba-research"  # retained: the flat-merge consumers' producer
 
 
 def assemble_input(
@@ -99,6 +155,13 @@ def assemble_input(
                 target[f] = source[f]
             else:
                 warnings.append(f"{producer}.{f} absent from artifact; omitted")
+        # Hydrate BEFORE merging, into whichever dict the fields land in. Nesting and
+        # hydration used to be mutually exclusive (`nest_key is None`); ba-breakdown
+        # needs both — a nested pack whose refs are dereferenced in place.
+        hydrate = REF_CHAIN_HYDRATORS.get(producer)
+        if hydrate is not None and stage_dirs and producer in stage_dirs:
+            hydrate(target, Path(stage_dirs[producer]), warnings)
+
         if nest_key is not None:
             payload[nest_key] = target
         else:
@@ -106,9 +169,6 @@ def assemble_input(
                 if k in payload and payload[k] != v:
                     warnings.append(f"input key {k!r} overwritten by {producer}")
                 payload[k] = v
-        if (producer == REF_CHAIN_PRODUCER and nest_key is None
-                and stage_dirs and producer in stage_dirs):
-            _hydrate_ba_research(payload, Path(stage_dirs[producer]), warnings)
 
     if "idempotency_key" in workflow_input and "idempotency_key" not in payload:
         payload["idempotency_key"] = workflow_input["idempotency_key"]

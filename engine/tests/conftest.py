@@ -1,6 +1,6 @@
 """Fixtures: a synthetic mini-workflow workspace (loader-compatible) and a
 scripted FakeExecutor, so orchestrator semantics are tested without touching
-the real 27-stage pipeline or spending any tokens."""
+the real 28-stage pipeline or spending any tokens."""
 from __future__ import annotations
 
 import asyncio

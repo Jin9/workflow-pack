@@ -154,9 +154,12 @@ only `normalized_request` and re-derives scope from raw prose. Both new skills a
 advisory `scope` input; the YAML pick is added in phase 2.
 
 **Report simplification:** `discovery.problem_framing` was one ~2,000-character paragraph and
-becomes `{problem, who, why_now}`. The BA leg's entire human-facing output is now **two short
-markdown files** (`discovery.md`, 42 lines; `breakdown.md`, 209 lines) instead of a
-3,284-line HTML viewer plus a 2,191-line renderer.
+becomes `{problem, who, why_now}`, each capped at 400 characters. `workflows/schemas/discovery.json`
+accepts **both** shapes via `oneOf`, so recorded artifacts carrying the legacy string stay valid —
+simplifying a report must never invalidate provenance already on disk. The validator proves both
+directions. The BA leg's entire human-facing output is now **two short markdown files**
+(`discovery.md`, 42 lines; `breakdown.md`, 209 lines) instead of a 3,284-line HTML viewer plus a
+2,191-line renderer.
 
 ## Measured result
 
@@ -185,12 +188,12 @@ real relation (new < corpus), not the estimate.
 
 ## Verification
 
-`python3 tmp/runs/ba-leg-v2/validate.py` — **279/279 checks pass**, covering:
+`engine/.venv/bin/python tmp/runs/ba-leg-v2/validate.py` — **285/285 checks pass**, covering:
 
 1. skillify `quick_validate.py` and `check_links.py` exit 0 on both skills; both SKILL.md ≤ 500 lines.
 2. Every schema is valid draft-07; every fenced example in each SKILL.md validates against its own schema.
 3. Every sample artifact validates against the schema that owns it.
-4. **Backward compatibility** — the S1c manifest validates against the live `workflows/schemas/ba-brief.json`.
+4. **Backward compatibility** — the S1c manifest validates against the live `workflows/schemas/ba-brief.json`; the S1a artifact validates against `workflows/schemas/discovery.json`, **and so does the recorded corpus discovery** with its legacy string `problem_framing`.
 5. Ref-chain integrity and FM-14 counts: every rule, entity, flow and story id resolves; epic story-id sums match; **every catalogued rule is referenced by a story**; every flow decision point cites a resolvable rule; every flow outcome lands in a declared entity state.
 6. Depth: every story cites ≥1 catalogued rule in its criteria; **every rule has ≥1 derived scenario**; every stateful entity has an illegal-transition scenario; all seven banking-grade rows present with substantive justifications; the edge-case ledger covers every referenced rule; `intent` and `rule_refs` are unchanged from the agreed skeleton.
 7. Cuts: no HTML emitted at all; exactly two markdown reports in the whole leg; every cut field absent; the new pack is smaller than the brief it replaces.

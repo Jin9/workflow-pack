@@ -64,13 +64,31 @@
         "proceed_when": { "type": "string", "minLength": 1 },
         "on_block": { "type": "string", "minLength": 1 },
         "verdicts": { "$ref": "#/definitions/Verdicts" },
-        "exception_queue": { "type": "string", "minLength": 1 }
+        "exception_queue": { "type": "string", "minLength": 1 },
+        "required_roles": {
+          "description": "QUORUM gate: the run is released only after a DISTINCT NAMED human has signed for every role listed here. Used by the three-amigos gate (ba-lead + dev-lead + qa-lead), where the point of the gate is that three different people looked at it. One human cannot cover two roles.",
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
       },
       "allOf": [
         {
           "description": "sync-named and human gates require an owner_role (a named human fills it at verdict time).",
           "if": { "properties": { "gate": { "enum": ["sync-named", "human"] } } },
           "then": { "required": ["owner_role"] }
+        },
+        {
+          "description": "A quorum gate must be sync-named and blocking: collecting three signatures is meaningless if the run does not wait for them, or if the signers need not be named.",
+          "if": { "required": ["required_roles"] },
+          "then": {
+            "properties": {
+              "gate": { "const": "sync-named" },
+              "blocking": { "const": true }
+            },
+            "required": ["blocking"]
+          }
         },
         {
           "description": "auto+exception gates must name their exception queue.",

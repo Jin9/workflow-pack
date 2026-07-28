@@ -12,8 +12,39 @@
   "additionalProperties": false,
   "properties": {
     "problem_framing": {
-      "type": "string",
-      "description": "What problem, for whom, why now (opportunity, not solution)."
+      "description": "What problem, for whom, why now (opportunity, not solution). Either the legacy single narrative string (recorded artifacts predating 2026-07-28 carry this and stay valid) or the structured triple that replaced it. EMIT THE STRUCTURED FORM: one 2,000-character paragraph is not a report a human reads, so each part is capped at 400 characters.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "required": [
+            "problem",
+            "who",
+            "why_now"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "problem": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            },
+            "who": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            },
+            "why_now": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            }
+          }
+        }
+      ]
     },
     "opportunities": {
       "type": "array",
@@ -77,7 +108,7 @@
     "audit_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"s1-discovery:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") \u2014 independent of optional inputs, distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids predate this formula and are grandfathered \u2014 never rewrite recorded provenance.)"
+      "description": "Producer-stamped provenance id. LIVE derivation: UUIDv5(HOUSE_NS, \"s1-discovery:{idempotency_key}\"), HOUSE_NS = uuid5(NAMESPACE_URL, \"https://squad-delivery/audit\") — independent of optional inputs, distinct from the per-attempt audit id in events.jsonl. (Reference-corpus ids predate this formula and are grandfathered — never rewrite recorded provenance.)"
     },
     "handoff_to_intake": {
       "type": "object",
@@ -91,7 +122,7 @@
         "audit_id": {
           "type": "string",
           "format": "uuid",
-          "description": "MUST equal the top-level audit_id \u2014 one audit identity across the discovery to brief chain."
+          "description": "MUST equal the top-level audit_id — one audit identity across the discovery to brief chain."
         },
         "recommendation": {
           "type": "string",
@@ -199,7 +230,7 @@
   },
   "allOf": [
     {
-      "description": "AI drafts, human decides: a ready-to-intake handoff is emitted only on a clear-to-proceed recommendation \u2014 both the nested and the TOP-LEVEL recommendation must be proceed. A needs-work / do-not-build artifact must not carry one.",
+      "description": "AI drafts, human decides: a ready-to-intake handoff is emitted only on a clear-to-proceed recommendation — both the nested and the TOP-LEVEL recommendation must be proceed. A needs-work / do-not-build artifact must not carry one.",
       "if": {
         "required": [
           "handoff_to_intake"

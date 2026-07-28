@@ -15,6 +15,11 @@ from engine.model import StageExecutionError
 from engine.runstore import SHOPPILOT, artifact_relpath
 
 
+# Stages whose artifact is a MANIFEST: the run dir needs the whole referenced
+# pack, recursively, or downstream hydration resolves nothing.
+REF_CHAIN_STAGES = {"ba-breakdown", "ba-research"}
+
+
 class ReplayExecutor:
     def __init__(self, corpus=SHOPPILOT):
         self.corpus = corpus
@@ -30,12 +35,18 @@ class ReplayExecutor:
         shutil.copyfile(source, ctx.output_path)
 
         copied_extra = 0
-        if ctx.stage.id == "ba-research":
-            # INDEX.json references one file per epic/story — copy the ref chain.
-            for sib in sorted(source.parent.glob("*.json")):
-                if sib.name != source.name:
-                    shutil.copyfile(sib, ctx.output_path.parent / sib.name)
-                    copied_extra += 1
+        if ctx.stage.id in REF_CHAIN_STAGES:
+            # A manifest references one file per epic / story / flow, and the epic
+            # sidecars live in PER-EPIC SUBDIRECTORIES. The old non-recursive
+            # glob("*.json") flattened at best and silently skipped the subdirs at
+            # worst, leaving every hydration ref dangling in the run dir.
+            for sib in sorted(source.parent.rglob("*.json")):
+                if sib == source:
+                    continue
+                dest = ctx.output_path.parent / sib.relative_to(source.parent)
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(sib, dest)
+                copied_extra += 1
 
         return ExecutionResult(
             status="artifact_written",

@@ -27,6 +27,10 @@ stages:
   s1-discovery:
     executor: headless
     model: opus # problem-space research quality matters at the human gate
+  ba-breakdown:
+    executor: headless
+    model: opus # the epic-grouping judgement is what the three-amigos gate reviews
+    timeout_multiplier: 2.0 # the pack is many small files: epics, stories, rules, domain, flows
   ba-research:
     executor: headless
     model: opus

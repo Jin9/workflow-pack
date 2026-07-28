@@ -46,9 +46,28 @@ class GateInstance:
     approver: Optional[str] = None
     note: Optional[str] = None
     decided_ts: Optional[float] = None
+    # QUORUM gates only: one accumulated row per signing role. The single-approver
+    # fields above stay populated with the DECISIVE signature, so every existing
+    # consumer of as_record() keeps working unchanged.
+    approvals: List[dict] = field(default_factory=list)
+
+    @property
+    def signed_roles(self) -> List[str]:
+        return [a["role"] for a in self.approvals if a.get("role")]
+
+    @property
+    def outstanding_roles(self) -> List[str]:
+        signed = set(self.signed_roles)
+        return [r for r in self.spec.required_roles if r not in signed]
 
     @property
     def question(self) -> str:
+        if self.spec.quorum:
+            return (
+                f"{self.stage_id}: {'/'.join(self.spec.required_roles)} must each sign; "
+                f"still outstanding: {self.outstanding_roles or 'none'}; "
+                f"release requires every signature to be {self.spec.proceed_when!r}"
+            )
         if self.spec.on_field:
             return (
                 f"{self.stage_id}: artifact {self.spec.on_field} = "
@@ -58,7 +77,7 @@ class GateInstance:
         return f"{self.stage_id}: {self.spec.gate} gate ({self.spec.owner_role or 'unassigned'})"
 
     def as_record(self) -> dict:
-        return {
+        rec = {
             "run_id": self.run_id,
             "stage_id": self.stage_id,
             "gate": self.spec.gate,
@@ -73,6 +92,11 @@ class GateInstance:
             "question": self.question,
             "verdicts": list(self.spec.verdicts),
         }
+        if self.spec.quorum:
+            rec["required_roles"] = list(self.spec.required_roles)
+            rec["approvals"] = list(self.approvals)
+            rec["outstanding_roles"] = self.outstanding_roles
+        return rec
 
 
 class GateBook:
@@ -106,6 +130,9 @@ class GateBook:
                 on_block=g.get("on_block"),
                 verdicts=tuple(g.get("verdicts", defaults.get("verdicts", ["approve", "reject"]))),
                 exception_queue=g.get("exception_queue"),
+                # Read explicitly: an unknown key is silently dropped here, which
+                # would leave a quorum gate releasable by one signature.
+                required_roles=tuple(g.get("required_roles", ())),
             )
         missing = set(workflow.stage_by_id) - set(specs)
         if missing:
@@ -146,10 +173,18 @@ def _fail_closed_fallback(workflow: WorkflowSpec) -> Dict[str, GateSpec]:
 
 def record_verdict(
     gate: GateInstance, verdict: str, approver: str, note: Optional[str] = None,
-    ts: Optional[float] = None,
+    ts: Optional[float] = None, role: Optional[str] = None,
 ) -> GateInstance:
     """The ONLY way a gate leaves `pending`. Raises GateApprovalError on any
-    rule violation; never mutates on failure."""
+    rule violation; never mutates on failure.
+
+    QUORUM gates (spec.required_roles non-empty) accumulate one signature per
+    role and stay `pending` until every role has signed. Two rules make the
+    quorum mean what it says: a role may be signed only once, and one human may
+    cover only one role — otherwise "three amigos" degenerates into one person
+    clicking three times. A dissenting signature resolves the gate immediately;
+    there is no point collecting the remaining signatures on a decision that
+    cannot release."""
     if gate.status != "pending":
         raise GateApprovalError(f"gate {gate.stage_id} already decided ({gate.status})")
     if verdict not in gate.spec.verdicts:
@@ -161,8 +196,32 @@ def record_verdict(
     if gate.spec.named and len(str(approver).strip()) < 2:
         raise GateApprovalError(f"{gate.spec.gate} gate requires a NAMED human approver")
 
+    name = str(approver).strip()
+
+    if gate.spec.quorum:
+        if not role:
+            raise GateApprovalError(
+                f"gate {gate.stage_id} is a quorum gate; a verdict must name the role it "
+                f"signs for (one of {list(gate.spec.required_roles)})"
+            )
+        if role not in gate.spec.required_roles:
+            raise GateApprovalError(
+                f"role {role!r} is not required by gate {gate.stage_id} "
+                f"{list(gate.spec.required_roles)}"
+            )
+        if role in gate.signed_roles:
+            raise GateApprovalError(f"role {role!r} has already signed gate {gate.stage_id}")
+        if any(a["approver"] == name for a in gate.approvals):
+            raise GateApprovalError(
+                f"{name!r} has already signed gate {gate.stage_id} for another role; a quorum "
+                "requires DISTINCT named humans"
+            )
+        gate.approvals.append(
+            {"role": role, "approver": name, "verdict": verdict, "note": note, "ts": ts}
+        )
+
     gate.verdict = verdict
-    gate.approver = str(approver).strip()
+    gate.approver = name
     gate.note = note
     gate.decided_ts = ts
 
@@ -170,6 +229,11 @@ def record_verdict(
         released = verdict == gate.spec.proceed_when
     else:
         released = verdict in RELEASE_VERDICTS or verdict in CAVEAT_VERDICTS
+
+    if gate.spec.quorum and released and gate.outstanding_roles:
+        gate.status = "pending"  # quorum not yet met — keep waiting, decide nothing
+        return gate
+
     if released:
         gate.status = "released-with-caveat" if verdict in CAVEAT_VERDICTS else "released"
     else:

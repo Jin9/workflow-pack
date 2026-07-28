@@ -39,8 +39,15 @@ def cmd_replay(args) -> int:
     gatebook = GateBook.load(workflow)
     binding = RuntimeBinding.load()
 
+    amigos = {}
+    for pair in (getattr(args, "amigos", None) or []):
+        role, _, name = pair.partition("=")
+        if not role.strip() or not name.strip():
+            raise SystemExit(f"--amigos expects role=Name, got {pair!r}")
+        amigos[role.strip()] = name.strip()
+
     approve_hook = None
-    if args.approve_as:
+    if args.approve_as or amigos:
         approver = args.approve_as
 
         def approve_hook(gate):
@@ -49,6 +56,16 @@ def cmd_replay(args) -> int:
             verdict = gate.spec.proceed_when or (
                 "approve" if "approve" in gate.spec.verdicts else gate.spec.verdicts[0]
             )
+            if gate.spec.quorum:
+                # A quorum needs a DISTINCT named human per role. One operator name
+                # must not be able to impersonate three reviewers, so an unsupplied
+                # role parks the run instead of being invented.
+                for role in gate.outstanding_roles:
+                    if role in amigos:
+                        return (verdict, amigos[role], f"replay {role} approval", role)
+                return None
+            if not approver:
+                return None
             return (verdict, approver, "replay operator approval")
 
     workflow_input = {
@@ -123,6 +140,9 @@ def main(argv=None) -> int:
     r.add_argument("--run-id", default="replay-1")
     r.add_argument("--approve-as", default=None,
                    help="operator name used to release blocking gates (omit -> run parks at the first gate)")
+    r.add_argument("--amigos", action="append", metavar="ROLE=NAME", default=None,
+                   help="named human per role for a quorum gate, e.g. --amigos ba-lead='Khun Pim' "
+                        "(repeatable). A quorum gate parks unless every role is supplied.")
     r.add_argument("--request", default="ShopPilot replay of the canned corpus")
     r.add_argument("--requester", default="replay-operator")
     r.add_argument("--idempotency-key", default="00000000-0000-4000-8000-000000000000")

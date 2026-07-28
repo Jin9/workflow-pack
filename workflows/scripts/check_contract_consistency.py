@@ -35,8 +35,11 @@ ROOT = Path(__file__).resolve().parents[2]
 YAML_PATH = ROOT / "workflows/delivery-pipeline.yaml"
 SKILLS = ROOT / "workflows/skills"
 
-# Mirror of engine/mapping.py NESTED_HANDOFF: (consumer stage, producer stage) -> nest key
-NESTED_HANDOFF = {("ba-research", "s1-discovery"): "discovery",
+# Mirror of engine/mapping.py NESTED_HANDOFF: (consumer stage, producer stage) -> nest key.
+# MUST move in the same commit as engine/mapping.py — a stale mirror reports every
+# nested pick as flat drift, in both directions.
+NESTED_HANDOFF = {("ba-breakdown", "s1-discovery"): "discovery",
+                  ("ba-research", "ba-breakdown"): "breakdown",
                   ("qa-plan", "backend-review"): "backend_review",
                   ("qa-plan", "frontend-review"): "frontend_review"}
 
@@ -48,7 +51,7 @@ ENGINE_INJECTED = {"idempotency_key", "upstream_artifacts", "loop_back_feedback"
 # not guarantee them; each entry must be justified in the consumer's Input contract.
 OPTIONAL_PICK_WHITELIST: set = {
     # s1-discovery emits handoff_to_intake only on proceed; the consumer
-    # (eliciting-banking-brief) documents absent == byte-identical no-seeding.
+    # (breaking-down-ba-scope) documents absent == byte-identical no-seeding.
     ("s1-discovery", "handoff_to_intake"),
 }
 

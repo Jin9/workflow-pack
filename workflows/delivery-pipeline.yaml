@@ -54,7 +54,7 @@ kind: Workflow
 
 metadata:
   name: delivery-pipeline
-  version: 3.0.0
+  version: 3.1.0
   owner: delivery
   description: >
     Complete banking-grade delivery pipeline from a raw requirement to a validated production release,
@@ -140,7 +140,7 @@ spec:
     - id: s1-discovery
       type: analyze
       skill_ref: skills/researching-ba-problem-space
-      skill_version: "2.0.0"
+      skill_version: "2.1.0"
       depends_on: [intake]
       input:
         from_workflow_input: [raw_request, requester]
@@ -165,17 +165,20 @@ spec:
         proceed_when: proceed
         on_block: ba-discovery-review
 
-    # S1b · brief + 3-level epic/story ref-chain pack (intake; id retained = ba-research)
-    - id: ba-research
+    # S1b · epic/story BREAKDOWN pack — grouped by business dependency, plus the
+    # business-rule catalogue, the domain model and the end-to-end flows. Story
+    # skeletons carry NO acceptance criteria: those are written only after the
+    # three-amigos gate agrees the shape, which is what makes the gate worth having.
+    - id: ba-breakdown
       type: analyze
-      skill_ref: skills/eliciting-banking-brief
-      skill_version: "2.0.1"
+      skill_ref: skills/breaking-down-ba-scope
+      skill_version: "1.0.0"
       depends_on: [intake, s1-discovery]
       input:
         from_workflow_input: [raw_request, requester]
         from_stage:
           intake: [normalized_request]
-          # typed discovery → brief handoff (advisory; orchestrator merges into input.discovery):
+          # typed discovery → breakdown handoff (advisory; engine nests it as input.discovery):
           s1-discovery:
             [
               problem_framing,
@@ -183,6 +186,45 @@ spec:
               recommendation,
               audit_id,
               handoff_to_intake,
+            ]
+      output:
+        schema_ref: schemas/ba-breakdown.json
+        required_fields:
+          [epics, story_files, flows, rules_file, domain_file, governance_gaps, state, audit_id]
+      timeout_seconds: 180
+      # A non-agreed three-amigos verdict is an ORDINARY review outcome, not a run
+      # failure: it loops the breakdown back to itself with the reviewers' findings
+      # threaded in. Cap 2 — a third disagreement is a scoping problem for a human,
+      # not something to keep re-running.
+      failure_policy:
+        on_failure: loop_back
+        loop_to_stage: ba-breakdown
+        max_loops: 2
+        after_max_loops: human-queue
+        human_queue_name: ba-breakdown-review
+
+    # S1c · story ELABORATION (id retained = ba-research, so the five downstream
+    # from_stage refs are untouched and the boundary contract is unchanged).
+    - id: ba-research
+      type: analyze
+      skill_ref: skills/elaborating-user-stories
+      skill_version: "1.0.0"
+      depends_on: [intake, ba-breakdown]
+      input:
+        from_workflow_input: [raw_request, requester]
+        from_stage:
+          intake: [normalized_request]
+          # the APPROVED breakdown pack; the engine nests + hydrates it as input.breakdown
+          ba-breakdown:
+            [
+              epics,
+              story_files,
+              flows,
+              rules_file,
+              domain_file,
+              governance_gaps,
+              state,
+              audit_id,
             ]
       output:
         # ba-brief.json manifest exposes epics[] / story_files[]; all downstream from_stage mappings

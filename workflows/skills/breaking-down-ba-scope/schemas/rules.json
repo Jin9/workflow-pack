@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/breaking-down-ba-scope/schemas/rules.json",
+  "title": "ba-breakdown business-rule catalogue (RULES.json)",
+  "description": "Every business rule stated ONCE, with a stable id. Stories reference rules; they never restate them. This is the single change that both deepens the analysis and shrinks the artifact: a threshold like 'free shipping at or above 1500 THB' lives in one row instead of being paraphrased inside three acceptance criteria that can drift apart.",
+  "type": "object",
+  "required": ["audit_id", "rules"],
+  "additionalProperties": true,
+  "properties": {
+    "audit_id": { "type": "string", "format": "uuid", "description": "Same value as the INDEX manifest." },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "type", "source_ref", "open"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^RULE-[A-Z0-9-]+-\\d+$" },
+          "statement": {
+            "type": "string",
+            "minLength": 15,
+            "description": "The rule in one testable sentence with concrete values. 'Reasonable delay' is not a rule - it is an open question (set open: true and link it)."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["calculation", "eligibility", "threshold", "state-transition", "constraint", "authorization"],
+            "description": "state-transition rules MUST name the entity whose state machine they guard, via applies_to_entities."
+          },
+          "source_ref": { "type": "string", "minLength": 1, "description": "Where in the raw request this rule comes from. A rule with no source is an assumption, not a rule." },
+          "tier": { "type": "string", "enum": ["T1", "T2", "T3"] },
+          "applies_to_entities": { "type": "array", "items": { "type": "string", "pattern": "^ENTITY-[A-Z0-9-]+$" } },
+          "story_refs": { "type": "array", "items": { "type": "string", "pattern": "^STORY-[A-Z0-9-]+-\\d+$" } },
+          "regulatory_tie": { "type": "string", "description": "The regulation this rule implements, when it implements one." },
+          "open": { "type": "boolean", "description": "True when the source states the rule exists but not its value. An open rule still gets an id so stories can reference it - it blocks elaboration of those stories, not the breakdown." },
+          "open_question_ref": { "type": "string", "pattern": "^OQ-\\d+$" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "type": { "const": "state-transition" } }, "required": ["type"] },
+            "then": { "properties": { "applies_to_entities": { "minItems": 1 } }, "required": ["applies_to_entities"] }
+          },
+          {
+            "if": { "properties": { "open": { "const": true } }, "required": ["open"] },
+            "then": { "required": ["open_question_ref"] }
+          }
+        ]
+      }
+    }
+  }
+}

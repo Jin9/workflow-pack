@@ -1,46 +1,72 @@
 {
-  "problem_framing": "Problem: a single Thai merchant has no direct online sales channel and today leans on phone/chat to sell; it wants customers to self-serve the entire purchase journey (browse -> cart -> checkout -> mock payment -> delivery tracking) while back-office staff run catalog, stock, orders and coupons from one console. For whom: B2C retail customers in Thailand (guest and registered) and the merchant's own back-office staff; own-data-only isolation between customers is treated as non-negotiable. Why now: this is the merchant's first online storefront and, equally, the squad's vehicle to validate an end-to-end software-delivery workflow on a 'small but complete' MVP (single merchant, single currency/language, mock payment and shipping) that must nonetheless 'actually sell' -- stock reservation, server-computed totals, coupon rules and pre-shipment cancellation genuinely enforced -- and stay extensible to a real payment provider, real shipping and a future loyalty/points program without a rebuild. PROVENANCE / RB-01: the source ecommerce_mvp_business_only.gap-closed.md is already a fully-structured requirement (sections 1-20: RACI, PII inventory, retention schedule, quantified SLOs), which is exactly this skill's RB-01 'input already a structured requirement -> route to intake' condition. Per explicit instruction this discovery is produced retrospectively -- framing the opportunity from the business narrative (sections 1-3) and the resolved regulatory context (section 18) rather than from a raw, pre-intake idea -- so it reads as a derived problem-space record, not true upstream discovery. AI drafts; the named human decides at the review gate, then hands the framing into intake (eliciting-banking-brief), which is materialized here as the brief + epics + stories layers of this S1 pack.",
+  "problem_framing": {
+    "problem": "A single Thai merchant sells only by phone and chat. Customers cannot complete a purchase themselves, and staff reconstruct stock, orders and promotions from memory and message threads.",
+    "who": "B2C retail customers in Thailand, guest and registered, plus the merchant's own back-office staff. Isolation between customers is treated as non-negotiable.",
+    "why_now": "This is the merchant's first online storefront and the squad's vehicle for proving an end-to-end delivery workflow on a small but complete MVP that must actually sell."
+  },
   "opportunities": [
-    "Direct self-serve online sales channel: let customers complete a purchase end-to-end on the web without phone or chat, lifting the registration->first-purchase and checkout->payment conversion the business wants to measure.",
-    "Unified back-office console: let merchant staff manage catalog, inventory, orders, fulfillment state and coupons in one place, cutting operational handling time and same-day fulfillment lag.",
-    "A trustworthy 'it actually sells' MVP: correct stock reservation, server-computed totals, idempotent confirm/payment and audited state changes so customers never hit overselling or double charges (the zero-defect quality KPIs).",
-    "An extensible foundation: a structure that admits a real payment provider, a real shipping provider and a future loyalty/points program without re-architecting.",
-    "An end-to-end SDLC workflow testbed: use ShopPilot as the reference initiative to exercise the squad's delivery pipeline from discovery through deployment."
+    "A direct self-serve sales channel: customers complete a purchase on the web without phone or chat.",
+    "A unified back-office console for catalogue, stock, orders, fulfilment and coupons.",
+    "A storefront that actually sells: real stock reservation, server-computed totals and idempotent confirm, so no overselling and no double charges.",
+    "An extensible foundation that admits a real payment provider, real shipping and a loyalty programme without a rebuild."
   ],
   "assumptions": [
     {
-      "statement": "Thai B2C shoppers will complete purchases unassisted on a single-merchant web storefront rather than reverting to phone/chat ordering.",
+      "statement": "Thai B2C shoppers will complete purchases unassisted rather than reverting to phone or chat ordering.",
       "risk_type": "value",
       "confidence": "medium",
-      "de_risk": "Instrument the registration->first-purchase and checkout->payment funnels (section 3) and read them post-launch; run 5-8 customer interviews or a demand test before committing later-phase investment."
+      "de_risk": "Instrument the registration-to-first-purchase and checkout-to-payment funnels (gap-closed 3.1, 3.2) and read them post-launch."
     },
     {
-      "statement": "Guest, customer and admin can each complete their core flows (browse->pay; manage catalog/stock/orders) without training, including the own-data-only rule and applying a coupon at checkout.",
+      "statement": "Guest, customer and admin can each complete their core flows without training, including applying a coupon at checkout.",
       "risk_type": "usability",
       "confidence": "medium",
-      "de_risk": "Moderated prototype usability tests on the checkout and admin-fulfillment flows; verify the section 20 accessibility targets (keyboard-usable, responsive, human-readable error/confirmation messages)."
+      "de_risk": "Moderated prototype tests on the checkout and admin-fulfilment flows against the accessibility targets in gap-closed 20."
     },
     {
-      "statement": "Mock payment/shipping plus atomic stock reservation with a 30-minute TTL, last-item-race resolution, idempotent confirm and provider-replay-safe callbacks, and price snapshots can be built and hardened within the one-sprint budget (section 7.1).",
+      "statement": "Atomic stock reservation with a 30-minute expiry, last-item-race resolution, idempotent confirm and replay-safe callbacks can be built and hardened in the one-sprint budget.",
       "risk_type": "feasibility",
       "confidence": "low",
-      "de_risk": "Run a time-boxed spike on the reservation + idempotency concurrency model (last-item race and provider-replay dedup) before commit, and hand the spike to a technical-feasibility assessment."
+      "de_risk": "Time-boxed spike on the reservation and idempotency concurrency model before commit."
     },
     {
-      "statement": "A single-merchant MVP is sustainable for the business and the regulator: PDPA obligations (per-field lawful basis, TH/SG residency, 5-year retention), CPA/ETA disclosure and a PCI-out-of-scope payment model are operable at this scale.",
+      "statement": "PDPA obligations, the Consumer Protection Act disclosure duty and a PCI-out-of-scope payment model are all operable at single-merchant scale.",
       "risk_type": "viability",
       "confidence": "high",
-      "de_risk": "Largely de-risked in the gap-closed governance workshop (sections 14-20: named Legal/DPO/Compliance owners, resolved citations); keep a cost model and confirm the manual-refund SOP (refunds over 3,000 THB need dual approval) is operationally staffed."
+      "de_risk": "Largely de-risked in the governance workshop (gap-closed 14 to 20: named owners, resolved citations); confirm the manual-refund SOP is staffed."
     }
   ],
   "regulatory_regimes": [
-    "PDPA B.E. 2562 (2019): per-field lawful basis (section 15), data-subject access/correction/erasure via a back-office request, separate marketing-email consent, and a defined breach-notification path; lawful basis resolved.",
-    "Data residency: all personal data confined to the Thailand/Singapore (ap-southeast) region (section 16).",
-    "Revenue Code: 5-year retention envelope for order, financial and audit records (section 16).",
-    "Consumer Protection Act and Electronic Transactions Act: price and total shown before payment; order confirmation treated as an electronic record (section 18).",
-    "PCI-DSS v4.0: ShopPilot stays out of cardholder-data scope -- no PAN/CVV collected or stored; mock provider now, PSP tokenization later (section 18).",
-    "Not in play: KYC / AML / sanctions screening -- there is no account opening, lending, or money movement beyond tokenized retail payment; flagged explicitly so intake does not assume a financial-crime regime. No hard regulatory blocker remains (all section 18 citations resolved)."
+    "PDPA B.E. 2562: per-field lawful basis, data-subject access, correction and erasure, separate marketing consent, breach-notification path. Resolved in gap-closed 15 and 18.",
+    "Data residency: personal data confined to the Thailand and Singapore (ap-southeast) region (gap-closed 16).",
+    "Revenue Code: 5-year retention envelope for order, financial and audit records (gap-closed 16).",
+    "Consumer Protection Act and Electronic Transactions Act: the total is shown before payment and the confirmation is an electronic record (gap-closed 18).",
+    "PCI-DSS v4.0: no card data is collected or stored, so ShopPilot stays out of cardholder-data scope (gap-closed 18).",
+    "Not in play: KYC, AML and sanctions screening. There is no account opening, lending or money movement beyond retail payment; flagged so the breakdown does not assume a financial-crime regime."
   ],
   "recommendation": "proceed",
-  "audit_id": "9d4e1f8a-2c07-4b63-a5e9-6f1b0c3d8e24"
+  "handoff_to_intake": {
+    "audit_id": "9ddddd53-aaf6-597f-831e-2c1e3ca2afe6",
+    "recommendation": "proceed",
+    "tier_signal": "T2",
+    "stakeholder_hints": [
+      {
+        "role": "Data Protection Officer",
+        "engagement_required_for": "per-field lawful basis on customer data"
+      },
+      {
+        "role": "Legal Counsel",
+        "engagement_required_for": "regulatory citations and customer-facing copy review"
+      },
+      {
+        "role": "Compliance Officer",
+        "engagement_required_for": "statute mapping and PCI-DSS scope"
+      },
+      {
+        "role": "Finance Lead",
+        "engagement_required_for": "the manual-refund SOP and its dual-approval threshold"
+      }
+    ]
+  },
+  "audit_id": "9ddddd53-aaf6-597f-831e-2c1e3ca2afe6"
 }

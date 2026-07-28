@@ -4,9 +4,9 @@ from engine.gates import GateBook
 from engine.loader import load_workflow
 
 
-def test_loads_27_stages_with_resolved_refs():
+def test_loads_28_stages_with_resolved_refs():
     wf = load_workflow()
-    assert len(wf.stages) == 27
+    assert len(wf.stages) == 28
     assert wf.name == "delivery-pipeline"
     for s in wf.stages:
         assert (s.skill_dir / "SKILL.md").is_file()
@@ -25,7 +25,9 @@ def test_s1_composite_human_review():
     hr = wf.stage_by_id["s1-discovery"].human_review
     assert hr is not None
     assert (hr.on_field, hr.proceed_when) == ("recommendation", "proceed")
-    assert "s1-discovery" in wf.stage_by_id["ba-research"].depends_on
+    assert "s1-discovery" in wf.stage_by_id["ba-breakdown"].depends_on
+    # elaboration now hangs off the BREAKDOWN, not discovery directly
+    assert "ba-breakdown" in wf.stage_by_id["ba-research"].depends_on
 
 
 def test_release_handoff_carries_compensation():
@@ -37,7 +39,7 @@ def test_release_handoff_carries_compensation():
 def test_dag_parallel_legs_and_cones():
     wf = load_workflow()
     dag = Dag(wf)
-    assert len(dag.topo_order) == 27
+    assert len(dag.topo_order) == 28
     be_cone = dag.downstream_cone("backend-implement")
     assert "backend-review" in be_cone and "backend-unit-tests" in be_cone
     assert "qa-plan" in be_cone  # legs rejoin at qa-plan

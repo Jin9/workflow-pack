@@ -16,8 +16,8 @@ apiVersion: cognitive-os/v1
 kind: GatePolicy
 metadata:
   name: delivery-pipeline-gates
-  version: 1.0.0
-  pipeline: delivery-pipeline@3.0.0
+  version: 1.1.0
+  pipeline: delivery-pipeline@3.1.0
 
 defaults:
   verdicts: [approve, reject]
@@ -36,8 +36,23 @@ gates:
     proceed_when: proceed
     verdicts: [proceed, needs-work, do-not-build]
     on_block: ba-discovery-review
+  - stage_id: ba-breakdown
+    # L3 THREE-AMIGOS — a BA, a developer and a tester must EACH sign, as distinct
+    # named humans. required_roles is what makes that structural rather than a
+    # convention: no single approver can release this gate, by construction.
+    # `agreed` releases; the other three verdicts loop the breakdown back with the
+    # reviewers' findings (failure_policy loop_back in delivery-pipeline.yaml).
+    gate: sync-named
+    owner_role: three-amigos
+    blocking: true
+    mandatory: true
+    required_roles: [ba-lead, dev-lead, qa-lead]
+    on_field: state
+    proceed_when: agreed
+    verdicts: [agreed, split-stories, descope, needs-rework]
+    on_block: ba-breakdown-review
   - stage_id: ba-research
-    gate: async-peer # L2 — BA lead (advisory; release is controlled by the s1-discovery gate)
+    gate: async-peer # L2 — BA lead (advisory; release is controlled by the ba-breakdown gate)
     owner_role: ba-lead
   - stage_id: ux-intake
     gate: async-peer # L2 — Tech Lead

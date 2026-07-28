@@ -125,12 +125,19 @@ def emit_discovery() -> None:
         ],
         "recommendation": "proceed",
         "handoff_to_intake": {
+            "audit_id": DISCOVERY_AUDIT,
+            "recommendation": "proceed",
             "tier_signal": "T2",
-            "stakeholder_hints": ["Data Protection Officer", "Legal Counsel", "Compliance Officer", "Finance Lead"],
+            "stakeholder_hints": [
+                {"role": "Data Protection Officer", "engagement_required_for": "per-field lawful basis on customer data"},
+                {"role": "Legal Counsel", "engagement_required_for": "regulatory citations and customer-facing copy review"},
+                {"role": "Compliance Officer", "engagement_required_for": "statute mapping and PCI-DSS scope"},
+                {"role": "Finance Lead", "engagement_required_for": "the manual-refund SOP and its dual-approval threshold"},
+            ],
         },
         "audit_id": DISCOVERY_AUDIT,
     }
-    write_json(OUT / "S1a-discovery" / "discovery.json", discovery)
+    write_json(OUT / "S1a-ba-discovery" / "discovery.json", discovery)
 
     pf = discovery["problem_framing"]
     md = [
@@ -152,10 +159,10 @@ def emit_discovery() -> None:
     md += [f"- {r}" for r in discovery["regulatory_regimes"]]
     md += ["", "## Handoff to breakdown", "",
            f"Tier floor `{discovery['handoff_to_intake']['tier_signal']}` and stakeholder hints "
-           f"({', '.join(discovery['handoff_to_intake']['stakeholder_hints'])}) are **advisory**: "
+           f"({', '.join(h['role'] for h in discovery['handoff_to_intake']['stakeholder_hints'])}) are **advisory**: "
            "they may raise a tier or seed a row, never suppress a detector or satisfy a citation.",
            "", f"`audit_id` {discovery['audit_id']}"]
-    write_text(OUT / "S1a-discovery" / "discovery.md", "\n".join(md))
+    write_text(OUT / "S1a-ba-discovery" / "discovery.md", "\n".join(md))
 
 
 # ---------------------------------------------------------------- S1b breakdown

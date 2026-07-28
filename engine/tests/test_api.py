@@ -1,6 +1,8 @@
 """API acceptance: create a replay run over HTTP, approve every gate, reach done."""
 import time
 
+from engine.tests.helpers import AMIGOS
+
 from fastapi.testclient import TestClient
 
 from engine.api import create_app
@@ -17,10 +19,17 @@ def _drain_gates(client, run_id, deadline=30.0):
             return pack
         for gate in pack["gates"]["pending"]:
             verdict = "proceed" if gate["stage_id"] == "s1-discovery" else (
-                "pass" if gate["stage_id"] == "adversarial-pentest" else "approve")
+                "pass" if gate["stage_id"] == "adversarial-pentest" else (
+                    "agreed" if gate.get("required_roles") else "approve"))
+            body = {"verdict": verdict, "approver": "Web Human", "note": "api test"}
+            if gate.get("outstanding_roles"):
+                # A quorum gate needs a DISTINCT named human per role; the console
+                # must send both the role and a different name each time.
+                role = gate["outstanding_roles"][0]
+                body["role"] = role
+                body["approver"] = AMIGOS[role]
             r = client.post(
-                f"/api/runs/{run_id}/gates/{gate['stage_id']}/verdict",
-                json={"verdict": verdict, "approver": "Web Human", "note": "api test"},
+                f"/api/runs/{run_id}/gates/{gate['stage_id']}/verdict", json=body,
             )
             assert r.status_code == 200, r.text
         time.sleep(0.05)

@@ -5,6 +5,7 @@ Only possible since the 2026-07-12 reshape, when the input schemas started
 describing the real post-adapter payload instead of a fictional envelope.
 """
 import asyncio
+import json
 import pytest
 
 from engine.binding import RuntimeBinding
@@ -13,6 +14,8 @@ from engine.loader import load_workflow
 from engine.model import ValidationFailed
 from engine.orchestrator import Orchestrator
 from engine.runstore import RunStore
+
+from engine.tests.helpers import quorum_aware_hook
 from engine.validation import validate_stage_input
 
 APPROVER = "Input Validation Test Operator"
@@ -29,21 +32,24 @@ def test_config_default_is_enforce():
 
 
 def test_assembled_payload_conforms_for_every_stage(tmp_path):
-    """The full replay must produce ZERO input-contract findings — 27/27."""
+    """The full replay must produce ZERO input-contract findings — 28/28."""
     wf = load_workflow()
     orch = Orchestrator(
         wf, GateBook.load(wf), RuntimeBinding.load(), run_id="input-e2e",
         workflow_input=WF_INPUT, mode="replay",
         store=RunStore("input-e2e", base=tmp_path / "runs"),
-        approve_hook=lambda g: (
-            g.spec.proceed_when or ("approve" if "approve" in g.spec.verdicts
-                                    else g.spec.verdicts[0]), APPROVER, "test approval"),
+        approve_hook=quorum_aware_hook(APPROVER),
     )
     state = asyncio.run(orch.start())
     assert state == "done"
-    breaches = [e for e in orch.audit.events() if e.get("type") == "input.validation.failed"] \
-        if hasattr(orch.audit, "events") else []
+    # Read the RECORDED events, not an attribute AuditLog does not expose: the
+    # previous `hasattr(orch.audit, "events")` guard made this assertion vacuous.
+    events = [json.loads(l) for l in
+              orch.store.events_path.read_text().splitlines() if l.strip()]
+    breaches = [e for e in events if e.get("kind") == "input.validation.failed"]
     assert breaches == [], f"input-contract breaches: {breaches}"
+    assert any(e.get("kind") == "stage.executed" and e.get("stage") == "ba-breakdown"
+               for e in events), "ba-breakdown did not run"
 
 
 def test_bad_payload_is_rejected_fail_closed():

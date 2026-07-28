@@ -1,6 +1,6 @@
 ---
 name: researching-ba-problem-space
-version: 2.0.0
+version: 2.1.0
 description: Run BA problem-space discovery after S0 request normalization and BEFORE the BA brief is elaborated — investigate the problem, frame opportunities, surface assumptions and the four product risks (value, usability, feasibility, viability), and map the banking regulatory regimes in play — producing a discovery artifact that a named human decides on before the brief node runs. Use when asked to research the problem space before the brief, decide whether this is the right thing to build, do product discovery, frame the opportunity and risks, or map the regulatory regime for an initiative. AI drafts; a human decides. Do NOT use to structure a known requirement into a brief or stories (use eliciting-banking-brief or scoping-ba-intake). Do NOT use to design the architecture (use designing-tech-lead-handoff). Do NOT use to write code or run compliance enforcement.
 stage_type: analyze
 input_schema: schemas/input.json
@@ -64,6 +64,12 @@ Validate against `schemas/output.json`: `problem_framing`, `assumptions[]`
 On `proceed` the schema enforces **four-risk completeness**: at least four
 assumptions, at least one per risk class, each with a `de_risk` step.
 
+**`problem_framing` is the structured triple** `{problem, who, why_now}`, each
+part capped at 400 characters (v2.1.0). One long paragraph is not a report a
+human reads, and the three questions this stage answers are exactly these three.
+The schema still accepts the legacy single string so artifacts recorded before
+the change stay valid — but emit the structured form.
+
 `handoff_to_intake` is optional and legal **only when both the top-level and the
 nested recommendation are `proceed`**. It is advisory-only seeding for the brief
 node: the consumer may seed pending-citation rows or a tier *floor*, but never
@@ -83,7 +89,11 @@ grandfathered; never rewrite recorded provenance.
 
 ```json
 {
-  "problem_framing": "Customers of a single Thai merchant cannot self-serve the full purchase journey; staff mediate every order by phone.",
+  "problem_framing": {
+    "problem": "Customers of a single Thai merchant cannot self-serve the full purchase journey; staff mediate every order by phone.",
+    "who": "B2C retail customers in Thailand, guest and registered, plus the merchant's own back-office staff.",
+    "why_now": "This is the merchant's first online storefront and the vehicle for proving the delivery workflow end to end."
+  },
   "assumptions": [
     {"statement": "Customers prefer self-serve checkout to phone orders", "risk_type": "value", "confidence": "medium", "de_risk": "interview 5 repeat customers"},
     {"statement": "A Thai-language storefront is usable without training", "risk_type": "usability", "confidence": "medium", "de_risk": "hallway test the checkout prototype"},
@@ -100,7 +110,8 @@ grandfathered; never rewrite recorded provenance.
 
 1. **Frame the problem** (`references/discovery-method.md`): what problem, for
    whom, why now — opportunity, not solution. Entry: the normalized request.
-   Exit: a problem framing.
+   Exit: `problem_framing` as the structured triple `{problem, who, why_now}`,
+   each part at most 400 characters. Do not pour all three into one paragraph.
 2. **Map opportunities** (opportunity-solution-tree style): candidate opportunities
    and the outcomes they serve; do not jump to a solution.
 3. **Surface assumptions + the four risks** — value, usability, feasibility,

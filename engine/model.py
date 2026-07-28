@@ -99,11 +99,19 @@ class GateSpec:
     on_block: Optional[str] = None
     verdicts: Tuple[str, ...] = ("approve", "reject")
     exception_queue: Optional[str] = None
+    # QUORUM: roles that must EACH be signed by a distinct named human before the
+    # gate releases. Empty = the ordinary single-approver gate.
+    required_roles: Tuple[str, ...] = ()
 
     @property
     def named(self) -> bool:
-        """sync-named and human gates require a named human approver."""
-        return self.gate in ("sync-named", "human")
+        """sync-named, human and quorum gates require a named human approver."""
+        return self.gate in ("sync-named", "human") or bool(self.required_roles)
+
+    @property
+    def quorum(self) -> bool:
+        """True when this gate needs one distinct named human per required role."""
+        return bool(self.required_roles)
 
 
 class EngineError(Exception):

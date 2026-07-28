@@ -22,7 +22,7 @@ from engine.binding import RuntimeBinding
 from engine.dag import Dag
 from engine.executors import REGISTRY
 from engine.executors.base import StageContext
-from engine.gates import GateBook, GateInstance, record_verdict
+from engine.gates import GateApprovalError, GateBook, GateInstance, record_verdict
 from engine.mapping import assemble_input
 from engine.model import (
     EngineError,
@@ -45,6 +45,15 @@ TERMINAL_RUN_STATES = {R_DONE, R_CAVEATS, R_FAILED, R_HARDFAIL, R_ABORTED}
 # Stage states
 S_PENDING, S_RUNNING, S_WAITING_GATE, S_SUCCEEDED = "pending", "running", "waiting-gate", "succeeded"
 S_HUMAN, S_FAILED, S_GATE_BLOCKED, S_COMPENSATED = "human-queued", "failed", "gate-blocked", "compensated"
+
+
+def _unpack_decision(decision) -> tuple:
+    """An approve_hook returns (verdict, approver, note) — or, for a quorum gate,
+    (verdict, approver, note, role). Accept both so existing hooks are unchanged."""
+    if len(decision) == 4:
+        return tuple(decision)
+    verdict, approver, note = decision
+    return (verdict, approver, note, None)
 
 
 class Orchestrator:
@@ -132,25 +141,88 @@ class Orchestrator:
         return [g for g in self.gates.values() if g.status == "pending"]
 
     def post_verdict(self, stage_id: str, verdict: str, approver: str,
-                     note: Optional[str] = None) -> GateInstance:
+                     note: Optional[str] = None, role: Optional[str] = None) -> GateInstance:
         gate = self.gates.get(stage_id)
         if gate is None:
             raise EngineError(f"no gate instance for stage {stage_id!r}")
-        record_verdict(gate, verdict, approver, note, ts=time.time())
-        self.emit("gate.verdict", stage_id, **{
+        record_verdict(gate, verdict, approver, note, ts=time.time(), role=role)
+        event = {
             "gate": gate.spec.gate, "verdict": verdict, "approver": gate.approver,
             "status": gate.status, "note": note, "contract_sha256": gate.contract_sha256,
-        })
+        }
+        if gate.spec.quorum:
+            event.update(role=role, signed_roles=gate.signed_roles,
+                         outstanding_roles=gate.outstanding_roles)
+        self.emit("gate.verdict", stage_id, **event)
         rec = self.stage[stage_id]
+        if gate.status == "pending":
+            # Quorum not yet met. Record the signature and change NOTHING about the
+            # stage: a partially-signed gate is still an open gate. The event is
+            # still set — the waiter re-evaluates, finds nothing ready and sleeps
+            # again, which is cheap and avoids a wake-up race with the API caller.
+            self._persist()
+            self.gate_event.set()
+            return gate
         if gate.status in ("released", "released-with-caveat"):
             rec["state"] = S_SUCCEEDED
             rec["caveat"] = rec["caveat"] or gate.status == "released-with-caveat"
+        elif self._gate_loop_back(stage_id, gate):
+            pass  # the loop-back arm has already reset the cone and emitted
         else:
             rec["state"] = S_GATE_BLOCKED
             rec["queue"] = gate.spec.on_block or gate.spec.exception_queue
         self._persist()
         self.gate_event.set()
         return gate
+
+    def _gate_loop_back(self, stage_id: str, gate: GateInstance) -> bool:
+        """A non-releasing verdict on a stage whose failure_policy is loop_back sends
+        the work BACK with the reviewers' findings attached, instead of failing the
+        run. Without this a three-amigos `split-stories` verdict — an ordinary,
+        expected review outcome — would terminate the run.
+
+        The findings come from the GATE (what the humans said), never from the
+        stage artifact: _apply_failure re-derives feedback from the artifact, which
+        would overwrite the human input and send a blind re-run."""
+        spec = self.workflow.stage_by_id[stage_id]
+        fp = spec.failure_policy
+        if fp.on_failure != "loop_back" or not fp.loop_to_stage:
+            return False
+        edge = f"{stage_id}->{fp.loop_to_stage}"
+        action = on_failure(spec, 1, self.loop_ledger.get(edge, 0),
+                            self.binding.for_stage(stage_id, self.mode).backoff_multiplier)
+        if action.kind != "loop_back":
+            return False  # cycle cap reached -> fall through to blocked/queue as designed
+        self.loop_ledger[edge] = self.loop_ledger.get(edge, 0) + 1
+        self.loop_feedback[action.loop_to] = {
+            "from_stage": stage_id,
+            "source": "gate",
+            "verdict": gate.verdict,
+            "reviewers": [
+                {k: a[k] for k in ("role", "approver", "verdict", "note") if a.get(k) is not None}
+                for a in gate.approvals
+            ] or [{"approver": gate.approver, "verdict": gate.verdict, "note": gate.note}],
+            "findings": [a["note"] for a in gate.approvals if a.get("note")]
+            or ([gate.note] if gate.note else []),
+            "loop_count": self.loop_ledger[edge],
+        }
+        cone = self.dag.downstream_cone(action.loop_to)
+        reset = []
+        for sid in cone:
+            if self.stage[sid]["state"] != S_PENDING:
+                self.stage[sid]["state"] = S_PENDING
+                self.stage[sid]["error"] = None
+                reset.append(sid)
+        self.gates.pop(stage_id, None)  # the re-run opens a fresh gate
+        fb = self.loop_feedback[action.loop_to]
+        self.emit("gate.loop-back", stage_id, loop_to=action.loop_to,
+                  verdict=gate.verdict, loop_count=self.loop_ledger[edge],
+                  reset=sorted(reset),
+                  # WHO sent it back and WHAT they said belongs in the HITL record;
+                  # loop_feedback itself is popped when the re-run consumes it.
+                  reviewers=[a.get("approver") for a in gate.approvals] or [gate.approver],
+                  findings=fb["findings"])
+        return True
 
     def _open_gate(self, stage_id: str, artifact: dict) -> None:
         spec = self.gatebook.spec_for(stage_id)
@@ -170,10 +242,25 @@ class Orchestrator:
         self.emit("gate.opened", stage_id, gate=spec.gate, owner_role=spec.owner_role,
                   question=gate.question, blocking=True)
         if self.approve_hook is not None:
-            decision = self.approve_hook(gate)
-            if decision is not None:
-                verdict, approver, note = decision
-                self.post_verdict(stage_id, verdict, approver, note)
+            # A quorum gate needs one decision PER ROLE, so the hook is re-invoked
+            # while the gate stays pending. The bound is the role count: a hook that
+            # keeps returning the same role hits record_verdict's already-signed
+            # guard rather than spinning.
+            for _ in range(max(1, len(spec.required_roles))):
+                if self.gates.get(stage_id) is not gate or gate.status != "pending":
+                    break
+                decision = self.approve_hook(gate)
+                if decision is None:
+                    break
+                verdict, approver, note, dec_role = _unpack_decision(decision)
+                try:
+                    self.post_verdict(stage_id, verdict, approver, note, role=dec_role)
+                except GateApprovalError as e:
+                    # A malformed automated decision must PARK the gate, not spin the
+                    # run waiting for a verdict that can never arrive. The gate stays
+                    # pending for a human; the reason is on the record.
+                    self.emit("gate.hook-refused", stage_id, reason=str(e)[:200])
+                    break
 
     # ── stage attempt ──────────────────────────────────────────────────────────
     async def _run_stage(self, stage_id: str) -> None:
@@ -286,16 +373,24 @@ class Orchestrator:
             self.emit("stage.retry-scheduled", stage_id, next_attempt=rec["attempts"] + 1)
         elif action.kind == "loop_back":
             self.loop_ledger[edge] = self.loop_ledger.get(edge, 0) + 1
-            try:  # thread the reviewer's findings into the re-run (data, not instructions)
-                artifact = self.store.read_artifact(stage_id)
-                self.loop_feedback[action.loop_to] = {
-                    "from_stage": stage_id,
-                    "verdict": artifact.get("verdict"),
-                    "findings": artifact.get("findings", [])[:20],
-                    "loop_count": self.loop_ledger[edge],
-                }
-            except Exception:
-                pass  # no artifact (execution error) -> the re-run gets no feedback
+            existing = self.loop_feedback.get(action.loop_to)
+            if existing and existing.get("source") == "gate":
+                # A human already told this stage what to change. Re-deriving feedback
+                # from the artifact here would overwrite their words and send a BLIND
+                # re-run — the exact failure the loop exists to prevent.
+                existing["loop_count"] = self.loop_ledger[edge]
+            else:
+                try:  # thread the reviewer's findings into the re-run (data, not instructions)
+                    artifact = self.store.read_artifact(stage_id)
+                    self.loop_feedback[action.loop_to] = {
+                        "from_stage": stage_id,
+                        "source": "artifact",
+                        "verdict": artifact.get("verdict"),
+                        "findings": artifact.get("findings", [])[:20],
+                        "loop_count": self.loop_ledger[edge],
+                    }
+                except Exception:
+                    pass  # no artifact (execution error) -> the re-run gets no feedback
             cone = self.dag.downstream_cone(action.loop_to)
             reset = []
             for sid in cone:

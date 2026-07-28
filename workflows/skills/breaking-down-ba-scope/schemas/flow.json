@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squad-delivery/skills/breaking-down-ba-scope/schemas/flow.json",
+  "title": "ba-breakdown business flow (FLOW-NAME.json)",
+  "description": "One end-to-end business journey across stories: who does what, where the decisions are, and how it can end. This is the view the Tech Lead never receives today - stories arrive as an unordered set and the path between them has to be reconstructed by hand. One file per flow.",
+  "type": "object",
+  "required": ["id", "name", "actor", "trigger", "steps", "outcomes", "story_refs"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^FLOW-[A-Z0-9-]+$" },
+    "name": { "type": "string", "minLength": 1 },
+    "actor": { "type": "string", "minLength": 1, "description": "The primary business actor. A flow with two primary actors is two flows." },
+    "trigger": { "type": "string", "minLength": 10 },
+    "steps": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["seq", "actor", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "seq": { "type": "integer", "minimum": 1 },
+          "actor": { "type": "string" },
+          "action": { "type": "string", "minLength": 5 },
+          "entity_refs": { "type": "array", "items": { "type": "string", "pattern": "^ENTITY-[A-Z0-9-]+$" } },
+          "rule_refs": { "type": "array", "items": { "type": "string", "pattern": "^RULE-[A-Z0-9-]+-\\d+$" } },
+          "story_refs": { "type": "array", "items": { "type": "string", "pattern": "^STORY-[A-Z0-9-]+-\\d+$" } }
+        }
+      }
+    },
+    "decision_points": {
+      "type": "array",
+      "description": "Where the flow branches. Every decision point MUST cite the rule that decides it - an uncited branch is an undocumented business rule.",
+      "items": {
+        "type": "object",
+        "required": ["at_step", "question", "rule_refs", "branches"],
+        "additionalProperties": false,
+        "properties": {
+          "at_step": { "type": "integer", "minimum": 1 },
+          "question": { "type": "string", "minLength": 10 },
+          "rule_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^RULE-[A-Z0-9-]+-\\d+$" } },
+          "branches": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["condition", "goes_to"],
+              "additionalProperties": false,
+              "properties": {
+                "condition": { "type": "string", "minLength": 3 },
+                "goes_to": { "type": "string", "description": "A step seq, an outcome name, or another FLOW id." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "outcomes": {
+      "type": "array",
+      "minItems": 2,
+      "description": "At least two: a flow with only a success outcome has not been analysed for failure.",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "enum": ["success", "failure", "abandon", "escalation"] },
+          "entity_state": { "type": "string", "description": "The state the primary entity lands in, matching a DOMAIN.json state." },
+          "story_refs": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "story_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^STORY-[A-Z0-9-]+-\\d+$" } }
+  }
+}
