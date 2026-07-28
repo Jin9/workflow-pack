@@ -97,7 +97,7 @@ engine/.venv/bin/python -m pytest engine/tests -q      # expect: 38 passed
 
 ## Option A · Token-free replay — start here
 
-Executes all **27 stages** (S0→S7 + the 12 T-gates) from the canned ShopPilot corpus.
+Executes all **28 stages** (S0→S7 + the 12 T-gates) from the canned ShopPilot corpus.
 Deterministic, offline, zero tokens:
 
 ```bash

@@ -87,7 +87,7 @@ design artifacts about one flagship agentic delivery pipeline.
   assembled stage payload against the consuming skill's input schema; several YAML
   mappings therefore remain adapter work, not a proven typed handoff.
 - Replay copies byte-verbatim artifacts from `tmp/runs/shoppilot/`; a successful
-  27-stage replay validates orchestration and output compatibility, not whether a
+  28-stage replay validates orchestration and output compatibility, not whether a
   live stage can consume its upstream payload.
 - `contract-design`, `backend-implement`, and `frontend-implement` are parallel DAG
   siblings. S3 does not currently feed either implementation stage, so do not call

@@ -1,6 +1,6 @@
 # engine/ — the delivery-pipeline runtime
 
-Executes `workflows/delivery-pipeline.yaml` (27 stages) with fail-closed
+Executes `workflows/delivery-pipeline.yaml` (28 stages) with fail-closed
 dual-schema JSON handoffs, externalized human gates, retry / loop_back /
 human-queue policies, SAGA compensation, and a hash-chained audit log.
 This runtime is the recorded posture departure of

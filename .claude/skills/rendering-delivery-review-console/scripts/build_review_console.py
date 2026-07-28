@@ -102,7 +102,9 @@ GATE_SKILLS = {
 STAGE_AUDIT_SOURCES = [
     ("S0-intake", "S0-intake/run-plan.json", "scoping-ba-intake"),
     ("S1a-ba-discovery", "S1a-ba-discovery/discovery.json", "researching-ba-problem-space"),
-    ("S1b-ba-brief", "S1b-ba-brief/INDEX.json", "eliciting-banking-brief"),
+    ("S1b-breakdown", "S1b-breakdown/INDEX.json", "breaking-down-ba-scope"),
+    ("S1c-brief", "S1c-brief/INDEX.json", "elaborating-user-stories"),
+    ("S1b-ba-brief", "S1b-ba-brief/INDEX.json", "eliciting-banking-brief"),  # pre-2026-07-28 runs
     ("S1.5-ux-intake", "S1.5-ux-intake/output.json", "generate-ux-pack"),
     ("S2-tl-design", "S2-tl-design/output.json", "designing-tech-lead-handoff"),
     ("S2.5-plan-review", "S2.5-plan-review/plan-review.json", "red-teaming-implementation-plan"),
@@ -199,7 +201,10 @@ def build_epics_menu(run_dir):
     """S1a discovery + S1b brief/INDEX/EPIC/STORY -> menu1 Epics & Stories."""
     sections = []
     s1a = find_dir(run_dir, "S1a-ba-discovery")
-    s1b = find_dir(run_dir, "S1b-ba-brief")
+    # BA leg v2 splits the old S1b into a breakdown pack and an elaborated brief;
+    # both names are accepted so a pre-2026-07-28 run still renders.
+    s1bd = find_dir(run_dir, "S1b-breakdown")
+    s1b = find_dir(run_dir, "S1c-brief", "S1b-ba-brief")
 
     # Discovery (S1a)
     if s1a:
@@ -221,7 +226,43 @@ def build_epics_menu(run_dir):
                 "source_path": "S1a-ba-discovery/discovery.json", "payload": payload,
             })
 
-    # Brief + epics/stories (S1b)
+    # Breakdown (S1b) — the agreed shape the three amigos reviewed
+    if s1bd:
+        bidx = read_json(os.path.join(s1bd, "INDEX.json"))
+        if isinstance(bidx, dict):
+            rules = read_json(os.path.join(s1bd, bidx.get("rules_file") or "RULES.json")) or {}
+            domain = read_json(os.path.join(s1bd, bidx.get("domain_file") or "DOMAIN.json")) or {}
+            epic_files = []
+            for e in bidx.get("epics", []) or []:
+                obj = read_json(os.path.join(s1bd, e.get("file") or ""))
+                if isinstance(obj, dict):
+                    epic_files.append({
+                        "id": obj.get("id"), "title": obj.get("title"),
+                        "business_value": obj.get("business_value"),
+                        "decoupling": obj.get("decoupling"),
+                    })
+            sections.append({
+                "id": "s1b-breakdown", "menu": "m1", "title": "Breakdown",
+                "kind": "breakdown", "status": bidx.get("state"),
+                "audit_id": bidx.get("audit_id"),
+                "source_path": "S1b-breakdown/INDEX.json",
+                "payload": {
+                    "skill": "breaking-down-ba-scope",
+                    "scope_kind": bidx.get("scope_kind"),
+                    "legal_status": bidx.get("legal_status"),
+                    "blocks_elaboration": bidx.get("blocks_elaboration"),
+                    "count_check": bidx.get("count_check"),
+                    "epics": epic_files,
+                    "rules": (rules.get("rules") or []),
+                    "entities": (domain.get("entities") or []),
+                    "glossary": (domain.get("glossary") or []),
+                    "flows": bidx.get("flows", []),
+                    "open_questions": bidx.get("open_questions", []),
+                    "governance_gaps": bidx.get("governance_gaps", []),
+                },
+            })
+
+    # Brief + epics/stories (S1c; pre-v2 runs put both in S1b-ba-brief)
     if s1b:
         index = read_json(os.path.join(s1b, "INDEX.json"))
         brief = read_json(os.path.join(s1b, "brief.json"))
@@ -243,7 +284,7 @@ def build_epics_menu(run_dir):
                 "id": "s1b-brief", "menu": "m1", "title": "Brief",
                 "kind": "brief", "status": (brief.get("frontmatter") or {}).get("status"),
                 "tier": (brief.get("frontmatter") or {}).get("workload_tier"),
-                "source_path": "S1b-ba-brief/brief.json",
+                "source_path": "brief.json (legacy run)",
                 "payload": {
                     "title": init.get("title"),
                     "summary": init.get("summary"),
@@ -299,9 +340,11 @@ def build_epics_menu(run_dir):
             sections.append({
                 "id": "s1b-epics", "menu": "m1", "title": "Epics & Stories",
                 "kind": "epics",
-                "source_path": "S1b-ba-brief/INDEX.json",
+                "source_path": os.path.relpath(os.path.join(s1b, "INDEX.json"), run_dir),
                 "payload": {
                     "count_check": index.get("count_check"),
+                    "rule_coverage": index.get("rule_coverage"),
+                    "hidden_requirements_sweep": index.get("hidden_requirements_sweep"),
                     "governance_gaps": index.get("governance_gaps", []),
                     "open_questions": index.get("open_questions", []),
                     "epics": epics_payload, "stories": stories,
@@ -314,7 +357,7 @@ def build_epics_menu(run_dir):
                 (s1a and read_json(os.path.join(s1a, "discovery.json")) is MALFORMED):
             status = "unreadable-or-malformed"
         return _pending_menu("m1", "Epics & Stories", "S1", 1,
-                             "eliciting-banking-brief", "S1b-ba-brief", status)
+                             "elaborating-user-stories", "S1c-brief", status)
     menu = {"id": "m1", "label": "Epics & Stories", "stage": "S1", "order": 1, "present": True}
     return menu, sections
 
@@ -740,13 +783,19 @@ def build_gate_board_menu(run_dir):
 # Run header
 # ---------------------------------------------------------------------------
 def build_run_header(run_dir, all_sections):
-    index = read_json(os.path.join(run_dir, "S1b-ba-brief", "INDEX.json")) or \
+    index = read_json(os.path.join(run_dir, "S1c-brief", "INDEX.json")) or \
+        read_json(os.path.join(run_dir, "S1b-ba-brief", "INDEX.json")) or \
         read_json(os.path.join(run_dir, "INDEX.json")) or {}
     run_id = os.path.basename(os.path.normpath(run_dir))
     project = None
     brief = read_json(os.path.join(run_dir, "S1b-ba-brief", "brief.json"))
     if isinstance(brief, dict):
         project = (brief.get("initiative") or {}).get("title")
+    if not project:
+        # v2 has no brief.json; the epic titles carry the initiative instead.
+        epics = index.get("epics") or []
+        if epics:
+            project = " · ".join(e.get("title", "") for e in epics if e.get("title"))[:120] or None
     # Audit index from AUTHORITATIVE artifacts first (audit_ids copied verbatim —
     # producer-stamped provenance; the renderer never generates or validates one).
     audit_index = []

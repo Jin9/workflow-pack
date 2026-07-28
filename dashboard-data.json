@@ -28,7 +28,7 @@
     {
       "id": "S1a",
       "name": "BA Discovery",
-      "skill": "researching-ba-problem-space 1.0.0",
+      "skill": "researching-ba-problem-space 2.1.0",
       "owner": "BA lead",
       "model": "Opus 4.8",
       "tier": "T1",
@@ -46,27 +46,46 @@
     },
     {
       "id": "S1b",
+      "name": "BA Breakdown",
+      "skill": "breaking-down-ba-scope 1.0.0",
+      "owner": "three amigos (BA + dev + QA leads)",
+      "model": "Opus 4.8",
+      "tier": "T2",
+      "gate": "sync",
+      "input": "discovery (advisory) + normalized_request",
+      "output": "epics (business-decoupled) · story skeletons · RULES · DOMAIN · FLOWs",
+      "contract": "ba-breakdown.json INDEX → EPIC-* / STORY-* / FLOW-* files + RULES.json + DOMAIN.json",
+      "json": "manifest",
+      "verify": true,
+      "reviewDoc": "breakdown.md — the two-page three-amigos agenda",
+      "caps": "loop_back to itself, max 2 → human-queue (ba-breakdown-review)",
+      "schema": "ba-breakdown.json (manifest → epic / story / flow refs + rule and domain catalogues)",
+      "fail": "non-agreed verdict → loop_back with the reviewers' findings; governance P1 → human (never auto-resolve)",
+      "tip": "<b>S1b · Epic &amp; story BREAKDOWN (YAML node <code>ba-breakdown</code>).</b> Epics are grouped by <b>business dependency</b>: a candidate is an epic only if it is independently valuable, owns a success metric, and has no mandatory business dependency on a sibling — enablers such as authentication become <b>stories inside the epic they enable</b>. Alongside the story skeletons it emits the <b>business-rule catalogue</b> (each rule stated once, with an id), the <b>domain model</b> (entities, state machines, per-field PII) and the <b>end-to-end flows</b>. Skeletons deliberately carry <b>no acceptance criteria</b>. Gate = <b>THREE AMIGOS</b>: a BA, a developer and a tester must each sign as distinct named humans; <code>agreed</code> releases, anything else loops the breakdown back with their findings."
+    },
+    {
+      "id": "S1c",
       "name": "BA Brief",
-      "skill": "eliciting-banking-brief 1.6.1",
+      "skill": "elaborating-user-stories 1.0.0",
       "owner": "BA lead",
       "model": "Opus 4.8",
-      "tier": "T1",
+      "tier": "T2",
       "gate": "async",
-      "input": "discovery + raw_request",
-      "output": "epics (EPIC-*) · stories (STORY-*) · governance_gaps",
+      "input": "the APPROVED breakdown pack (hydrated)",
+      "output": "epics (EPIC-*) · elaborated stories (STORY-*) · governance_gaps",
       "contract": "ba-brief.json INDEX → EPIC-* files (story refs) → STORY-* files",
       "json": "manifest",
       "verify": true,
-      "reviewDoc": "Four-layer pack · one unified HTML viewer",
+      "reviewDoc": "none — the run-level delivery-review console renders the pack",
       "caps": "retry 2 → human-queue (delivery-failures)",
       "schema": "ba-brief.json (manifest → epic refs → STORY-* files)",
-      "fail": "brief: transient→retry; governance P1→human (never auto-resolve)",
-      "tip": "<b>S1b · Epics & stories (YAML node <code>ba-research</code>; id preserved so downstream refs are untouched).</b> On <b>proceed</b>, <b>eliciting-banking-brief</b> takes the discovery (advisory) and splits the requirement into <b>one EPIC-* file per epic</b>, each referencing its <b>STORY-* story files</b> (one per story, under the epic; <b>nothing inlined</b>). Machine handoff is a <b>4-layer ref chain</b>: INDEX manifest → discovery + brief → epic files (story refs) → story files (load only what you need). Human-view = a single self-contained offline <b>HTML viewer</b> rendering all four layers (discovery · brief · epics · stories). <b>Governance/P1 blockers escalate to a human</b>, never auto-resolved."
+      "fail": "uncovered or still-open rule → needs-work; governance P1 → human",
+      "tip": "<b>S1c · Story ELABORATION (YAML node <code>ba-research</code>; id preserved so the five downstream refs are untouched).</b> Runs only after the three-amigos gate agrees the shape. Writes <b>rule-anchored Gherkin</b> — each scenario cites the <code>RULE-*</code> it verifies — plus the seven force-evaluated <b>banking-grade rows</b>, and a <b>systematic edge-case sweep</b> derived from each rule's type (at / below / above a threshold, rounding, wrong actor, replay, race, partial failure) and from each entity's state machine (the illegal-transition case). Two coverage ledgers make the depth <b>countable</b>: a rule with no derived scenario is a visible gap, not a silence."
     },
     {
       "id": "S1.5",
       "name": "UX Intake",
-      "skill": "generate-ux-pack 0.1.1",
+      "skill": "generate-ux-pack 0.2.0",
       "owner": "Tech Lead",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -85,7 +104,7 @@
     {
       "id": "S2",
       "name": "TL Design",
-      "skill": "designing-tech-lead-handoff 0.2.2",
+      "skill": "designing-tech-lead-handoff 0.3.0",
       "owner": "Tech Lead",
       "model": "Opus 4.8 / GPT-5.5",
       "tier": "T1",
@@ -143,7 +162,7 @@
     {
       "id": "S4a",
       "name": "Backend Impl",
-      "skill": "implement-backend-feature 1.0.1",
+      "skill": "implement-backend-feature 2.0.0",
       "owner": "dev-squad",
       "model": "Sonnet 4.6 → Opus 4.8",
       "tier": "T2",
@@ -162,7 +181,7 @@
     {
       "id": "S4a-r",
       "name": "Backend Review",
-      "skill": "review-backend-code 1.0.0",
+      "skill": "review-backend-code 2.0.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -181,7 +200,7 @@
     {
       "id": "T1",
       "name": "Unit · Backend",
-      "skill": "executing-backend-unit-tests 0.1.0",
+      "skill": "executing-backend-unit-tests 0.2.0",
       "owner": "dev-squad",
       "model": "Sonnet 4.6",
       "tier": "T2",
@@ -200,7 +219,7 @@
     {
       "id": "T2",
       "name": "SAST gate",
-      "skill": "running-sast-security-gate 0.1.0",
+      "skill": "running-sast-security-gate 0.2.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T1",
@@ -219,7 +238,7 @@
     {
       "id": "S4b",
       "name": "Frontend Impl",
-      "skill": "implement-frontend-feature 1.0.1",
+      "skill": "implement-frontend-feature 2.0.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -238,7 +257,7 @@
     {
       "id": "S4b-r",
       "name": "Frontend Review",
-      "skill": "review-frontend-code 1.0.1",
+      "skill": "review-frontend-code 2.0.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -257,7 +276,7 @@
     {
       "id": "T3",
       "name": "Unit · Frontend",
-      "skill": "executing-frontend-unit-tests 0.1.0",
+      "skill": "executing-frontend-unit-tests 0.2.0",
       "owner": "dev-squad",
       "model": "Sonnet 4.6",
       "tier": "T2",
@@ -276,7 +295,7 @@
     {
       "id": "T4",
       "name": "Accessibility · WCAG AA",
-      "skill": "running-accessibility-tests 0.1.0",
+      "skill": "running-accessibility-tests 0.2.0",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -295,7 +314,7 @@
     {
       "id": "T5",
       "name": "Contract · Pact",
-      "skill": "contract-testing-pact 0.1.0",
+      "skill": "contract-testing-pact 0.2.0",
       "owner": "dev-squad",
       "model": "Sonnet 4.6",
       "tier": "T2",
@@ -314,7 +333,7 @@
     {
       "id": "T6",
       "name": "Integration",
-      "skill": "executing-integration-tests 0.1.0",
+      "skill": "executing-integration-tests 0.2.0",
       "owner": "qa-squad",
       "model": "Sonnet 4.6 / Opus 4.8",
       "tier": "T2",
@@ -333,7 +352,7 @@
     {
       "id": "T7",
       "name": "AppSec · DAST/SCA",
-      "skill": "scanning-appsec-pipeline-gate 0.1.0",
+      "skill": "scanning-appsec-pipeline-gate 0.2.1",
       "owner": "dev-squad",
       "model": "Opus 4.8",
       "tier": "T1",
@@ -352,7 +371,7 @@
     {
       "id": "S4c",
       "name": "QA Test Design",
-      "skill": "planning-banking-tests 1.0.1",
+      "skill": "planning-banking-tests 2.0.0",
       "owner": "qa-squad",
       "model": "GPT-5.5 / Opus 4.8",
       "tier": "T2",
@@ -391,7 +410,7 @@
     {
       "id": "T8",
       "name": "End-to-end",
-      "skill": "authoring-e2e-test-suite 0.1.0",
+      "skill": "authoring-e2e-test-suite 0.2.0",
       "owner": "qa-squad",
       "model": "Opus 4.8",
       "tier": "T2",
@@ -410,7 +429,7 @@
     {
       "id": "T9",
       "name": "Performance / Load",
-      "skill": "running-performance-load-test 0.1.0",
+      "skill": "running-performance-load-test 0.2.1",
       "owner": "qa-squad",
       "model": "Sonnet 4.6",
       "tier": "T2",
@@ -429,7 +448,7 @@
     {
       "id": "T10",
       "name": "Adversarial pentest",
-      "skill": "validating-banking-implementation 0.1.0",
+      "skill": "validating-banking-implementation 0.2.1",
       "owner": "security",
       "model": "GPT-5.5 / Opus 4.8",
       "tier": "T1",
@@ -468,7 +487,7 @@
     {
       "id": "T11",
       "name": "Smoke / sanity",
-      "skill": "running-smoke-tests 0.1.0",
+      "skill": "running-smoke-tests 0.2.0",
       "owner": "On-call / Rel Mgr",
       "model": "Sonnet 4.6",
       "tier": "T2",
@@ -487,7 +506,7 @@
     {
       "id": "T12",
       "name": "Canary analysis",
-      "skill": "analyzing-canary-rollout 0.1.0",
+      "skill": "analyzing-canary-rollout 0.2.0",
       "owner": "On-call / Rel Mgr",
       "model": "Gemini 3.1 Pro / Opus 4.8",
       "tier": "T1",
@@ -543,7 +562,7 @@
       "consumes": [
         "ba.discovery"
       ],
-      "emits": "ba.brief",
+      "emits": "ba.breakdown",
       "sdlc": "Requirements & Design"
     },
     "S1.5": {
@@ -724,6 +743,13 @@
       ],
       "emits": "ops.canary",
       "sdlc": "Operate"
+    },
+    "S1c": {
+      "consumes": [
+        "ba.breakdown"
+      ],
+      "emits": "ba.brief",
+      "sdlc": "Requirements & Design"
     }
   },
   "templates": {
@@ -736,8 +762,8 @@
       "f": "discovery review doc (problem-space: framing · 4 product risks · regimes · recommendation)"
     },
     "S1b": {
-      "p": "agentic-delivery-pipeline/reference/integration/templates/S1-ba-research/",
-      "f": "one unified offline HTML viewer (ba-research-viewer.html, all four layers) + 4-layer JSON pack (discovery.json · brief.json · EPIC-*/STORY-*)"
+      "p": "workflows/skills/breaking-down-ba-scope/",
+      "f": "breakdown.md (the three-amigos agenda) + the JSON pack (INDEX, EPIC-*, STORY-*, RULES, DOMAIN, FLOW-*)"
     },
     "S1.5": {
       "p": "agentic-delivery-pipeline/reference/integration/templates/S1_5-ux-pack-maturity-report.md",
@@ -834,6 +860,10 @@
     "T12": {
       "p": "workflows/schemas/canary-analysis.json",
       "f": "JSON verdict (schema-validated gate)"
+    },
+    "S1c": {
+      "p": "workflows/skills/elaborating-user-stories/",
+      "f": "JSON ref chain only (INDEX → EPIC-* → STORY-*); the run-level review console is the human view"
     }
   },
   "json_only": [
@@ -1004,12 +1034,20 @@
       "cite": "✦ workflows/skills/researching-ba-problem-space (problem-space → discovery + recommendation gate)"
     },
     {
-      "step": "S1b BA Brief",
-      "skill": "eliciting-banking-brief",
+      "step": "S1b BA Breakdown",
+      "skill": "breaking-down-ba-scope",
       "cov": "full",
       "missing": "",
       "src": "live",
-      "cite": "✦ workflows/skills/eliciting-banking-brief (epics EPIC-* + stories STORY-*, 4-layer ref chain)"
+      "cite": "✦ workflows/skills/breaking-down-ba-scope (business-decoupled epics + RULES/DOMAIN/FLOW catalogues)"
+    },
+    {
+      "step": "S1c BA Brief",
+      "skill": "elaborating-user-stories",
+      "cov": "full",
+      "missing": "",
+      "src": "live",
+      "cite": "✦ workflows/skills/elaborating-user-stories (rule-anchored Gherkin + banking-grade rows)"
     },
     {
       "step": "S1.5 UX Intake",

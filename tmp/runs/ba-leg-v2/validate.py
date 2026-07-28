@@ -23,7 +23,11 @@ REPO = ROOT.parents[2]
 PACK = ROOT / "sample-pack"
 BD = ROOT / "skills" / "breaking-down-ba-scope"
 EL = ROOT / "skills" / "elaborating-user-stories"
-CORPUS = REPO / "tmp" / "runs" / "shoppilot" / "S1b-ba-brief"
+# The dir this pack replaced was retired on 2026-07-28. Its size is recorded here with
+# its provenance rather than measured live, so the comparison survives the deletion:
+#   git ls-tree -r --name-only 6ed2a7b tmp/runs/shoppilot/S1b-ba-brief  ->  16 files
+CORPUS_BASELINE_LINES = 6250
+CORPUS_BASELINE_REF = "6ed2a7b:tmp/runs/shoppilot/S1b-ba-brief"
 
 FAILS: list[str] = []
 NOTES: list[str] = []
@@ -230,10 +234,10 @@ for banned in ("ba_reasoning_trace", "ba_compliance_checklist", "dor_checklist",
     check(not hits, f"cut field absent: {banned}", str(hits))
 
 new_lines = lines([p for p in PACK.rglob("*") if p.is_file() and p.parent.name != "S1a-ba-discovery"])
-old_lines = lines([p for p in CORPUS.rglob("*") if p.is_file()])
+old_lines = CORPUS_BASELINE_LINES
 check(new_lines < old_lines, "the new breakdown plus brief is smaller than the brief it replaces",
-      f"{new_lines} vs {old_lines}")
-NOTES.append(f"artifact size: corpus S1b {old_lines} lines -> new S1b+S1c {new_lines} lines "
+      f"{new_lines} vs {old_lines} ({CORPUS_BASELINE_REF})")
+NOTES.append(f"artifact size: retired corpus S1b {old_lines} lines -> new S1b+S1c {new_lines} lines "
              f"({100 * (old_lines - new_lines) // old_lines}% smaller), with the acceptance criteria "
              f"count going 29 -> {ac_total} and rules/entities/flows going 0 -> "
              f"{len(rules)}/{len(entities)}/{len(flows)}.")

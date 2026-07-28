@@ -21,7 +21,7 @@ deterministically and threaded from the real upstream artifacts:
   hashes, fixed timestamps; re-runs byte-identical). Threads S1b `brief.json` + S2 `output.json` into each
   downstream contract.
 - Validator: [`_sim/validate.py`](_sim/validate.py) — every artifact validates against **both** its built skill
-  `schemas/output.json` **and** its boundary schema in `../../../workflows/schemas/`. **27/27 PASS** (incl. the
+  `schemas/output.json` **and** its boundary schema in `../../../workflows/schemas/`. **28/28 PASS** (incl. the
   4 pre-existing upstream artifacts as a regression guard).
 - **S1.5 was bumped to maturity 2** to clear the S4b frontend gate (RT-4 ≥ 2): brand tokens + Thai microcopy
   filled (resolving the two TBD P1s), the two "no UX-team source" findings downgraded to P2. This is a
